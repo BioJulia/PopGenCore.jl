@@ -19,6 +19,5 @@ end
 end
 
 include("precompile.jl")
-precompile()
 
 end
