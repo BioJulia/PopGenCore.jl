@@ -1,7 +1,7 @@
 module  TestIO
 
-using PopGen
-using GeneticVariation, GZip
+using PopGenIO
+using VariantCallFormat, GZip
 using Test
 
 cats_gen = normpath(joinpath(@__DIR__,"..","data/", "nancycats.gen"))
