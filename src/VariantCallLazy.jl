@@ -78,7 +78,7 @@ end
 function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, allow_monomorphic::Bool = false)
     bases = (A = Int8(1), T = Int8(2), C = Int8(3), G = Int8(4), miss = Int8(0))
     stream = VCF.Reader(openvcf(infile))
-    nmarkers = countlines(openvcf(infile)) - length(VCF.header(stream)) - 1
+    nmarkers = countlines(openvcf(infile)) - length(header(stream)) - 1
     sample_ID = header(stream).sampleID
     nsamples = length(sample_ID)
     loci_names = fill("marker", nmarkers)
