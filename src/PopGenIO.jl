@@ -3,14 +3,14 @@ module PopGenIO
 # Write your package code here.
 using CSV, DataFrames, NaturalSort, PooledArrays, Requires
 
-include("Datasets.jl")
-include("Delimited.jl")
-include("Genepop.jl")
-include("Read.jl")
-include("Structure.jl")
 include("PopData.jl")
 include("Utils.jl")
+include("Delimited.jl")
+include("Genepop.jl")
+include("Structure.jl")
 include("VariantCall.jl")
+include("Read.jl")
+include("Datasets.jl")
 @init @require  VariantCallFormat="28eba6e3-a997-4ad9-87c6-d933b8bca6c1" begin
     include("io/VariantCallLazy.jl")
 end

@@ -13,7 +13,7 @@ PopData
     loci::DataFrame
 ```
 The data struct used for the PopGen population genetics ecosystem. You are
-STRONGLY discouraged from manually creating tables to pass into a PopObj,
+**strongly** discouraged from manually creating tables to pass into a PopObj,
 and instead should use the provided file importers.
 
 - `meta` ::DataFrame individual/sample data with the columns:
@@ -23,9 +23,9 @@ and instead should use the provided file importers.
     - `longitude` ::Float64 longitude values
     - `latitude` ::Float64 latitude values
 - `loci` ::DataFrame Long-format table of sample genotype records
-    - name` ::CategoricalString the individual/sample names
-    - `population`::CategoricalString population name
-    - `locus` ::CategoricalString of locus name
+    - name` ::PooledArray the individual/sample names
+    - `population`::PooledArray of population names
+    - `locus` ::PooledArray of locus names
     - `genotype` Tuple of Int8 or Int16 depending on SNP or microsatellite
 """
 struct PopData <: PopObj
@@ -73,7 +73,7 @@ function Base.show(io::IO, data::PopData)
         marker = "SNP"
     end
     n_loc = length(unique(data.loci.locus))
-    printstyled(io, n_loc, " ", marker, " markers", "\n" , bold = true)
+    printstyled(io, n_loc, " ", marker, " loci", "\n" , bold = true)
     if "ploidy" ∈ names(data.meta)
         ploidy = unique(data.meta.ploidy) |> sort
         if length(ploidy) == 1
