@@ -18,4 +18,7 @@ end
     @require GZip="92fee26a-97fe-5a0c-ad85-20a5f3185b63" include("VariantCallGzLazy.jl")
 end
 
+include("precompile.jl")
+precompile()
+
 end

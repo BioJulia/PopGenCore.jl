@@ -1,5 +1,5 @@
 ## test data available for use in PopGen
-export dataset, @nancycats, @gulfsharks
+export @nancycats, @gulfsharks
 
 """
     dataset(::String)
@@ -15,13 +15,13 @@ gsharks = dataset("sharks")
 """
 function dataset(name::String)
     if lowercase(name) in ["nancycats", "cats"] 
-        filename = normpath(joinpath(@__DIR__,"../..","data", "nancycats.gen"))
+        filename = normpath(joinpath(@__DIR__,"..","data", "nancycats.gen"))
     elseif lowercase(name) in ["gulfsharks", "sharks"]
-        filename = normpath(joinpath(@__DIR__,"../..","data", "gulfsharks.csv"))
+        filename = normpath(joinpath(@__DIR__,"..","data", "gulfsharks.csv"))
     else
         throw(ArgumentError("Please choose either the \"nancycats\" or \"gulfsharks\" datasets"))
     end
-    read_from(filename, silent = true)
+    read_from(filename, silent = true, allow_monomorphic = true)
 end
 
 """

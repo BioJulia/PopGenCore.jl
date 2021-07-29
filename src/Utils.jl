@@ -1,4 +1,4 @@
-export drop_monomorphic, drop_monomorphic!, drop_multiallelic, drop_multiallelic!
+export drop_monomorphic, drop_monomorphic!, drop_multiallelic, drop_multiallelic!, loci, samples
 
 #=
 This file contains the helper functions necessary for file import/export
@@ -265,3 +265,16 @@ function generate_meta(data::DataFrame)
         :latitude => Vector{Union{Missing, Float32}}(undef, (length(nms)))
     )
 end
+
+
+"""
+    loci(data::PopData)
+Returns an array of strings of the loci names in a `PopData` object.
+"""
+loci(data::PopData) = data.loci.locus.pool
+
+"""
+    samples(data::PopData)
+View individual/sample names in a `PopData`
+"""
+samples(data::PopData) = @view data.meta[!, :name]
