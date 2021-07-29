@@ -16,9 +16,10 @@ end
     @test typeof(@gulfsharks) == PopData
 end
 
+#=
 @testset "VCF io" begin
     @test typeof(vcf(example_vcf, silent = true)) == PopData    
 end
-
+=#
 end # module
 
