@@ -26,9 +26,7 @@ julia> mydata = bcf("path/to/file.bcf", silent = true, rename_loci = true) ;
 julia> mydata.loci.genotype =  mydata.loci.genotype |> Array{Union{Missing, NTuple}}
 ```
 """
-function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, allow_monomorphic::Bool = false)
-    error("Please load in VariantCallFormat.jl with \`using VariantCallFormat\`")
-end
+bcf(infile::String; kwargs...) = error("Please load in VariantCallFormat.jl with \`using VariantCallFormat\`")
 
 ### VCF parsing ###
 
@@ -59,6 +57,5 @@ julia> mydata.loci.genotype =  mydata.loci.genotype |> Array{Union{Missing, NTup
 
 ```
 """
-function vcf(infile::String; rename_snp::Bool = false, silent::Bool = false, allow_monomorphic::Bool = false)
-    error("Please load in VariantCallFormat.jl with \`using VariantCallFormat\`")
-end
+vcf(infile::String; kwargs...) = error("Please load in VariantCallFormat.jl with \`using VariantCallFormat\`")
+
