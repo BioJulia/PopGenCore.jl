@@ -3,6 +3,12 @@ uuid = "0b445f12-c832-4bf1-aef4-b28982104bff"
 authors = ["Pavel Dimens"]
 version = "0.1.0"
 
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+NaturalSort = "c020b1a1-e9b0-503a-9c33-f039bfc54a85"
+PooledArrays = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
+
 [compat]
 julia = "1.5"
 
