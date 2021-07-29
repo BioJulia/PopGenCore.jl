@@ -133,3 +133,6 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     !allow_monomorphic && drop_monomorphic!(pd_out)
     return pd_out
 end
+
+Base.precompile(vcf, (String,))
+Base.precompile(bcf, (String,))
