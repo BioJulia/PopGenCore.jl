@@ -1,4 +1,4 @@
-using .GeneticVariation
+using .VariantCallFormat
 
 export bcf, vcf
 

@@ -27,7 +27,7 @@ julia> mydata.loci.genotype =  mydata.loci.genotype |> Array{Union{Missing, NTup
 ```
 """
 function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, allow_monomorphic::Bool = false)
-    error("Please load in GeneticVariation.jl with \`using GeneticVariation\`")
+    error("Please load in VariantCallFormat.jl with \`using VariantCallFormat\`")
 end
 
 ### VCF parsing ###
@@ -60,5 +60,5 @@ julia> mydata.loci.genotype =  mydata.loci.genotype |> Array{Union{Missing, NTup
 ```
 """
 function vcf(infile::String; rename_snp::Bool = false, silent::Bool = false, allow_monomorphic::Bool = false)
-    error("Please load in GeneticVariation.jl with \`using GeneticVariation\`")
+    error("Please load in VariantCallFormat.jl with \`using VariantCallFormat\`")
 end
