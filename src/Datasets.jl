@@ -37,7 +37,8 @@ ncats = @nancycats
 """
 macro nancycats()
     return esc(quote
-       dataset("nancycats")
+        filename = normpath(joinpath(@__DIR__,"..","data", "nancycats.gen"))
+        read_from(filename, silent = true, allow_monomorphic = true)
     end)
 end
 
@@ -56,6 +57,7 @@ sharks = @gulfsharks
 """
 macro gulfsharks()
     return esc(quote
-       dataset("gulfsharks")
+        filename = normpath(joinpath(@__DIR__,"..","data", "gulfsharks.csv"))
+        read_from(filename, silent = true, allow_monomorphic = true)
     end)
 end
