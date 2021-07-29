@@ -1,2 +1,3 @@
 ![logo](misc/popgenio.png)
-File reading and writing for use with PopGen.jl
+
+[![Build Status](https://github.com/Pavel Dimens/PopGenIO.jl/workflows/CI/badge.svg)](https://github.com/Pavel Dimens/PopGenIO.jl/actions)
