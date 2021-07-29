@@ -1,5 +1,5 @@
 ![logo](misc/popgenio.png)
-This package contains the `PopData` struct and utilities associated with it, along with the file reading/writing module required by [PopGen.jl](https://biojulia.net/PopGen.jl/docs/io/file_import).
+This package contains the `PopData` struct and utilities associated with it, along with the file reading/writing module required by [PopGen.jl](https://github.com/biojulia/PopGen.jl).
 
 [![alt text](https://img.shields.io/badge/docs-stable-informational?style=for-the-badge&logo=Read%20The%20Docs&logoColor=white)](https://BioJulia.net/PopGen.jl/) 
 [![alt text](https://img.shields.io/badge/slack-join%20PopGen.jl-9d72b1?style=for-the-badge&logo=slack)](https://join.slack.com/t/popgenjl/shared_invite/zt-deam65n8-DuBs2z1oDtsbBuRplJW~Pg)
