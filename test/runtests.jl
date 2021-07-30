@@ -2,7 +2,7 @@ fatalerrors = length(ARGS) > 0 && ARGS[1] == "-f"
 quiet = length(ARGS) > 0 && ARGS[1] == "-q"
 anyerrors = false
 
-using PopGenIO
+using PopGenCore
 using Test
 
 all_tests = [
