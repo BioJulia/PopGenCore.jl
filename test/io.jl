@@ -1,6 +1,6 @@
 module  TestIO
 
-using PopGenIO
+using PopGenCore
 using VariantCallFormat, GZip
 using Test
 
