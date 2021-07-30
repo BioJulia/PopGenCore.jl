@@ -1,4 +1,4 @@
-module PopGenIO
+module PopGenCore
 
 # Write your package code here.
 using CSV, DataFrames, NaturalSort, PooledArrays, Requires
