@@ -1,4 +1,4 @@
-name = "PopGenIO"
+name = "PopGenCore"
 uuid = "0b445f12-c832-4bf1-aef4-b28982104bff"
 authors = ["Pavel Dimens"]
 version = "0.1.0"
