@@ -1,7 +1,6 @@
 module  TestTypesDatasets
 
-using PopGenIO
-#using PopGenIO: dataset
+using PopGenCore
 using DataFrames
 using PooledArrays
 using Test
