@@ -1,4 +1,4 @@
-![logo](misc/popgenio.png)
+![logo](misc/popgencore.png)
 This package contains the core utilities required by [PopGen.jl](https://github.com/biojulia/PopGen.jl), which includes the `PopData` and `Genotype` data types, their associated utilities, and file reading/writing.
 
 [![alt text](https://img.shields.io/badge/docs-stable-informational?style=for-the-badge&logo=Read%20The%20Docs&logoColor=white)](https://BioJulia.net/PopGen.jl/) 
