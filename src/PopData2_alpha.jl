@@ -37,22 +37,22 @@ function Base.show(io::IO, data::PopData2)
     end
     n_loc = length(data.loci)
     println(io, "PopData", "{" * ploidytext * ", ", n_loc, " " , marker * " loci}")
-    print(io, "  Samples: ") ; printstyled(io, length(data.samples), "\n", bold = true)
-    print(io, "  Populations: ") ; printstyled(io, length(data.populations), bold = true)
+    println(io, "  Samples: $(length(data.samples))") #; printstyled(io, length(data.samples), "\n", bold = true)
+    println(io, "  Populations: $(length(data.populations))") # ; printstyled(io, length(data.populations), bold = true)
     if "longitude" ∈ names(data.metadata)
         miss_count = count(ismissing, data.metadata.longitude)
         if miss_count == length(data.metadata.longitude)
             print("")
         elseif iszero(miss_count)
-            print(io, "\n  Coordinates: present")
+            println(io, "  Coordinates: present")
         else
-            print(io, "\n  Coordinates: present (", count(ismissing, data.metadata.longitude), " missing)")
+            println(io, "  Coordinates: present (", count(ismissing, data.metadata.longitude), " missing)")
         end
     end
     allcols = vcat(names(data.metadata), names(data.genotypes)) |> unique
     extracols = symdiff(allcols, ["name", "population", "ploidy", "longitude", "latitude", "locus", "genotype"])
     if !isempty(extracols)
-        print(io, "\n  Other Info: ", extracols)
+        print(io, "  Other Info: ", extracols)
     end
 end
 
