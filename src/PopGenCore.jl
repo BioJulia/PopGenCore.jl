@@ -5,6 +5,7 @@ using CSV, DataFrames, NaturalSort, PooledArrays, Requires
 
 include("PopData.jl")
 include("Utils.jl")
+include("Manipulate.jl")
 include("Delimited.jl")
 include("Genepop.jl")
 include("Structure.jl")
