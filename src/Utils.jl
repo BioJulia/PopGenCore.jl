@@ -27,7 +27,7 @@ function determine_marker(geno_parse::T, digits::Int) where T<:AbstractDataFrame
         num_test_loc = total_col - 2
     end
     # remove everything else
-    test_df = @view geno_parse[:, 3:num_test_loc]
+    test_df = @view geno_parse[:, 3:(2 + num_test_loc)]
 
     # isolate the largest allele value
     max_allele = map(eachcol(test_df)) do i

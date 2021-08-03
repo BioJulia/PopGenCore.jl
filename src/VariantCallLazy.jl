@@ -134,5 +134,4 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     return pd_out
 end
 
-Base.precompile(vcf, (String,))
-Base.precompile(bcf, (String,))
+vcf("precompile/precompile.vcf", silent = true) ;
