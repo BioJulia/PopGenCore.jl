@@ -174,25 +174,25 @@ function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3
         end
         if lowercase(format) != "ibd"
             pops = Vector{String}()
-            for (keys, sample) in pairs(groupby(data.loci, [:name, :population]))
+            for (keys, sample) in pairs(groupby(data.genotypes, [:name, :population]))
                 if keys.population ∉ pops
                     push!(pops, keys.population)
                     print(outfile, "\n", "POP")
                 end
                 samplename = sample.name[1]
-                sample_ploidy = convert(Int, data.meta.ploidy[data.meta.name .== samplename][1])
+                sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
                 print(outfile, "\n", samplename, ",\t")
                 format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
                 [print(outfile, i, "\t") for i in format_geno[1:end-1]]
                 print(outfile, format_geno[end])
             end
         else
-            for (keys, sample) in pairs(groupby(data.loci, :name))
+            for (keys, sample) in pairs(groupby(data.genotypes, :name))
                 samplename = sample.name[1]
-                sample_ploidy = convert(Int, data.meta.ploidy[data.meta.name .== samplename][1])
+                sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
                 print(outfile, "\n", "POP")
-                long = data.meta[data.meta.name .== keys.name, :longitude][1]
-                lat = data.meta[data.meta.name .== keys.name, :latitude][1]
+                long = data.metadata[data.metadata.name .== keys.name, :longitude][1]
+                lat = data.metadata[data.metadata.name .== keys.name, :latitude][1]
                 print(outfile, "\n", long, "\t", lat, "\t", keys.name, ",\t")
                 format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
                 [print(outfile, i, "\t") for i in format_geno[1:end-1]]

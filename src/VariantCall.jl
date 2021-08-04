@@ -23,7 +23,7 @@ step to convert the genotype column into the correct `GenoArray` type:
 ```julia
 julia> mydata = bcf("path/to/file.bcf", silent = true, rename_loci = true) ;
 
-julia> mydata.loci.genotype =  mydata.loci.genotype |> Array{Union{Missing, NTuple}}
+julia> mydata.genotypes.genotype =  mydata.genotypes.genotype |> Array{Union{Missing, NTuple}}
 ```
 """
 bcf(infile::String; kwargs...) = error("Please load in VariantCallFormat.jl with \`using VariantCallFormat\`")
@@ -53,7 +53,7 @@ step to convert the genotype column into the correct `GenoArray` type:
 ```julia
 julia> mydata = vcf("path/to/file.vcf", silent = true, rename_loci = true) ;
 
-julia> mydata.loci.genotype =  mydata.loci.genotype |> Array{Union{Missing, NTuple}}
+julia> mydata.genotypes.genotype =  mydata.genotypes.genotype |> Array{Union{Missing, NTuple}}
 
 ```
 """

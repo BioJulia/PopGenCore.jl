@@ -144,7 +144,7 @@ loci were removed.
 """
 function drop_monomorphic(data::PopData)
     all_loci = loci(data)
-    mtx = reshape(data.loci.genotype, length(samples(data)), :)
+    mtx = reshape(data.genotypes.genotype, length(samples(data)), :)
     monomorphs = [length(unique(skipmissing(x))) == 1 for x in eachcol(mtx)]
     loci_to_rm = all_loci[monomorphs]
     if length(loci_to_rm) == 0
@@ -165,7 +165,7 @@ loci were removed.
 """
 function drop_monomorphic!(data::PopData)
     all_loci = loci(data)
-    mtx = reshape(data.loci.genotype, length(samples(data)), :)
+    mtx = reshape(data.genotypes.genotype, length(samples(data)), :)
     monomorphs = [length(unique(skipmissing(x))) == 1 for x in eachcol(mtx)]
     loci_to_rm = all_loci[monomorphs]
     if length(loci_to_rm) == 0
@@ -185,7 +185,7 @@ Return a `PopData` object omitting loci that are not biallelic.
 """
 function drop_multiallelic(data::PopData)
     all_loci = loci(data)
-    mtx = reshape(data.loci.genotype, length(samples(data)), :)
+    mtx = reshape(data.genotypes.genotype, length(samples(data)), :)
     nonbi = [!isbiallelic(x) for x in eachcol(mtx)]
     loci_to_rm = all_loci[nonbi]
     if length(loci_to_rm) == 0
@@ -205,7 +205,7 @@ Edit a `PopData` object in place, removing loci that are not biallelic.
 """
 function drop_multiallelic!(data::PopData)
     all_loci = loci(data)
-    mtx = reshape(data.loci.genotype, length(samples(data)), :)
+    mtx = reshape(data.genotypes.genotype, length(samples(data)), :)
     nonbi = [!isbiallelic(x) for x in eachcol(mtx)]
     loci_to_rm = all_loci[nonbi]
     if length(loci_to_rm) == 0
@@ -221,14 +221,14 @@ end
 
 """
     generate_meta(data::DataFrame)
-Given a genotype DataFrame formatted like `PopData.loci`, generates a corresponding
-`meta` DataFrame. In other words, it creates the `.meta` part of `PopData` from the `.loci` part.
+Given a genotype DataFrame formatted like `PopData.genotypes`, generates a corresponding
+`meta` DataFrame. In other words, it creates the `.metadata` part of `PopData` from the `.genotypes` part.
 
 **Example**
 ```
 julia> cats = @nancycats ;
 
-julia> cats_nometa = cats.loci ;
+julia> cats_nometa = cats.genotypes ;
 
 julia> cats_meta = generate_meta(cats_nometa)
 237×5 DataFrame
@@ -271,10 +271,10 @@ end
     loci(data::PopData)
 Returns an array of strings of the loci names in a `PopData` object.
 """
-loci(data::PopData) = data.loci.locus.pool
+loci(data::PopData) = data.genotypes.locus.pool
 
 """
     samples(data::PopData)
 View individual/sample names in a `PopData`
 """
-samples(data::PopData) = @view data.meta[!, :name]
+samples(data::PopData) = @view data.metadata[!, :name]

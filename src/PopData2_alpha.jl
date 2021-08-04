@@ -10,7 +10,7 @@ end
 
 x = @nancycats
 
-pd2pd2(x::PopData) = PopData2(x.meta, x.loci, x.loci.name.pool, x.loci.population.pool, x.loci.locus.pool)
+pd2pd2(x::PopData) = PopData2(x.meta, x.genotypes, x.genotypes.name.pool, x.genotypes.population.pool, x.genotypes.locus.pool)
 
 function Base.show(io::IO, data::PopData2)
     if occursin("Int16", string(eltype(data.genotypes.genotype)))
@@ -35,7 +35,7 @@ function Base.show(io::IO, data::PopData2)
     else
         ploidytext = "Unknown-ploidy"
     end
-    n_loc = length(data.loci)
+    n_loc = length(data.genotypes)
     println(io, "PopData", "{" * ploidytext * ", ", n_loc, " " , marker * " loci}")
     println(io, "  Samples: $(length(data.samples))") #; printstyled(io, length(data.samples), "\n", bold = true)
     println(io, "  Populations: $(length(data.populations))") # ; printstyled(io, length(data.populations), bold = true)
@@ -61,7 +61,7 @@ end
 1. :name changing is bidirectional. Meaning you 
 can modify the name of a sample in .metadata and it will replace all occurences of it in .genotypes
 
-2. you can modify PopData.samples, PopData.loci, PopData.populations and it will apply all those
+2. you can modify PopData.samples, PopData.genotypes, PopData.populations and it will apply all those
 changes to both dataframes
 
 3. adding a new population in .metadata will break the sync with the pools
