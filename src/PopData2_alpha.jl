@@ -1,5 +1,3 @@
-using DataFrames, PooledArrays
-
 struct PopData2
     metadata::DataFrame
     genotypes::DataFrame
@@ -56,7 +54,7 @@ function Base.show(io::IO, data::PopData2)
     end
 end
 
-## Notes
+#= Notes
 
 1. :name changing is bidirectional. Meaning you 
 can modify the name of a sample in .metadata and it will replace all occurences of it in .genotypes
@@ -67,3 +65,4 @@ changes to both dataframes
 3. adding a new population in .metadata will break the sync with the pools
 
 
+=#

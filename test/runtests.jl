@@ -8,6 +8,7 @@ using Test
 all_tests = [
     "types.jl",
      "io.jl",
+     "manipulate.jl"
 ]
 
 println("Running tests:")
