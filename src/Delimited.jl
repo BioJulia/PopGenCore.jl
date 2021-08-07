@@ -74,9 +74,9 @@ function delimited(
     rename!(geno_parse, [:name, :population, :locus, :genotype])
 
     select!(geno_parse,
-        :name => (i -> PooledArray(Array(i))) => :name,
-        :population => (i -> PooledArray(Array(i))) => :population,
-        :locus => (i -> PooledArray(Array(i))) => :locus, 
+        :name => (i -> PooledArray(Array(i), compress = true)) => :name,
+        :population => (i -> PooledArray(Array(i), compress = true)) => :population,
+        :locus => (i -> PooledArray(Array(i), compress = true)) => :locus, 
         :genotype => (i -> phase.(i, geno_type, digits)) => :genotype
     )
 

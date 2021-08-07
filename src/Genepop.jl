@@ -127,9 +127,9 @@ function genepop(
     rename!(geno_parse, [:name, :population, :locus, :genotype])
     select!(
         geno_parse, 
-        :name => PooledArray => :name, 
-        :population => PooledArray => :population, 
-        :locus => (i -> PooledArray(Array(i))) => :locus, 
+        :name => (i -> PooledArray(i, compress = true)) => :name, 
+        :population => (i -> PooledArray(i, compress = true)) => :population, 
+        :locus => (i -> PooledArray(Array(i), compress = true)) => :locus, 
         :genotype
     )
 

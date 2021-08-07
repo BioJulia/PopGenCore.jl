@@ -177,9 +177,9 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
     rename!(loci_df, [:name, :population, :locus, :genotype])
 
     # convert columns to PooledArrays
-    loci_df.name = PooledArray(loci_df.name)
-    loci_df.population = PooledArray(loci_df.population)
-    loci_df.locus = PooledArray(loci_df.locus)
+    loci_df.name = PooledArray(loci_df.name, compress = true)
+    loci_df.population = PooledArray(loci_df.population, compress = true)
+    loci_df.locus = PooledArray(loci_df.locus, compress = true)
 
     pd_out = PopData(meta_df, loci_df)
     !allow_monomorphic && drop_monomorphic!(pd_out) 
