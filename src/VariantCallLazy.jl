@@ -20,11 +20,9 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     nmarkers = countlines(openvcf(infile)) - length(BCF.header(stream)) - 1
     sample_ID = header(stream).sampleID
     nsamples = length(sample_ID)
-    loci_names = fill("marker", nmarkers)
     geno_df = DataFrame(:name => sample_ID, :population =>  "missing")
     if silent == false
         @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ---> population info must be added"
-        #@info "\n$(abspath(infile))\n$nsamples samples detected\n$nmarkers markers detected\npopulation info must be added <---"
     end
         for record in stream
         ref_alt = Dict(-1 => "miss", 0 => BCF.ref(record), [i => j for (i,j) in enumerate(BCF.alt(record))]...)
@@ -81,12 +79,12 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     nmarkers = countlines(openvcf(infile)) - length(header(stream)) - 1
     sample_ID = header(stream).sampleID
     nsamples = length(sample_ID)
-    loci_names = fill("marker", nmarkers)
     geno_df = DataFrame(:name => sample_ID, :population =>  "missing")
+    
     if silent == false
         @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ---> population info must be added"
-        #@info "\n$(abspath(infile))\n$nsamples samples detected\n$nmarkers markers detected\npopulation info must be added <---"
     end
+
     for record in stream
         ref_alt = Dict(-1 => "miss", 0 => VCF.ref(record), [i => j for (i,j) in enumerate(VCF.alt(record))]...)
         raw_geno = VCF.genotype(record, 1:nsamples, "GT")
