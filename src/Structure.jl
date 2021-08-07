@@ -121,9 +121,9 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
         if !iszero(extracols)
             geno_parse = geno_parse[!, Not(collect(3:2+n))]
         end
-        
+        #return geno_parse
     # determine marker from max genotype value
-    maxval = map(i -> maximum(skipmissing(i)), eachcol(geno_parse[3:end])) |> maximum
+    maxval = map(i -> maximum(skipmissing(i)), eachcol(geno_parse)[2:end]) |> maximum
     markertype = maxval < 100 ? Int8 : Int16
     if faststructure == true
         if markertype == Int8
@@ -146,13 +146,13 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
     for (key, eachsample) in pairs(by_sample)
         insertcols!(
             loci_df,    
-            Symbol(key.name) => map(i -> phase_structure(markertype, i...), eachcol(eachsample[3:end]))
+            Symbol(key.name) => map(i -> phase_structure(markertype, i...), eachcol(eachsample)[3:end])
         )
     end
-
-    # hacky way of transposing the dataframe
-    loci_df = loci_df[!, Not(:locus)] |> Matrix |> permutedims |> DataFrame
-    rename!(loci_df, locinames)
+    #loci_df = DataFrame(loci_df[!, Not(:locus)] |> Matrix |> permutedims, :auto)
+    #rename!(loci_df, locinames)
+    # transposiethe dataframe
+    loci_df = permutedims(loci_df, 1, :name)
 
     # create the metadata from the original file info
     meta_df = DataFrames.combine(
@@ -169,11 +169,10 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
     
     if !silent
         @info "\n $(abspath(infile))\n data: loci = $(length(meta_df.name)), samples = $(length(meta[!, 1])), populations = $(length(unique(meta_df.population)))"
-        #@info "\n$(abspath(infile))\n$(length(meta_df.name)) samples from $(length(unique(meta_df.population))) populations detected\n$(length(locinames)) loci detected"
     end
 
     # create long-format DataFrame
-    insertcols!(loci_df, 1, :name => meta_df.name, :population => meta_df.population)
+    insertcols!(loci_df, 2, :population => meta_df.population)
     loci_df = DataFrames.stack(loci_df, DataFrames.Not([:name, :population]))
     rename!(loci_df, [:name, :population, :locus, :genotype])
 
