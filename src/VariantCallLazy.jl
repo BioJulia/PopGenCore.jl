@@ -132,4 +132,4 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     return pd_out
 end
 
-vcf(normpath(joinpath(@__DIR__, "..", "precompile", "precompile")) * ".vcf", silent = true) ;
+vcf(normpath(joinpath(@__DIR__, "precompile", "precompile")) * ".vcf", silent = true) ;
