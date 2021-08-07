@@ -62,6 +62,7 @@ end
 end
 
 @testset "exclusion" begin
+    cats = @nancycats ;
     tmp = exclude(cats, name = "N100", population = ["1", "15"])
     @test length(samples(tmp)) == 215
     @test length(populations(tmp)) == 15
