@@ -72,9 +72,9 @@ end
     @test length(populations(tmp)) == 16
     @test length(samples(tmp)) == 225
 
-    tmp = keep(cats, name = "N102")
+    tmp = keep(cats, name = "N104")
     @test length(samples(tmp)) == 1
-    tmp = keep(cats, name = ["N102", "N103"])
+    tmp = keep(cats, name = ["N104", "N105"])
     @test length(samples(tmp)) == 2
     tmp = keep(cats, locus = "fca8")
     @test length(loci(tmp)) == 1
