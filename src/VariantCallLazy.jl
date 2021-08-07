@@ -48,7 +48,7 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         stacked_geno_df, 
         :name => (i -> PooledArray(i, compress = true)) => :name, 
         :population => (i -> PooledArray(i, compress = true)) => :population, 
-        :locus => (i -> PooledArray(i |> Vector{String}), compress = true) => :locus, 
+        :locus => (i -> PooledArray(i |> Vector{String}, compress = true)) => :locus, 
         :genotype
     )
     # replace missing genotypes as missing
@@ -109,7 +109,7 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         stacked_geno_df, 
         :name => (i -> PooledArray(i, compress = true)) => :name, 
         :population => (i -> PooledArray(i, compress = true)) => :population, 
-        :locus => (i -> PooledArray(i |> Vector{String}), compress = true) => :locus, 
+        :locus => (i -> PooledArray(i |> Vector{String}, compress = true)) => :locus, 
         :genotype
     )
     # replace missing genotypes as missing

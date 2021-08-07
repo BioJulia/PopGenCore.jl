@@ -2,6 +2,7 @@ module  TestManipulate
 
 using PopGenCore
 using DataFrames
+using StatsBase
 using Test
 
 cats = @nancycats;
