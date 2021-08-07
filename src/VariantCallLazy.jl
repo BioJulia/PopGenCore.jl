@@ -67,7 +67,7 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     insertcols!(meta_df, 4, :longitude => Vector{Union{Missing, Float32}}(undef, nsamples), :latitude => Vector{Union{Missing, Float32}}(undef, nsamples))
     meta_df.name = Vector{String}(meta_df.name)
     pd_out = PopData(meta_df, stacked_geno_df)
-    !allow_monomorphic && drop_monomorphic!(pd_out)
+    !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
     return pd_out
 end
 
@@ -128,7 +128,7 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
 
     meta_df.name = Vector{String}(meta_df.name)
     pd_out = PopData(meta_df, stacked_geno_df)
-    !allow_monomorphic && drop_monomorphic!(pd_out)
+    !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
     return pd_out
 end
 

@@ -1,11 +1,12 @@
 module PopGenCore
 
 # Write your package code here.
-using CSV, DataFrames, NaturalSort, PooledArrays, Requires
+using CSV, DataFrames, NaturalSort, PooledArrays, Requires, StaticArrays
 using StatsBase: countmap
 
 include("PopData.jl")
 include("Utils.jl")
+include("Iterators.jl")
 include("Manipulate.jl")
 include("Delimited.jl")
 include("Genepop.jl")

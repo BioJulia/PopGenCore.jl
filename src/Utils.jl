@@ -1,9 +1,15 @@
-export drop_monomorphic, drop_monomorphic!, drop_multiallelic, drop_multiallelic!, loci, samples
+export copy, drop_monomorphic, drop_monomorphic!, drop_multiallelic, drop_multiallelic!, loci, samples
 
 #=
 This file contains the helper functions necessary for file import/export
 of various file formats.
 =#
+
+
+function Base.copy(data::PopData)
+    PopData(copy(data.metadata), copy(data.genotypes))
+end
+
 
 """
     determine_marker(geno_parse::T, digits::Int) where T<:AbstractDataFrame
@@ -142,17 +148,20 @@ end
 Return a `PopData` object omitting any monomorphic loci. Will inform you which
 loci were removed.
 """
-function drop_monomorphic(data::PopData)
+function drop_monomorphic(data::PopData; silent::Bool = false)
     all_loci = loci(data)
     mtx = reshape(data.genotypes.genotype, length(samples(data)), :)
     monomorphs = [length(unique(skipmissing(x))) == 1 for x in eachcol(mtx)]
     loci_to_rm = all_loci[monomorphs]
     if length(loci_to_rm) == 0
         return data
-    elseif length(loci_to_rm) == 1
-        @info "Removing monomorphic locus " * loci_to_rm[1]
-    else
-        @info "Removing $(length(loci_to_rm)) monomorphic loci:" * "\n $loci_to_rm"
+        
+    elseif !silent
+        if length(loci_to_rm) == 1
+            @info "Removing monomorphic locus " * loci_to_rm[1]
+        else
+            @info "Removing $(length(loci_to_rm)) monomorphic loci:" * "\n $loci_to_rm"
+        end
     end
     exclude(data, locus = loci_to_rm)
 end
@@ -163,17 +172,19 @@ end
 Edit a `PopData` object in place by omitting any monomorphic loci. Will inform you which
 loci were removed.
 """
-function drop_monomorphic!(data::PopData)
+function drop_monomorphic!(data::PopData; silent::Bool = false)
     all_loci = loci(data)
     mtx = reshape(data.genotypes.genotype, length(samples(data)), :)
     monomorphs = [length(unique(skipmissing(x))) == 1 for x in eachcol(mtx)]
     loci_to_rm = all_loci[monomorphs]
     if length(loci_to_rm) == 0
         return data
-    elseif length(loci_to_rm) == 1
-        @info "Removing monomorphic locus " * loci_to_rm[1]
-    else
-        @info "Removing $(length(loci_to_rm)) monomorphic loci:" * "\n $loci_to_rm"
+    elseif !silent
+        if length(loci_to_rm) == 1
+            @info "Removing monomorphic locus " * loci_to_rm[1]
+        else
+            @info "Removing $(length(loci_to_rm)) monomorphic loci:" * "\n $loci_to_rm"
+        end
     end
     exclude!(data, locus = loci_to_rm)
 end
@@ -264,6 +275,54 @@ function generate_meta(data::DataFrame)
         :longitude => Vector{Union{Missing, Float32}}(undef, (length(nms))),
         :latitude => Vector{Union{Missing, Float32}}(undef, (length(nms)))
     )
+end
+
+"""
+    Base.sort(x::NTuple{N,T}) where N where T <: Signed 
+Sort the integers within a Tuple and return the sorted Tuple.
+"""
+function Base.sort(x::NTuple{N,T}) where N where T <: Signed 
+    Tuple(sort(SVector(x)))
+end
+
+"""
+    reciprocal(num::T) where T <: Signed
+Returns the reciprocal (1/number) of a number. Will return `0` when
+the number is `0` instead of returning `Inf`.
+"""
+function reciprocal(num::T) where T <: Real
+    !iszero(num) ? 1.0/float(num) : 0.0
+end
+
+
+"""
+    reciprocal_sum(x::AbstractVector{T}) where T<:Real
+Return the sum of the reciprocal values of `x`, skipping the `Inf` values
+resulting from divide-by-zero errors.
+"""
+function reciprocal_sum(x::AbstractVector{T}) where T<:Real
+    mapreduce(reciprocal, +, x)
+end
+
+"""
+    partitionarray(array::AbstractArray, steps::AbstractVector{<:Integer})
+Like Base.Iterators.Partition, except you can apply arbitrary sizes to
+partition the array by. The `steps` must add up to the total row length
+of the array.
+
+**Example**
+```
+julia> partitionmatrix(rand(20,5), [10,3,4,3]) .|> size
+((10, 5), (3, 5), (4, 5), (3, 5))
+```
+"""
+# solution brilliantly provided by @stevengj and @mcabbott on Slack and Discourse (https://discourse.julialang.org/t/is-there-a-simple-intuitive-way-to-partition-a-matrix-by-arbitrary-strides-like-i/55863)
+function partitionarray(array::AbstractArray, steps::AbstractVector{<:Integer})
+    v = axes(array,1)
+    v == 1:sum(steps) || error("Steps provided do not sum to length of the first dimension")
+    i = firstindex(v)
+    tmp = (view(v, i:(i+=s)-1) for s in steps)
+    [view(array,r,:) for r in tmp]
 end
 
 #=
