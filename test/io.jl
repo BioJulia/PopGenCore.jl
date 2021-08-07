@@ -6,7 +6,7 @@ using Test
 
 #cats_gen = normpath(joinpath(@__DIR__,"data/", "nancycats.gen"))
 #sharks_csv = normpath(joinpath(@__DIR__,"data/", "gulfsharks.csv"))
-example_vcf = normpath(joinpath(@__DIR__,"../data/", "example.vcf"))
+example_vcf = normpath(joinpath(@__DIR__,"../src/precompile", "precompile.vcf"))
 
 @testset "Genepop io" begin
     @test typeof(@nancycats) == PopData
