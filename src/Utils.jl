@@ -266,7 +266,7 @@ function generate_meta(data::DataFrame)
     )
 end
 
-
+#=
 """
     loci(data::PopData)
 Returns an array of strings of the loci names in a `PopData` object.
@@ -278,3 +278,4 @@ loci(data::PopData) = data.genotypes.locus.pool
 View individual/sample names in a `PopData`
 """
 samples(data::PopData) = @view data.metadata[!, :name]
+=#
