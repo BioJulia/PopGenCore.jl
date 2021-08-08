@@ -81,13 +81,19 @@ end
 
 phase(loc::Missing, type::DataType, digit::Int) = missing
 
-@inline function phase(loc::T, type::DataType, digit::Int) where T<:Integer
+@inline function phase(loc::T, type::DataType, digits::T) where T<:Integer
     loc == -9 || iszero(loc) && return missing
-    units = 10^digit
-    allele1 = loc ÷ units |> type
-    allele2 = loc % units |> type
-    return [allele1, allele2] |> sort |> Tuple
+    out = type[]
+    units = 10^digits
+    d,r = divrem(loc, units)
+    @inbounds push!(out, r)
+    @inbounds while d != 0
+        d,r = divrem(d, units)
+        @inbounds push!(out, r)
+    end
+    return Tuple(sort(out))
 end
+
 
 """
     unphase(geno::T; digits::Int = 3, ploidy::Int = 2, miss::Int = 0) where T <: Genotype
