@@ -1,15 +1,14 @@
 export delimited, csv
 """
     delimited(infile::String; delim::Union{Char,String,Regex} = "auto", digits::Int64 = 3, silent::Bool = false)
-Load a delimited-type file into memory as a PopData object. *There should be no empty cells
-in your file*
+Load a delimited-type file into memory as a PopData object.
+
 ### Arguments
 - `infile` : path to file
 
 ### Keyword Arguments
 - `delim` : delimiter characters. By default uses auto-parsing of `CSV.File`
 - `digits` : number of digits denoting each allele (default: `3`)
-- `diploid`  : whether samples are diploid for parsing optimizations (default: `true`)
 - `silent`   : whether to print file information during import (default: `true`)
 - `allow_monomorphic::Bool` : whether to keep monomorphic loci in the dataset (default: `false`)
 
@@ -51,38 +50,40 @@ function delimited(
     infile::String;
     delim::Union{Char,String,Regex} = "auto",
     digits::Int = 3,
-    diploid::Bool = true,
     silent::Bool = false,
     allow_monomorphic::Bool = false
     )
 
-    diploid ? type = nothing : type = String
     dlm = delim == "auto" ? nothing : delim
-
-    file_parse = CSV.File(infile, delim = dlm, missingstrings = ["-9", ""], type = type) |> DataFrame
-
+    file_parse = CSV.File(infile, delim = dlm, missingstrings = ["-9", ""]) |> DataFrame
     locinames = names(file_parse)[5:end]
-
     meta = select(file_parse, 1:4)
     # force strings for this field
     meta.population = string.(meta.population)
 
     rename!(meta, [:name, :population, :longitude, :latitude])
     select!(file_parse, Not(3:4))
-    geno_type = determine_marker(file_parse, digits)
+    #geno_type = determine_marker(file_parse, digits)
     geno_parse = DataFrames.stack(file_parse, DataFrames.Not(1:2))
-    rename!(geno_parse, [:name, :population, :locus, :genotype])
 
+    rename!(geno_parse, [:name, :population, :locus, :genotype])
+    
     select!(geno_parse,
         :name => (i -> PooledArray(Array(i), compress = true)) => :name,
         :population => (i -> PooledArray(Array(i), compress = true)) => :population,
         :locus => (i -> PooledArray(Array(i), compress = true)) => :locus, 
-        :genotype => (i -> phase.(i, geno_type, digits)) => :genotype
+        :genotype
     )
-
+    
+    try
+        geno_parse.genotype = phase.(geno_parse.genotype, Int8, digits)
+    catch
+        geno_parse.genotype = phase.(geno_parse.genotype, Int16, digits)
+    end
+    
     if !silent
         @info "\n $(abspath(infile))\n data: loci = $(length(locinames)), samples = $(length(meta[!, 1])), populations = $(length(unique(meta[!,2])))"
-        #@info "\n$(abspath(infile))\n$(length(meta[!, 1])) samples from $(length(unique(meta[!,2]))) populations detected\n$(length(locinames)) loci detected"
+        println()
     end
 
     ploidy = DataFrames.combine(
