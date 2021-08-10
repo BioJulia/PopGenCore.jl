@@ -53,12 +53,14 @@ const Genotype = NTuple{N, <:Integer} where N
 An alias for `NTuple{N, Int8}`
 """
 const SNP = NTuple{N, Int8} where N
+_SNP(geno) = all(ismissing.(geno)) ? missing : SNP(geno)
 
 """
-    MSat::DataType
+MSat::DataType
 An alias for `NTuple{N, Int16}`
-"""
+    """
 const MSat = NTuple{N, Int16} where N
+_MSat(geno) = all(ismissing.(geno)) ? missing : MSat(geno)
 
 """
     GenoArray::DataType
