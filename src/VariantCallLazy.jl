@@ -21,10 +21,13 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     sample_ID = header(stream).sampleID
     nsamples = length(sample_ID)
     geno_df = DataFrame(:name => sample_ID, :population =>  "missing")
+    
     if silent == false
         @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ---> population info must be added"
+        println()
     end
-        for record in stream
+    
+    for record in stream
         ref_alt = Dict(-1 => "miss", 0 => BCF.ref(record), [i => j for (i,j) in enumerate(BCF.alt(record))]...)
         raw_geno = BCF.genotype(record, 1:nsamples, "GT")
         conv_geno = map(raw_geno) do rg
@@ -51,11 +54,7 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     )
     # replace missing genotypes as missing
     stacked_geno_df.genotype = map(stacked_geno_df.genotype) do geno
-        if all(0 .== geno)
-            return missing
-        else
-            return geno
-        end
+        if all(0 .== geno) ? missing : geno
     end
     sort!(stacked_geno_df, [:name, :locus])
     #meta_df = generate_meta(stacked_geno_df)
@@ -83,6 +82,7 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     
     if silent == false
         @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ---> population info must be added"
+        println()
     end
 
     for record in stream
@@ -112,11 +112,7 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     )
     # replace missing genotypes as missing
     stacked_geno_df.genotype = map(stacked_geno_df.genotype) do geno
-        if all(0 .== geno)
-            return missing
-        else
-            return geno
-        end
+        if all(0 .== geno) ? missing : geno
     end
     sort!(stacked_geno_df, [:name, :locus])
     # ploidy finding

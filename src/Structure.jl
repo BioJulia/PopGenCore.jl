@@ -1,27 +1,6 @@
 export structure
 
 """
-	phase_structure(datatype::DataType, args...)
-Takes a DataType (such as `Int8`) and a series of integers to return
-a sorted Tuple of those integers converted to that DataType. i.e. takes
-a series of alleles and returns a genotype. Returns `missing` if args are
-`missing`. Used internally in PopGen.structure file reader.
-
-**Example**
-```
-phase_structure(Int8, 1,2,3,4,3,4,6,1)
-(1, 1, 2, 3, 3, 4, 4, 6)
-
-phase_structure(Int16, missing, missing)
-missing
-```
-"""
-function phase_structure(datatype::DataType, args...)
-    all(ismissing.(args)) && return missing
-    return Tuple(datatype.(sort([args...])))
-end
-
-"""
     structure(infile::String; kwargs...)
 Load a Structure format file into memory as a PopData object.
 - `infile::String` : path to Structure file
@@ -43,6 +22,7 @@ Load a Structure format file into memory as a PopData object.
 - number of rows per sample = ploidy
     - e.g. if diploid, that sample would have 2 rows
     - multi-column variant not supported
+    - all samples must have the same ploidy
 - first data column is sample name
 - second data column is population ID
     - optional columns allowed **after** the population ID (2nd) column
@@ -102,11 +82,30 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
         data_row = 1
         first_row = split(strip(open(readline, infile)), delim)
         n_loci = length(first_row)
-        locinames = ["marker_$i" for i in 1:n_loci-2]
+        locinames = ["locus_$i" for i in 1:n_loci-2]
     else
         data_row = 2 + extrarows
-        locinames = Symbol.(split(strip(open(readline, infile)), delim))
+        locinames = string.(split(strip(open(readline, infile)), delim))
     end
+    nloc = length(locinames)
+    dropcols = extracols == 0 ? [1,2] : collect(1:2+extracols)
+    names_parse = CSV.File(
+        infile,
+        delim = delim,
+        header = false,
+        datarow = data_row,
+        missingstrings = [missingval],
+        type = String,
+        ignorerepeated = true,
+        select = [1,2]
+     ) |> DataFrame
+
+    samplecount = countmap(names_parse[:,1])
+    ploidy = unique(values(samplecount))
+    # TODO make this flexible enough to take any ploidy
+    length(ploidy) >1 && throw(error("Multiple ploidies detected among samples. Samples must all be of a single ploidy"))
+    samplenames = unique(names_parse)  
+
     # read in the file as a table
     geno_parse = CSV.File(
         infile,
@@ -114,34 +113,35 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
         header = false,
         datarow = data_row,
         missingstrings = [missingval],
-        #type = type,
-        ignorerepeated = true
-        ) |> DataFrame
-        # ignore any extra columns
-        if !iszero(extracols)
-            geno_parse = geno_parse[!, Not(collect(3:2+n))]
-        end
-        #return geno_parse
-    # determine marker from max genotype value
-    maxval = map(i -> maximum(skipmissing(i)), eachcol(geno_parse)[2:end]) |> maximum
-    markertype = maxval < 100 ? Int8 : Int16
-    if faststructure == true
-        if markertype == Int8
-            locinames = Symbol.(replace.(locinames, "marker" => "snp"))
-        else
-            locinames = Symbol.(replace.(locinames, "marker" => "msat"))
-        end
+        type = Int32,
+        ignorerepeated = true,
+        drop = dropcols
+     ) |> Tables.matrix
+
+    genos = Base.Iterators.partition(geno_parse, first(ploidy)) .|> sort!
+    try
+        genos = _SNP.(genos)
+    catch
+        genos = _MSat.(genos)
     end
+
+    unique!(names_parse)
+    rename!(names_parse, [:name, :population])
+    nsamples = length(names_parse.name)
     
-    rename!(geno_parse, append!([:name, :population], locinames))
+    #geno_parse.name .= replace.(geno_parse.name, "-" => "_")
+    loci_df = DataFrame(
+        :name => PooledArray(fill(names_parse.name, nloc) |> Base.Iterators.flatten |> collect, compress = true),
+        :population => PooledArray(fill(names_parse.population, nloc) |> Base.Iterators.flatten |> collect, compress = true),
+        :locus => PooledArray(fill(locinames, nsamples) |> Base.Iterators.flatten |> collect, compress = true),
+        :genotype => genos,
+    )
     
     # fix names, just in case
-    geno_parse.name .= replace.(geno_parse.name, "-" => "_")
-    geno_parse.population = string.(geno_parse.population)
+    
+    
+    #= create new dataframe to add phased genotypes to
     by_sample = groupby(geno_parse, :name)
-    
-    
-    # create new dataframe to add phased genotypes to
     loci_df = DataFrame(:locus => locinames)
     for (key, eachsample) in pairs(by_sample)
         insertcols!(
@@ -149,39 +149,22 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
             Symbol(key.name) => map(i -> phase_structure(markertype, i...), eachcol(eachsample)[3:end])
         )
     end
-    #loci_df = DataFrame(loci_df[!, Not(:locus)] |> Matrix |> permutedims, :auto)
-    #rename!(loci_df, locinames)
-    # transposiethe dataframe
+
+    # transpose the dataframe
     loci_df = permutedims(loci_df, 1, :name)
+    =#
 
     # create the metadata from the original file info
-    meta_df = DataFrames.combine(
-        by_sample,
-        :name => first => :name,
-        :population => first => :population,
-        :name => (i -> Int8(length(i))) => :ploidy  # ploidy derived from # of times a name appears
-    )
-    insertcols!(
-        meta_df, 
-        :longitude => Vector{Union{Missing, Float32}}(undef, length(meta_df.name)), 
-        :latitude => Vector{Union{Missing, Float32}}(undef, length(meta_df.name))
-    )
-    
+    names_parse.ploidy = [samplecount[i] for i in names_parse.name]
+    names_parse.longitude = Vector{Union{Missing, Float32}}(undef, nsamples) 
+    names_parse.latitude = Vector{Union{Missing, Float32}}(undef, nsamples)
+
     if !silent
-        @info "\n $(abspath(infile))\n data: loci = $(length(meta_df.name)), samples = $(length(meta[!, 1])), populations = $(length(unique(meta_df.population)))"
+        @info "\n $(abspath(infile))\n data: loci = $(nloc), samples = $(nsamples), populations = $(length(unique(names_parse.population)))"
+        println()
     end
 
-    # create long-format DataFrame
-    insertcols!(loci_df, 2, :population => meta_df.population)
-    loci_df = DataFrames.stack(loci_df, DataFrames.Not([:name, :population]))
-    rename!(loci_df, [:name, :population, :locus, :genotype])
-
-    # convert columns to PooledArrays
-    loci_df.name = PooledArray(loci_df.name, compress = true)
-    loci_df.population = PooledArray(loci_df.population, compress = true)
-    loci_df.locus = PooledArray(loci_df.locus, compress = true)
-
-    pd_out = PopData(meta_df, loci_df)
+    pd_out = PopData(names_parse, loci_df)
     !allow_monomorphic && drop_monomorphic!(pd_out) 
 
     return pd_out

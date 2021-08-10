@@ -8,7 +8,6 @@ Load a Genepop format file into memory as a PopData object.
 ### Keyword Arguments
 - `digits::Integer`: number of digits denoting each allele (default: `3`)
 - `popsep::String` : word that separates populations in `infile` (default: "POP")
-- `diploid::Bool`  : whether samples are diploid for parsing optimizations (default: `true`)
 - `silent::Bool`   : whether to print file information during import (default: `false`)
 - `allow_monomorphic::Bool` : whether to keep monomorphic loci in the dataset (default: `false`)
 
@@ -45,7 +44,6 @@ function genepop(
     infile::String;
     digits::Int = 3,
     popsep::String = "POP",
-    diploid::Bool = true,
     silent::Bool = false,
     allow_monomorphic::Bool = false
 )
@@ -92,30 +90,28 @@ function genepop(
 
     if !silent
         @info "\n $(abspath(infile))\n formatting: delimiter = $(delim_txt), loci = $(format)\n data: loci = $(length(locinames)), samples = $(sum(popcounts)), populations = $(length(popcounts))"
-        #@info "\n$(abspath(infile))\n$(delim_txt) delimiter detected\nloci formatting: $(format)\n$(sum(popcounts)) samples from $(length(popcounts)) populations detected\n$(length(locinames)) loci detected"
+        println()
     end
 
     # load in samples and genotypes
-    coln = append!(["name"], locinames)
-
-    diploid ? type = nothing : type = String
+    pushfirst!(locinames, "name")
 
     geno_parse = CSV.File(
         infile,
         delim = delim,
-        header = coln,
+        header = locinames,
         datarow = pop_idx[1] + 1,
         comment = popsep,
         missingstrings = ["-9", ""],
-        type = type,
+        normalizenames = true,
         ignorerepeated = true
     ) |> DataFrame
 
-    popnames = string.(collect(1:length(popcounts)))
+    popnames = string.(1:length(popcounts))
     popnames = fill.(popnames,popcounts) |> Base.Iterators.flatten |> collect
     insertcols!(geno_parse, 2, :population => popnames)
-    geno_parse.name .= replace.(geno_parse.name, "," => "")
-    geno_type = determine_marker(geno_parse, digits)
+    geno_parse.name .= strip.(geno_parse.name, ',')
+    #geno_type = determine_marker(geno_parse, digits)
     sample_table = DataFrame(
         name = geno_parse.name,
         population = geno_parse.population,
@@ -133,9 +129,14 @@ function genepop(
         :genotype
     )
 
-    geno_parse.genotype = map(i -> phase.(i, geno_type, digits), geno_parse.genotype)
-    sample_table = generate_meta(geno_parse)
+    # try to compress the alleles into Int8 (snps) or In16 (msat)
+    try
+        geno_parse.genotype = phase.(geno_parse.genotype, Int8, digits)
+    catch
+        geno_parse.genotype = phase.(geno_parse.genotype, Int16, digits)
+    end
 
+    sample_table = generate_meta(geno_parse)
     pd_out = PopData(sample_table, geno_parse)
     !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
     return pd_out

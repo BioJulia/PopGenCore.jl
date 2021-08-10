@@ -39,23 +39,28 @@ struct PopData <: PopObj
     end
 end
 
-#=
-#TODO needs to be included in the struct definition
-function PopData(meta::DataFrame, loci::DataFrame)
-    tmp = issorted(loci, [:locus, :name], lt = natural) ? loci : sort(loci, [:locus, :name], lt = natural)
-    sort(meta.name) != sort(tmp.name.pool) && throw(ArgumentError("meta and loci dataframes do not contain the same sample names"))
-    sort(unique(meta.population)) != sort(tmp.population.pool) && throw(ArgumentError("meta and loci dataframes do not contain the same population names"))
-    PopData(meta, tmp)
-end
-=#
 
 """
     Genotype::DataType
 For convenience purposes, an alias for `NTuple{N, <:Integer} where N`, which is
-the type describing individual genotypes in PopData.
+the type describing individual genotypes in PopData. Specifically, there exist
+`SNP` as an alias for `NTuple{N, Int8}` and `MSat` for `NTuple{N, Int16}`
 """
 const Genotype = NTuple{N, <:Integer} where N
 
+"""
+    SNP::DataType
+An alias for `NTuple{N, Int8}`
+"""
+const SNP = NTuple{N, Int8} where N
+_SNP(geno) = all(ismissing.(geno)) ? missing : SNP(geno)
+
+"""
+MSat::DataType
+An alias for `NTuple{N, Int16}`
+    """
+const MSat = NTuple{N, Int16} where N
+_MSat(geno) = all(ismissing.(geno)) ? missing : MSat(geno)
 
 """
     GenoArray::DataType
