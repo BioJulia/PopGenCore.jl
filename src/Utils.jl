@@ -202,19 +202,18 @@ Return a `PopData` object omitting loci that are not biallelic.
 """
 function drop_multiallelic(data::PopData)
     all_loci = loci(data)
-    mtx = reshape(data.genodata.genotype, length(samples(data)), :)
-    nonbi = [!isbiallelic(x) for x in eachcol(mtx)]
-    loci_to_rm = string.(all_loci[nonbi])
-    if length(loci_to_rm) == 0
+    prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
+    nonbi = string.(all_loci[[!isbiallelic(i) for i in prt]])
+    if length(nonbi) == 0
         return data
-    elseif length(loci_to_rm) == 1
+    elseif length(nonbi) == 1
         @info "Removing 1 multiallelic locus"
         println()
     else
-        @info "Removing $(length(loci_to_rm)) multialleic loci"
+        @info "Removing $(length(nonbi)) multialleic loci"
         println()
     end
-    exclude(data, locus = loci_to_rm)
+    exclude(data, locus = nonbi)
 end
 
 
@@ -224,19 +223,18 @@ Edit a `PopData` object in place, removing loci that are not biallelic.
 """
 function drop_multiallelic!(data::PopData)
     all_loci = loci(data)
-    mtx = reshape(data.genodata.genotype, length(samples(data)), :)
-    nonbi = [!isbiallelic(x) for x in eachcol(mtx)]
-    loci_to_rm = string.(all_loci[nonbi])
-    if length(loci_to_rm) == 0
+    prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
+    nonbi = string.(all_loci[[!isbiallelic(i) for i in prt]])
+    if length(nonbi) == 0
         return data
-    elseif length(loci_to_rm) == 1
+    elseif length(nonbi) == 1
         @info "Removing 1 multiallelic locus"
         println()
     else
-        @info "Removing $(length(loci_to_rm)) multialleic loci"
+        @info "Removing $(length(nonbi)) multialleic loci"
         println()
     end
-    exclude!(data, locus = loci_to_rm)
+    exclude!(data, locus = nonbi)
 end
 
 

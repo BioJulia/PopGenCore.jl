@@ -5,7 +5,7 @@ export ishom, ishet, isbiallelic
     isbiallelic(data::GenoArray)
 Returns `true` if the `GenoArray` is biallelic, `false` if not.
 """
-function isbiallelic(data::T) where T<:GenoArray
+@inline function isbiallelic(data::T) where T<:GenoArray
     length(unique(Base.Iterators.flatten(skipmissing(data)))) == 2
 end
 
@@ -15,9 +15,11 @@ end
 Returns `true` all the loci in the `PopData` are biallelic, `false` if not.
 """
 function isbiallelic(data::PopData)
-    tmp = issorted(data.loci, [:locus, :name], lt = natural) ? data.loci : sort(data.loci, [:locus, :name], lt = natural)
-    mtx = reshape(tmp.genotype, length(samples(data)), :)
-    all(map(isbiallelic, eachcol(mtx)))
+    tmp = issorted(data.genodata, [:locus, :name], lt = natural) ? data.genodata : sort(data.genodata, [:locus, :name], lt = natural)
+    prt = Base.Iterators.partition(tmp.genotype, length(samples(data)))
+    #all([isbiallelic(i) for i in prt])
+    bi = findfirst(!isbiallelic, collect(prt))
+    isnothing(bi) ? true : false
 end
 
 #TODO how to treat haploids?
