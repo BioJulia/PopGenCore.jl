@@ -69,9 +69,9 @@ function delimited(
     rename!(geno_parse, [:name, :population, :locus, :genotype])
     
     select!(geno_parse,
-        :name => (i -> PooledArray(Array(i), compress = true)) => :name,
-        :population => (i -> PooledArray(Array(i), compress = true)) => :population,
-        :locus => (i -> PooledArray(Array(i), compress = true)) => :locus, 
+        :name => (i -> PooledArray(i, compress = true)) => :name,
+        :population => (i -> PooledArray(string.(i), compress = true)) => :population,
+        :locus => (i -> PooledArray(i, compress = true)) => :locus, 
         :genotype
     )
     
@@ -91,7 +91,6 @@ function delimited(
         :genotype => find_ploidy => :ploidy
     ).ploidy
     DataFrames.insertcols!(meta, 3, :ploidy => ploidy)
-
     pd_out = PopData(meta, geno_parse)
     !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
     return pd_out
