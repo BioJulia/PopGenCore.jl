@@ -1,4 +1,4 @@
-export delimited, csv
+export delimited
 """
     delimited(infile::String; delim::Union{Char,String,Regex} = "auto", digits::Int64 = 3, silent::Bool = false)
 Load a delimited-type file into memory as a PopData object.
@@ -59,13 +59,13 @@ function delimited(
     locinames = names(file_parse)[5:end]
     meta = select(file_parse, 1:4)
     # force strings for this field
-    meta.population = string.(meta.population)
+    if eltype(meta.population) != String
+        meta.population = string.(meta.population)
+    end
 
     rename!(meta, [:name, :population, :longitude, :latitude])
     select!(file_parse, Not(3:4))
-    #geno_type = determine_marker(file_parse, digits)
     geno_parse = DataFrames.stack(file_parse, DataFrames.Not(1:2))
-
     rename!(geno_parse, [:name, :population, :locus, :genotype])
     
     select!(geno_parse,
@@ -97,7 +97,6 @@ function delimited(
     return pd_out
 end
 
-const csv = delimited
 
 """
     delimited(data::PopData; filename::String, delim::String = ",", digits::Integer = 3, format::String = "wide", miss::Int = 0)
@@ -122,7 +121,7 @@ delimited(fewer_cats, filename = "filtered_nancycats.gen", digits = 3, format = 
 """
 function delimited(data::PopData; filename::String, delim::String = ",", digits::Integer = 3, format::String = "wide", miss::Int = 0)
     # create empty String column
-    unphased_df = insertcols!(copy(data.genotypes), :string_geno => fill("", length(data.genotypes.name)))
+    unphased_df = insertcols!(copy(data.genodata), :string_geno => fill("", length(data.genodata.name)))
     # grouping to facilitate pulling out ploidy values for coding missing genotypes
     grp_df = groupby(unphased_df, :name)
     for sample in grp_df

@@ -10,7 +10,7 @@ abstract type PopObj end
 ```
 PopData
     metadata::DataFrame
-    genotypes::DataFrame
+    genodata::DataFrame
 ```
 The data struct used for the PopGen population genetics ecosystem. You are
 **strongly** discouraged from manually creating tables to pass into a PopData,
@@ -30,7 +30,7 @@ and instead should use the provided file importers.
 """
 struct PopData <: PopObj
     metadata::DataFrame
-    genotypes::DataFrame
+    genodata::DataFrame
     function PopData(meta::DataFrame, loci::DataFrame)
         sort!(loci, [:locus, :population, :name], lt = natural)
         sort(meta.name) != sort(loci.name.pool) && throw(ArgumentError("meta and loci dataframes do not contain the same sample names"))
@@ -73,7 +73,7 @@ const GenoArray = AbstractVector{S} where S<:Union{Missing,Genotype}
 
 
 function Base.show(io::IO, data::PopData)
-    if occursin("Int16", string(eltype(data.genotypes.genotype)))
+    if occursin("Int16", string(eltype(data.genodata.genotype)))
         marker = "Microsatellite"
     else
         marker = "SNP"
@@ -95,10 +95,10 @@ function Base.show(io::IO, data::PopData)
     else
         ploidytext = "Unknown-ploidy"
     end
-    n_loc = length(data.genotypes.locus.pool)
+    n_loc = length(data.genodata.locus.pool)
     println(io, "PopData", "{" * ploidytext * ", ", n_loc, " " , marker * " loci}")
     println(io, "  Samples: $(length(data.metadata.name))") #; printstyled(io, length(data.samples), "\n", bold = true)
-    print(io, "  Populations: $(length(data.genotypes.population.pool))") # ; printstyled(io, length(data.populations), bold = true)
+    print(io, "  Populations: $(length(data.genodata.population.pool))") # ; printstyled(io, length(data.populations), bold = true)
     if "longitude" ∈ names(data.metadata)
         miss_count = count(ismissing, data.metadata.longitude)
         if miss_count == length(data.metadata.longitude)
@@ -109,7 +109,7 @@ function Base.show(io::IO, data::PopData)
             print(io, "\n  Coordinates: present (", count(ismissing, data.metadata.longitude), " missing)")
         end
     end
-    allcols = vcat(names(data.metadata), names(data.genotypes)) |> unique
+    allcols = vcat(names(data.metadata), names(data.genodata)) |> unique
     extracols = symdiff(allcols, ["name", "population", "ploidy", "longitude", "latitude", "locus", "genotype"])
     if !isempty(extracols)
         print(io, "\n  Other Info: ", extracols)
@@ -124,9 +124,9 @@ function metadata(data::PopData)
 end
 
 function genotypes(data::PopData) 
-    l = length(data.genotypes.locus.pool)
+    l = length(data.genodata.locus.pool)
     s = length(data.metadata.name)
     dimtext = "(" * string(s) * " samples, " * string(l) * " loci)"
-    show(data.genotypes, show_row_number = false, title = "Genotype information of PopData " * dimtext )
+    show(data.genodata, show_row_number = false, title = "Genotype information of PopData " * dimtext )
 end
 =#

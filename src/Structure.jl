@@ -1,6 +1,25 @@
 export structure
 
 """
+	phase_structure(datatype::DataType, args...)
+Takes a DataType (such as `Int8`) and a series of integers to return
+a sorted Tuple of those integers converted to that DataType. i.e. takes
+a series of alleles and returns a genotype. Returns `missing` if args are
+`missing`. Used internally in PopGen.structure file reader.
+**Example**
+```
+phase_structure(Int8, 1,2,3,4,3,4,6,1)
+(1, 1, 2, 3, 3, 4, 4, 6)
+phase_structure(Int16, missing, missing)
+missing
+```
+"""
+function phase_structure(datatype::DataType, args...)
+    all(ismissing.(args)) && return missing
+    return Tuple(datatype.(sort([args...])))
+end
+
+"""
     structure(infile::String; kwargs...)
 Load a Structure format file into memory as a PopData object.
 - `infile::String` : path to Structure file
@@ -131,12 +150,12 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
     
     #geno_parse.name .= replace.(geno_parse.name, "-" => "_")
     loci_df = DataFrame(
-        :name => PooledArray(fill(names_parse.name, nloc) |> Base.Iterators.flatten |> collect, compress = true),
-        :population => PooledArray(fill(names_parse.population, nloc) |> Base.Iterators.flatten |> collect, compress = true),
-        :locus => PooledArray(fill(locinames, nsamples) |> Base.Iterators.flatten |> collect, compress = true),
+        :name => PooledArray(repeat(names_parse.name, nloc), compress = true),
+        :population => PooledArray(repeat(names_parse.population, nloc), compress = true),
+        :locus => PooledArray(repeat(locinames, inner = nsamples), compress = true),
         :genotype => genos,
     )
-    
+
     # fix names, just in case
     
     
@@ -188,7 +207,7 @@ structure(fewer_cats, filename = "filtered_nancycats.str", faststructure = true)
 """
 function structure(data::PopData; filename::String, faststructure::Bool = false, delim::String = "tab")
     # index both dataframes
-    genos_gdf = groupby(data.genotypes, :name)
+    genos_gdf = groupby(data.genodata, :name)
     meta_gdf = groupby(data.metadata, :name)
     # get the sample names to iterate keys over
     idx = collect(samples(data))

@@ -8,10 +8,10 @@ end
 
 x = @nancycats
 
-pd2pd2(x::PopData) = PopData2(x.meta, x.genotypes, x.genotypes.name.pool, x.genotypes.population.pool, x.genotypes.locus.pool)
+pd2pd2(x::PopData) = PopData2(x.meta, x.genodata, x.genodata.name.pool, x.genodata.population.pool, x.genodata.locus.pool)
 
 function Base.show(io::IO, data::PopData2)
-    if occursin("Int16", string(eltype(data.genotypes.genotype)))
+    if occursin("Int16", string(eltype(data.genodata.genotype)))
         marker = "Microsatellite"
     else
         marker = "SNP"
@@ -33,7 +33,7 @@ function Base.show(io::IO, data::PopData2)
     else
         ploidytext = "Unknown-ploidy"
     end
-    n_loc = length(data.genotypes)
+    n_loc = length(data.genodata)
     println(io, "PopData", "{" * ploidytext * ", ", n_loc, " " , marker * " loci}")
     println(io, "  Samples: $(length(data.samples))") #; printstyled(io, length(data.samples), "\n", bold = true)
     println(io, "  Populations: $(length(data.populations))") # ; printstyled(io, length(data.populations), bold = true)
@@ -47,7 +47,7 @@ function Base.show(io::IO, data::PopData2)
             println(io, "  Coordinates: present (", count(ismissing, data.metadata.longitude), " missing)")
         end
     end
-    allcols = vcat(names(data.metadata), names(data.genotypes)) |> unique
+    allcols = vcat(names(data.metadata), names(data.genodata)) |> unique
     extracols = symdiff(allcols, ["name", "population", "ploidy", "longitude", "latitude", "locus", "genotype"])
     if !isempty(extracols)
         print(io, "  Other Info: ", extracols)
@@ -57,9 +57,9 @@ end
 #= Notes
 
 1. :name changing is bidirectional. Meaning you 
-can modify the name of a sample in .metadata and it will replace all occurences of it in .genotypes
+can modify the name of a sample in .metadata and it will replace all occurences of it in .genodata
 
-2. you can modify PopData.samples, PopData.genotypes, PopData.populations and it will apply all those
+2. you can modify PopData.samples, PopData.genodata, PopData.populations and it will apply all those
 changes to both dataframes
 
 3. adding a new population in .metadata will break the sync with the pools
