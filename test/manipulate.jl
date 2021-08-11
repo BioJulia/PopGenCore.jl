@@ -67,10 +67,10 @@ end
     @test length(samples(tmp)) == 215
     @test length(populations(tmp)) == 15
 
-    tmp = exclude(cats, name = "N102", locus= "fca8", population = "3")
+    tmp = exclude(cats, name = "N7", locus= "fca8", population = "3")
     @test length(loci(tmp)) == 8
     @test length(populations(tmp)) == 16
-    @test length(samples(tmp)) == 225
+    @test length(samples(tmp)) == 224
 
     tmp = keep(cats, name = "N104")
     @test length(samples(tmp)) == 1
