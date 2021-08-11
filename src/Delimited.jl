@@ -59,10 +59,7 @@ function delimited(
     locinames = names(file_parse)[5:end]
     meta = select(file_parse, 1:4)
     # force strings for this field
-    if eltype(meta.population) != String
-        meta.population = string.(meta.population)
-    end
-
+    meta.population = string.(meta.population)
     rename!(meta, [:name, :population, :longitude, :latitude])
     select!(file_parse, Not(3:4))
     geno_parse = DataFrames.stack(file_parse, DataFrames.Not(1:2))
