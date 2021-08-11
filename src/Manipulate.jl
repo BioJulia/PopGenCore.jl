@@ -149,7 +149,7 @@ function locations!(data::PopData, long::Vector{String}, lat::Vector{String})
     lat_len = length(lat)
     lat_len != long_len && error("latitude ($lat_len) and longitude ($long_len) arrays not equal in length")
     lat_len != length(data.metadata.name) && error("lat/long array length ($lat_len) and number of samples in PopData ($long_len) are not equal")
-    @info "Converting decimal minutes to decimal degrees"
+    println("Converting decimal minutes to decimal degrees")
     # convert coordinates to decimal degrees
     data.metadata.longitude .= convert_coord.(long)
     data.metadata.latitude .= convert_coord.(lat)
@@ -378,6 +378,7 @@ function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing
             if length(err) > 1
                 [print(", \"$i\"") for i in err[2:end]] ; print("\n")
             end
+            println()
         end
     end
     if !isnothing(locus)
@@ -389,6 +390,7 @@ function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing
             if length(err) > 1
                 [print(", \"$i\"") for i in err[2:end]] ; print("\n")
             end
+            println()
         end
     end
     if !isnothing(name)
@@ -400,6 +402,7 @@ function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing
             if length(err) > 1
                 [print(", \"$i\"") for i in err[2:end]] ; print("\n")
             end
+            println()
         end
     end
 

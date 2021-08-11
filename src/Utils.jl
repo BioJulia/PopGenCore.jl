@@ -155,17 +155,16 @@ loci were removed.
 """
 function drop_monomorphic(data::PopData; silent::Bool = false)
     all_loci = loci(data)
-    mtx = reshape(data.genodata.genotype, length(samples(data)), :)
-    monomorphs = [length(unique(skipmissing(x))) == 1 for x in eachcol(mtx)]
-    loci_to_rm = string.(all_loci[monomorphs])
-    if length(loci_to_rm) == 0
+    prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
+    monomorphs = string.(all_loci[[length(unique(i))==1 for i in prt]])
+    if length(monomorphs) == 0
         return data
     elseif !silent
-        if length(loci_to_rm) == 1
-            @info "Removing monomorphic locus " * loci_to_rm[1]
+        if length(monomorphs) == 1
+            println("Removing monomorphic locus: " * monomorphs[1])
             println()
         else
-            @info "Removing $(length(loci_to_rm)) monomorphic loci:" * "\n $loci_to_rm"
+            println("Removing $(length(monomorphs)) monomorphic loci:" * "\n $monomorphs")
             println()
         end
     end
@@ -180,29 +179,22 @@ loci were removed.
 """
 function drop_monomorphic!(data::PopData; silent::Bool = false)
     all_loci = loci(data)
-    mtx = reshape(data.genodata.genotype, length(samples(data)), :)
-    monomorphs = [length(unique(skipmissing(x))) == 1 for x in eachcol(mtx)]
-    loci_to_rm = string.(all_loci[monomorphs])
-    if length(loci_to_rm) == 0
+    prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
+    monomorphs = string.(all_loci[[length(unique(i))==1 for i in prt]])
+    if length(monomorphs) == 0
         return data
     elseif !silent
-        if length(loci_to_rm) == 1
-            @info "Removing monomorphic locus " * loci_to_rm[1]
+        if length(monomorphs) == 1
+            println("Removing monomorphic locus: " * monomorphs[1])
             println()
         else
-            @info "Removing $(length(loci_to_rm)) monomorphic loci:" * "\n $loci_to_rm"
+            println("Removing $(length(monomorphs)) monomorphic loci:" * "\n $monomorphs")
             println()
         end
     end
-
-    exclude!(data, locus = loci_to_rm)
+    exclude!(data, locus = monomorphs)
 end
 
-
-function drop_mono2(data::PopData)
-    loc = _find_monomorphs(data)
-    exclude!(data, locus = loc)
-end
 
 """
     drop_multiallelic(data::PopData)
