@@ -5,6 +5,7 @@ using StatsBase: countmap
 
 include("PopData.jl")
 include("Utils.jl")
+include("Conditionals.jl")
 include("Iterators.jl")
 include("Manipulate.jl")
 include("Delimited.jl")
