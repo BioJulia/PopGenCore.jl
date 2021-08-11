@@ -61,7 +61,7 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     sort!(geno_df, [:name, :locus])
     meta_df = generate_meta(geno_df)
     pd_out = PopData(meta_df, geno_df)
-    pd_out = !allow_monomorphic ? drop_monomorphic!(pd_out, silent = silent) : pd_out
+    !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
     return pd_out
 end
 
@@ -114,7 +114,7 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     sort!(geno_df, [:name, :locus])
     meta_df = generate_meta(geno_df)
     pd_out = PopData(meta_df, geno_df)
-    pd_out = !allow_monomorphic ? drop_monomorphic!(pd_out, silent = silent) : pd_out
+    !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
     return pd_out
 end
 
