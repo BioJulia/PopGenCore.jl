@@ -148,7 +148,6 @@ function convert_coord(coordinate::String)
     end
 end
 
-
 """
     drop_monomorphic(data::PopData; silent::Bool = false)
 Return a `PopData` object omitting any monomorphic loci. Will inform you which
@@ -158,15 +157,16 @@ function drop_monomorphic(data::PopData; silent::Bool = false)
     all_loci = loci(data)
     mtx = reshape(data.genodata.genotype, length(samples(data)), :)
     monomorphs = [length(unique(skipmissing(x))) == 1 for x in eachcol(mtx)]
-    loci_to_rm = all_loci[monomorphs]
+    loci_to_rm = string.(all_loci[monomorphs])
     if length(loci_to_rm) == 0
         return data
-        
     elseif !silent
         if length(loci_to_rm) == 1
             @info "Removing monomorphic locus " * loci_to_rm[1]
+            println()
         else
             @info "Removing $(length(loci_to_rm)) monomorphic loci:" * "\n $loci_to_rm"
+            println()
         end
     end
     exclude(data, locus = loci_to_rm)
@@ -182,19 +182,27 @@ function drop_monomorphic!(data::PopData; silent::Bool = false)
     all_loci = loci(data)
     mtx = reshape(data.genodata.genotype, length(samples(data)), :)
     monomorphs = [length(unique(skipmissing(x))) == 1 for x in eachcol(mtx)]
-    loci_to_rm = all_loci[monomorphs]
+    loci_to_rm = string.(all_loci[monomorphs])
     if length(loci_to_rm) == 0
         return data
     elseif !silent
         if length(loci_to_rm) == 1
             @info "Removing monomorphic locus " * loci_to_rm[1]
+            println()
         else
             @info "Removing $(length(loci_to_rm)) monomorphic loci:" * "\n $loci_to_rm"
+            println()
         end
     end
+
     exclude!(data, locus = loci_to_rm)
 end
 
+
+function drop_mono2(data::PopData)
+    loc = _find_monomorphs(data)
+    exclude!(data, locus = loc)
+end
 
 """
     drop_multiallelic(data::PopData)
@@ -204,13 +212,15 @@ function drop_multiallelic(data::PopData)
     all_loci = loci(data)
     mtx = reshape(data.genodata.genotype, length(samples(data)), :)
     nonbi = [!isbiallelic(x) for x in eachcol(mtx)]
-    loci_to_rm = all_loci[nonbi]
+    loci_to_rm = string.(all_loci[nonbi])
     if length(loci_to_rm) == 0
         return data
     elseif length(loci_to_rm) == 1
         @info "Removing 1 multiallelic locus"
+        println()
     else
         @info "Removing $(length(loci_to_rm)) multialleic loci"
+        println()
     end
     exclude(data, locus = loci_to_rm)
 end
@@ -224,13 +234,15 @@ function drop_multiallelic!(data::PopData)
     all_loci = loci(data)
     mtx = reshape(data.genodata.genotype, length(samples(data)), :)
     nonbi = [!isbiallelic(x) for x in eachcol(mtx)]
-    loci_to_rm = all_loci[nonbi]
+    loci_to_rm = string.(all_loci[nonbi])
     if length(loci_to_rm) == 0
         return data
     elseif length(loci_to_rm) == 1
         @info "Removing 1 multiallelic locus"
+        println()
     else
         @info "Removing $(length(loci_to_rm)) multialleic loci"
+        println()
     end
     exclude!(data, locus = loci_to_rm)
 end
@@ -279,7 +291,8 @@ function generate_meta(data::DataFrame)
         :population => pops,
         :ploidy => ploids,
         :longitude => Vector{Union{Missing, Float32}}(undef, (length(nms))),
-        :latitude => Vector{Union{Missing, Float32}}(undef, (length(nms)))
+        :latitude => Vector{Union{Missing, Float32}}(undef, (length(nms))),
+        copycols = true
     )
 end
 

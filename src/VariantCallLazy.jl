@@ -17,7 +17,7 @@ end
 function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, allow_monomorphic::Bool = false)
     bases = (A = Int8(1), T = Int8(2), C = Int8(3), G = Int8(4), miss = Int8(0))
     stream = BCF.Reader(openvcf(infile))
-    nmarkers = countlines(openvcf(infile)) - length(BCF.header(stream)) - 1
+    nmarkers = countlines(openvcf(infile)) - length(header(stream)) - 1
     sample_ID = header(stream).sampleID
     nsamples = length(sample_ID)
     geno_df = DataFrame(:name => sample_ID, :population =>  "missing")
@@ -26,9 +26,10 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ---> population info must be added"
         println()
     end
-    
+
     for record in stream
-        ref_alt = Dict(-1 => "miss", 0 => BCF.ref(record), [i => j for (i,j) in enumerate(BCF.alt(record))]...)
+        ref_alt = Dict(-1 => "miss", 0 => BCF.ref(record))
+        [ref_alt[i] = j for (i,j) in enumerate(BCF.alt(record))]
         raw_geno = BCF.genotype(record, 1:nsamples, "GT")
         conv_geno = map(raw_geno) do rg
             tmp = replace.(rg, "." => "-1")
@@ -39,7 +40,7 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     end
     close(stream)
     if rename_loci
-        rnm = append!([:name, :population], [Symbol.("snp_" * i) for i in string.(1:nmarkers)])
+        rnm = vcat([:name, :population], [Symbol.("snp_" * i) for i in string.(1:nmarkers)])
         rename!(geno_df, rnm)
     end
     stacked_geno_df = DataFrames.stack(geno_df, DataFrames.Not(1:2))
@@ -54,17 +55,10 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     )
     # replace missing genotypes as missing
     stacked_geno_df.genotype = map(i -> all(0 .== i) ? missing : i, stacked_geno_df.genotype)
-    sort!(stacked_geno_df, [:name, :locus], lt = natural)
-    
-    # ploidy finding
-    meta_df = DataFrames.combine(DataFrames.groupby(stacked_geno_df, :name),
-        :genotype => (i -> Int8(length(first(skipmissing(i))))) => :ploidy    
-    )
-    insertcols!(meta_df, 2, :population => "missing")
-    insertcols!(meta_df, 4, :longitude => Vector{Union{Missing, Float32}}(undef, nsamples), :latitude => Vector{Union{Missing, Float32}}(undef, nsamples))
-    meta_df.name = Vector{String}(meta_df.name)
+    sort!(stacked_geno_df, [:name, :locus])
+    meta_df = generate_meta(stacked_geno_df)
     pd_out = PopData(meta_df, stacked_geno_df)
-    !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
+    pd_out = !allow_monomorphic ? drop_monomorphic(pd_out, silent = silent) : pd_out
     return pd_out
 end
 
@@ -84,7 +78,8 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     end
 
     for record in stream
-        ref_alt = Dict(-1 => "miss", 0 => VCF.ref(record), [i => j for (i,j) in enumerate(VCF.alt(record))]...)
+        ref_alt = Dict(-1 => "miss", 0 => VCF.ref(record))
+        [ref_alt[i] = j for (i,j) in enumerate(VCF.alt(record))]
         raw_geno = VCF.genotype(record, 1:nsamples, "GT")
         conv_geno = map(raw_geno) do rg
             tmp = replace.(rg, "." => "-1")
@@ -111,17 +106,10 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     # replace missing genotypes as missing
     stacked_geno_df.genotype = map(i -> all(0 .== i) ? missing : i, stacked_geno_df.genotype)
     sort!(stacked_geno_df, [:name, :locus])
-    # ploidy finding
-    meta_df = DataFrames.combine(DataFrames.groupby(stacked_geno_df, :name),
-        :genotype => (i -> Int8(length(first(skipmissing(i))))) => :ploidy    
-    )
-    insertcols!(meta_df, 2, :population => "missing")
-    insertcols!(meta_df, 4, :longitude => Vector{Union{Missing, Float32}}(undef, nsamples), :latitude => Vector{Union{Missing, Float32}}(undef, nsamples))
-
-    meta_df.name = Vector{String}(meta_df.name)
+    meta_df = generate_meta(stacked_geno_df)
     pd_out = PopData(meta_df, stacked_geno_df)
-    !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
+    pd_out = !allow_monomorphic ? drop_monomorphic(pd_out, silent = silent) : pd_out
     return pd_out
 end
 
-vcf(normpath(joinpath(@__DIR__, "precompile", "precompile")) * ".vcf", silent = true) ;
+#vcf(normpath(joinpath(@__DIR__, "precompile", "precompile")) * ".vcf", silent = true) ;
