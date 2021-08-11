@@ -53,11 +53,9 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         :genotype
     )
     # replace missing genotypes as missing
-    stacked_geno_df.genotype = map(stacked_geno_df.genotype) do geno
-        if all(0 .== geno) ? missing : geno
-    end
-    sort!(stacked_geno_df, [:name, :locus])
-    #meta_df = generate_meta(stacked_geno_df)
+    stacked_geno_df.genotype = map(i -> all(0 .== i) ? missing : i, stacked_geno_df.genotype)
+    sort!(stacked_geno_df, [:name, :locus], lt = natural)
+    
     # ploidy finding
     meta_df = DataFrames.combine(DataFrames.groupby(stacked_geno_df, :name),
         :genotype => (i -> Int8(length(first(skipmissing(i))))) => :ploidy    
@@ -97,7 +95,7 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     end
     close(stream)
     if rename_loci
-        rnm = append!([:name, :population], [Symbol.("snp_" * i) for i in string.(1:nmarkers)])
+        rnm = vcat([:name, :population], [Symbol.("snp_" * i) for i in string.(1:nmarkers)])
         rename!(geno_df, rnm)
     end
     stacked_geno_df = DataFrames.stack(geno_df, DataFrames.Not(1:2))
@@ -111,9 +109,7 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         :genotype
     )
     # replace missing genotypes as missing
-    stacked_geno_df.genotype = map(stacked_geno_df.genotype) do geno
-        if all(0 .== geno) ? missing : geno
-    end
+    stacked_geno_df.genotype = map(i -> all(0 .== i) ? missing : i, stacked_geno_df.genotype)
     sort!(stacked_geno_df, [:name, :locus])
     # ploidy finding
     meta_df = DataFrames.combine(DataFrames.groupby(stacked_geno_df, :name),
