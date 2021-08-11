@@ -32,6 +32,16 @@ struct PopData <: PopObj
     metadata::DataFrame
     genodata::DataFrame
     function PopData(meta::DataFrame, loci::DataFrame)
+        metacols = ["name", "population", "ploidy"]
+        metacheck = intersect(metacols, names(meta))
+        if metacheck != metacols
+            throw(error("metadata missing columns $(symdiff(metacheck, metacols))"))
+        end
+        genocols = ["name", "population", "locus", "genotype"]
+        genocheck = intersect(genocols, names(loci))
+        if genocheck != genocols
+            throw(error("genodata missing columns $(symdiff(genocheck, genocols))"))
+        end
         sort!(loci, [:locus, :population, :name], lt = natural)
         sort(meta.name) != sort(loci.name.pool) && throw(ArgumentError("meta and loci dataframes do not contain the same sample names"))
         sort(unique(meta.population)) != sort(loci.population.pool) && throw(ArgumentError("metadata and genotypes dataframes do not contain the same population names"))
@@ -95,7 +105,7 @@ function Base.show(io::IO, data::PopData)
     else
         ploidytext = "Unknown-ploidy"
     end
-    n_loc = length(data.genodata.locus.pool)
+    n_loc = length(loci(data))
     println(io, "PopData", "{" * ploidytext * ", ", n_loc, " " , marker * " loci}")
     println(io, "  Samples: $(length(data.metadata.name))") #; printstyled(io, length(data.samples), "\n", bold = true)
     print(io, "  Populations: $(length(data.genodata.population.pool))") # ; printstyled(io, length(data.populations), bold = true)
