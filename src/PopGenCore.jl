@@ -1,6 +1,5 @@
 module PopGenCore
 
-# Write your package code here.
 using CSV, DataFrames, NaturalSort, PooledArrays, Requires, StaticArrays
 using StatsBase: countmap
 
