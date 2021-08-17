@@ -22,6 +22,16 @@ function isbiallelic(data::PopData)
     isnothing(bi) ? true : false
 end
 
+
+"""
+    isbinary(filepath::String)
+Returns `true` if the `filepath` is a binary file. 
+"""
+function isbinary(path)
+    !isvalid(String(read(filepath, 1000)))
+end
+
+
 #TODO how to treat haploids?
 """
 ```
