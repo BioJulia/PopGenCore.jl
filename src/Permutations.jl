@@ -106,13 +106,10 @@ keeping the `missing` values at their original locations.
 Use `strict_shuffle!` to edit in-place instead of returning a copy.
 """
 @inline function strict_shuffle(x::T) where T <: AbstractArray
-    # get indices of where original missing are
-    miss_idx = findall(i -> i === missing, x)
-    out_vec = shuffle(x[.!ismissing.(x)])
-    insert!.(Ref(out_vec), miss_idx, missing)
-    return out_vec
+    y = copy(x)
+    @inbounds shuffle!(@view y[.!ismissing.(y)])
+    return y
 end
-
 
 """
     strict_shuffle!(x::T)! where T <: AbstractArray
@@ -120,7 +117,7 @@ Shuffle only the non-missing values of a Vector, keeping the
 `missing` values at their original locations. Use `strict_shuffle`
 to return a copy instead of editing in-place.
 """
-function strict_shuffle!(x::T) where T <: AbstractArray
+@inline function strict_shuffle!(x::T) where T <: AbstractArray
     @inbounds shuffle!(@view x[.!ismissing.(x)])
     return x
 end

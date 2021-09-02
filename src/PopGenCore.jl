@@ -12,6 +12,7 @@ include("Utils/MathUtils.jl")
 include("Utils/MissingUtils.jl")
 ##
 include("Conditionals.jl")
+include("Permutations.jl")
 include("Iterators.jl")
 include("Manipulate.jl")
 include("Delimited.jl")
