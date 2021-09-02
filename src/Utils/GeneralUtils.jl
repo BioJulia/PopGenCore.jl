@@ -10,7 +10,7 @@ General use utilities
 
 
 function Base.copy(data::PopData)
-    PopData(copy(data.metadatadata), copy(data.genodata))
+    PopData(copy(data.metadata), copy(data.genodata))
 end
 
 function Base.size(data::PopData)
@@ -252,6 +252,57 @@ function loci_matrix(data::PopData)
     dims = size(data)
     sort_df = issorted(data.genodata, [:name, :locus]) ? sort(data.genodata, [:name, :locus]) : data.genodata
     reshape(sort_df.genotype, (dims.samples, dims.loci)) |> collect
+end
+
+
+"""
+    phased_matrix(data::PopData)
+Return a `Vector` of length `ploidy` composed of allele matrices with dimensions `samples × loci`.
+Rows are samples and columns are loci. Will return an error if ploidy varies between samples. 
+
+**Example**
+```
+julia> mtx = phased_matrix(@nancycats)
+2-element Array{Array{Union{Missing, Int16},2},1}:
+ [missing 136 … 113 208; missing 146 … 113 208; … ; 137 130 … 113 208; 135 130 … missing 208]
+ [missing 146 … 113 208; missing 146 … 113 208; … ; 143 136 … 117 208; 141 146 … missing 208]
+
+julia> mtx[1]
+237×9 Array{Union{Missing, Int16},2}:
+    missing  136  139  116         156  142  199  113         208
+    missing  146  139  120         156  142  185  113         208
+ 135         136  141  116         152  142  197  113         210
+ 133         138  139  116         150  142  199   91         208
+ 133         140  141  126         152  142  193  113         208
+ 135         136  145  120         150  148  193   91         208
+ 135         136  139  116         152  142  199  105         208
+ 135         136  135  120         154  142  193   91         208
+ 137         136  139  116         150  142  197  105         208
+ 135         132  141  120         150  148  197   91         208
+ 137         130  137  128         152  142  193   91         182
+ 129         130  135  126         144  140  193   91         182
+   ⋮                                      ⋮                   
+ 133         136  135     missing  146  142  199  113         182
+ 133         136  135     missing  150  142  197  113         182
+ 133         130  141     missing  148  142  191     missing  208
+ 123         138  141     missing  148  142  191     missing  208
+ 123         138  139     missing  150  142  197     missing  208
+ 133         136  139     missing  150  142  197     missing  208
+ 133         130  139     missing  152  142  191     missing  208
+ 133         136  139     missing  150  142  199     missing  208
+ 133         130  135     missing  148  142  197     missing  208
+ 135         136  143     missing  144  142  191  113         208
+ 137         130  135     missing  150  142  193  113         208
+ 135         130  135     missing  150  142  197     missing  208
+```
+"""
+function phased_matrix(data::PopData)
+    dims = size(data)
+    ploidy = unique(data.metadata.ploidy)
+    ploidy = length(ploidy) != 1 ? error("Phasing will not work on mixed-ploidy samples") : ploidy[1]
+    sort_df = issorted(data.genodata, [:name, :locus]) ? sort(data.genodata, [:name, :locus], lt = natural) : data.genodata
+    matrices = map(j -> map(i -> ismissing(i) ? missing : i[j] , sort_df.genotype), 1:ploidy)
+    map(i -> collect(reshape(i, (dims.samples, dims.loci))), matrices)
 end
 
 

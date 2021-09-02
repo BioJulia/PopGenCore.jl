@@ -208,7 +208,7 @@ structure(fewer_cats, filename = "filtered_nancycats.str", faststructure = true)
 function structure(data::PopData; filename::String, faststructure::Bool = false, delim::String = "tab")
     # index both dataframes
     genos_gdf = groupby(data.genodata, :name)
-    meta_gdf = groupby(data.metadatadata, :name)
+    meta_gdf = groupby(data.metadata, :name)
     # get the sample names to iterate keys over
     idx = collect(samples(data))
     
@@ -226,7 +226,7 @@ function structure(data::PopData; filename::String, faststructure::Bool = false,
     faststructure == false && println(outfile, join([i * dlm for i in loci(data)]))
     
     # remap populations as integers
-    pops = unique(data.metadatadata.population)
+    pops = unique(data.metadata.population)
     pop_mappings = Dict{String,Integer}()
     [pop_mappings[j] = i for (i,j) in enumerate(pops)]
 

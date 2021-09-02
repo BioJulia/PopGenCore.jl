@@ -181,7 +181,7 @@ function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3
                     print(outfile, "\n", "POP")
                 end
                 samplename = sample.name[1]
-                sample_ploidy = convert(Int, data.metadatadata.ploidy[data.metadatadata.name .== samplename][1])
+                sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
                 print(outfile, "\n", samplename, ",\t")
                 format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
                 [print(outfile, i, "\t") for i in format_geno[1:end-1]]
@@ -190,10 +190,10 @@ function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3
         else
             for (keys, sample) in pairs(groupby(data.genodata, :name))
                 samplename = sample.name[1]
-                sample_ploidy = convert(Int, data.metadatadata.ploidy[data.metadatadata.name .== samplename][1])
+                sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
                 print(outfile, "\n", "POP")
-                long = data.metadatadata[data.metadatadata.name .== keys.name, :longitude][1]
-                lat = data.metadatadata[data.metadatadata.name .== keys.name, :latitude][1]
+                long = data.metadata[data.metadata.name .== keys.name, :longitude][1]
+                lat = data.metadata[data.metadata.name .== keys.name, :latitude][1]
                 print(outfile, "\n", long, "\t", lat, "\t", keys.name, ",\t")
                 format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
                 [print(outfile, i, "\t") for i in format_geno[1:end-1]]
