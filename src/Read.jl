@@ -74,7 +74,7 @@ function write_to(data::PopData; filename::String, kwargs...)
     if ext in ["gen", "genepop"]
         genepop(data, filename = filename; kwargs...)
     elseif ext in ["str", "structure"]
-        return structure(data; kwargs...)
+        structure(data, filename = filename; kwargs...)
     elseif ext in ["csv", "txt", "tsv"]
         delimited(data, filename = filename; kwargs...)
     else
