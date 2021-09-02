@@ -1,6 +1,14 @@
 export reciprocal, reciprocal_sum
-
+export count_nonzeros
 ## Utilities relevant for math ##
+
+"""
+    count_nonzeros(x::AbstractVector{T}) where T<:Real
+Return the number of non-zero values in a vector
+"""
+function count_nonzeros(x::AbstractVector{T}) where T<:Real
+    mapreduce(!iszero, +, x)
+end
 
 """
 reciprocal(num::T) where T <: Signed
