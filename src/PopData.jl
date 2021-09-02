@@ -14,19 +14,19 @@ PopData
 ```
 The data struct used for the PopGen population genetics ecosystem. You are
 **strongly** discouraged from manually creating tables to pass into a PopData,
-and instead should use the provided file importers.
+and instead should use the provided file importers and utilities.
 
-- `metadata` ::DataFrame individual/sample data with the columns:
-    - `name` ::String the individual/sample names
+- `metadata` ::DataFrame sample information with the columns:
+    - `name` ::String the sample names
     - `population` ::String population names
     - `ploidy` ::Int8 ploidy in order of `ind`
-    - `longitude` ::Float64 longitude values
-    - `latitude` ::Float64 latitude values
-- `genotypes` ::DataFrame Long-format table of sample genotype records
-    - name` ::PooledArray the individual/sample names
+    - `longitude` ::Float32 longitude values
+    - `latitude` ::Float32 latitude values
+- `genodata` ::DataFrame Long-format table of sample genotype records
+    - `name` ::PooledArray the individual/sample names
     - `population`::PooledArray of population names
     - `locus` ::PooledArray of locus names
-    - `genotype` Tuple of Int8 or Int16 depending on SNP or microsatellite
+    - `genotype` Tuple of Int8 (SNP) or Int16 (microsatellite)
 """
 struct PopData <: PopObj
     metadata::DataFrame
@@ -74,7 +74,7 @@ _MSat(geno) = all(ismissing.(geno)) ? missing : MSat(geno)
 
 """
     GenoArray::DataType
-For convenience purposes, an alias for an `AbstractVector` of elements `Missing`
+An alias for an `AbstractVector` of elements `Missing`
 and `Genotype`, which itself is of type `NTuple{N, <:Integer} where N`.
 The definition as an `AbstractVector` adds flexibility for `SubArray`
 cases.
