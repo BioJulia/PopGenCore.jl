@@ -1,4 +1,4 @@
-export skipinf, skipnan, skipinfnan
+export skipinf, skipnan, skipinfnan, nonmissings
 
 """
     nonmissings(vec1::AbstractVector, vec2::AbstractVector)

@@ -1,4 +1,4 @@
-export copy, drop_monomorphic, drop_monomorphic!, drop_multiallelic, drop_multiallelic!, loci, samples
+export copy, drop_monomorphic, drop_monomorphic!, drop_multiallelic, drop_multiallelic!, loci, samples, find_ploidy, phase, unphase, convert_coord, reciprocal, reciprocal_sum, partitionarray, reciprocal_sum
 
 #=
 This file contains the helper functions necessary for file import/export
@@ -10,7 +10,7 @@ function Base.copy(data::PopData)
     PopData(copy(data.metadata), copy(data.genodata))
 end
 
-
+# Possibly deprecated
 """
     determine_marker(geno_parse::T, digits::Int) where T<:AbstractDataFrame
 Return either `Int8` or `Int16` depending on largest allelic value in all genotypes
