@@ -1,4 +1,5 @@
 export permute_loci!, permute_samples!, permute_genotypes!, permute_alleles!
+export strict_shuffle, strict_shuffle!
 
 """
     permute_loci!(data::PopData)
@@ -6,7 +7,7 @@ Edits `PopData` in place with loci permuted across populations within
 the `.loci` dataframe.
 """
 @inline function permute_loci!(data::PopData)
-    @inbounds @sync for locus in groupby(data.loci, :locus)
+    @inbounds @sync for locus in groupby(data.genodata, :locus)
         Base.Threads.@spawn begin
             shuffle!(Xoroshiro128Star(), locus.population)
         end
@@ -22,15 +23,15 @@ the default is to only edit the `.loci` table in place; use `meta = true`
 if you also require the `.meta` dataframe edited in place.
 """
 @inline function permute_samples!(data::PopData; meta::Bool = false)
-    pops = shuffle(Xoroshiro128Star(), data.meta.population)
+    pops = shuffle(Xoroshiro128Star(), data.metadata.population)
 
     if meta == true
         meta_pops = copy(pops)
-        @inbounds for name in groupby(data.meta, :name)
+        @inbounds for name in groupby(data.metadata, :name)
             @inbounds name.population .= pop!(meta_pops)
         end
     end
-    @inbounds @sync for name in groupby(data.loci, :name)
+    @inbounds @sync for name in groupby(data.genodata, :name)
         Base.Threads.@spawn begin
             @inbounds name.population .= pop!(pops) 
         end
@@ -60,7 +61,7 @@ within populations.
 @inline function permute_genotypes!(data::PopData; by::String = "locus")
     # establish mode of operation
     groupings = by == "locus" ? :locus : [:locus, :population]
-    @inbounds @sync for grp in groupby(data.loci, groupings)
+    @inbounds @sync for grp in groupby(data.genodata, groupings)
         Base.Threads.@spawn begin
             grp.genotype .= strict_shuffle!(grp.genotype)
         end
@@ -79,7 +80,7 @@ it would be best to identify ploidy in advance and set it to a specific integer.
 """
 @inline function permute_alleles!(data::PopData; ploidy::Union{Nothing, Int} = nothing, by::String = "locus")
     if ploidy == nothing
-        tmp = unique(data.meta.ploidy)
+        tmp = unique(data.metadata.ploidy)
         length(tmp) > 1 && error("This permutation method is not appropriate for mixed-ploidy data")
         ploidy = first(tmp)
     end
@@ -87,7 +88,7 @@ it would be best to identify ploidy in advance and set it to a specific integer.
     # establish mode of operation
     groupings = by == "locus" ? :locus : [:locus, :population]
 
-    @inbounds @sync for grp in groupby(data.loci, groupings)
+    @inbounds @sync for grp in groupby(data.genodata, groupings)
         Base.Threads.@spawn begin
             alle = shuffle(Xoroshiro128Star(), alleles(grp.genotype))
             new_genos = Tuple.(Base.Iterators.partition(alle, ploidy))
@@ -95,4 +96,31 @@ it would be best to identify ploidy in advance and set it to a specific integer.
         end
     end
     data
+end
+
+
+"""
+    strict_shuffle(x::T) where T <: AbstractArray
+Shuffle only the non-missing values of a Vector and return a copy of the vector,
+keeping the `missing` values at their original locations.
+Use `strict_shuffle!` to edit in-place instead of returning a copy.
+"""
+@inline function strict_shuffle(x::T) where T <: AbstractArray
+    # get indices of where original missing are
+    miss_idx = findall(i -> i === missing, x)
+    out_vec = shuffle(x[.!ismissing.(x)])
+    insert!.(Ref(out_vec), miss_idx, missing)
+    return out_vec
+end
+
+
+"""
+    strict_shuffle!(x::T)! where T <: AbstractArray
+Shuffle only the non-missing values of a Vector, keeping the
+`missing` values at their original locations. Use `strict_shuffle`
+to return a copy instead of editing in-place.
+"""
+function strict_shuffle!(x::T) where T <: AbstractArray
+    @inbounds shuffle!(@view x[.!ismissing.(x)])
+    return x
 end

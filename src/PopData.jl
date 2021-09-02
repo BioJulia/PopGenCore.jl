@@ -88,8 +88,8 @@ function Base.show(io::IO, data::PopData)
     else
         marker = "SNP"
     end
-    if "ploidy" ∈ names(data.metadata)
-        ploidy = unique(data.metadata.ploidy) |> sort
+    if "ploidy" ∈ names(data.metadatadata)
+        ploidy = unique(data.metadatadata.ploidy) |> sort
         if length(ploidy) == 1
             ploidy = first(ploidy)
             ploidytext = 
@@ -107,19 +107,19 @@ function Base.show(io::IO, data::PopData)
     end
     n_loc = length(loci(data))
     println(io, "PopData", "{" * ploidytext * ", ", n_loc, " " , marker * " loci}")
-    println(io, "  Samples: $(length(data.metadata.name))") #; printstyled(io, length(data.samples), "\n", bold = true)
+    println(io, "  Samples: $(length(data.metadatadata.name))") #; printstyled(io, length(data.samples), "\n", bold = true)
     print(io, "  Populations: $(length(data.genodata.population.pool))") # ; printstyled(io, length(data.populations), bold = true)
-    if "longitude" ∈ names(data.metadata)
-        miss_count = count(ismissing, data.metadata.longitude)
-        if miss_count == length(data.metadata.longitude)
+    if "longitude" ∈ names(data.metadatadata)
+        miss_count = count(ismissing, data.metadatadata.longitude)
+        if miss_count == length(data.metadatadata.longitude)
             print("")
         elseif iszero(miss_count)
             print(io, "\n  Coordinates: present")
         else
-            print(io, "\n  Coordinates: present (", count(ismissing, data.metadata.longitude), " missing)")
+            print(io, "\n  Coordinates: present (", count(ismissing, data.metadatadata.longitude), " missing)")
         end
     end
-    allcols = vcat(names(data.metadata), names(data.genodata)) |> unique
+    allcols = vcat(names(data.metadatadata), names(data.genodata)) |> unique
     extracols = symdiff(allcols, ["name", "population", "ploidy", "longitude", "latitude", "locus", "genotype"])
     if !isempty(extracols)
         print(io, "\n  Other Info: ", extracols)
@@ -128,14 +128,14 @@ end
 
 #=
 function metadata(data::PopData) 
-    s,f  = size(data.metadata)
+    s,f  = size(data.metadatadata)
     dimtext = "(" * string(s) * " samples, " * string(f) * " fields)"
-    show(data.metadata, show_row_number = false, title = "Metadata of PopData " * dimtext )
+    show(data.metadatadata, show_row_number = false, title = "Metadata of PopData " * dimtext )
 end
 
 function genotypes(data::PopData) 
     l = length(data.genodata.locus.pool)
-    s = length(data.metadata.name)
+    s = length(data.metadatadata.name)
     dimtext = "(" * string(s) * " samples, " * string(l) * " loci)"
     show(data.genodata, show_row_number = false, title = "Genotype information of PopData " * dimtext )
 end

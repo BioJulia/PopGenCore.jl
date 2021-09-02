@@ -4,7 +4,12 @@ using CSV, DataFrames, NaturalSort, PooledArrays, Requires, StaticArrays
 using StatsBase: countmap
 
 include("PopData.jl")
-include("Utils.jl")
+# Utilities
+include("Utils/GeneralUtils.jl")
+include("Utils/ioUtils.jl")
+include("Utils/MathUtils.jl")
+include("Utils/MissingUtils.jl")
+##
 include("Conditionals.jl")
 include("Iterators.jl")
 include("Manipulate.jl")

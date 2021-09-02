@@ -122,14 +122,14 @@ function delimited(data::PopData; filename::String, delim::String = ",", digits:
     grp_df = groupby(unphased_df, :name)
     for sample in grp_df
         samplename = sample.name[1]
-        sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
+        sample_ploidy = convert(Int, data.metadatadata.ploidy[data.metadatadata.name .== samplename][1])
         sample.string_geno .= unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
     end
     # pop out original genotype column
     select!(unphased_df, 1, 2, 3, 5)
     if format == "wide"
         wide_df = DataFrames.unstack(unphased_df, :locus, :string_geno)
-        insertcols!(wide_df, 3, :longitude => data.metadata.longitude, :latitude => data.metadata.latitude)
+        insertcols!(wide_df, 3, :longitude => data.metadatadata.longitude, :latitude => data.metadatadata.latitude)
         CSV.write(filename, wide_df, delim = delim) ;
         return
     else
@@ -140,9 +140,9 @@ function delimited(data::PopData; filename::String, delim::String = ",", digits:
                 4 => (i -> Vector{Union{Float32, Missing}}(undef, length(i))) => :latitude, 3:4
                 )
                     )
-        for i in 1:length(data.metadata.name)
-            out_df[out_df.name .== data.metadata.name[i], :longitude] .= data.metadata.longitude[i]
-            out_df[out_df.name .== data.metadata.name[i], :latitude] .= data.metadata.latitude[i]
+        for i in 1:length(data.metadatadata.name)
+            out_df[out_df.name .== data.metadatadata.name[i], :longitude] .= data.metadatadata.longitude[i]
+            out_df[out_df.name .== data.metadatadata.name[i], :latitude] .= data.metadatadata.latitude[i]
         end
         CSV.write(filename, out_df, delim = delim) ;
         return
