@@ -6,6 +6,7 @@ using StatsBase: countmap
 include("PopData.jl")
 # Utilities
 include("Utils/GeneralUtils.jl")
+inclue("Utils/GenotypeUtils.jl")
 include("Utils/ioUtils.jl")
 include("Utils/MathUtils.jl")
 include("Utils/MissingUtils.jl")
