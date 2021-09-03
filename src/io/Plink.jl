@@ -1,25 +1,18 @@
 
 function plink(infile::String; silent::Bool = false)
     basefile = join(split(infile, ".")[1:end-1])
-    famfile= CSV.read(
+    famfile = CSV.read(
         basefile * ".fam", DataFrame, 
         header = [:population, :name, :sire, :dam, :sex, :phenotype],
         missingstrings = ["-9", "0"],
         types = Dict(:sex => Int8)
     )
     nsamples = length(famfile.name)
-    npopulations = length(famfile.population)
+    npopulations = length(unique(famfile.population))
     sirecheck = !all(ismissing.(famfile.sire))
     damcheck = !all(ismissing.(famfile.dam))
     sexcheck = !all(ismissing.(famfile.sex))
     phenotypecheck = !all(ismissing.(famfile.phenotype))
-    # bimfile #
-    # col1 chrom number
-    # col2 snp name
-    # col3 snp position in morgans/com
-    # col4 snp physical position (resets for each chrom)
-    # col5 and 6 the allele values usually 5=minor 6=major
-    # 0 is missing
     bimfile = CSV.read(
         basefile * ".bim",
         DataFrame,
@@ -37,6 +30,19 @@ function plink(infile::String; silent::Bool = false)
         println()
     end
 
-    CSV.read(basefile * ".bed", DataFrames)
+    bedfile = basefile * ".bed"
+    data = open(bedfile, "r") do io
+        read(io, UInt16) == 0x1b6c || throw(ArgumentError("wrong magic number in file $bedfile"))
+        read(io, UInt8) == 0x01 || throw(ArgumentError(".bed file, $bedfile, is not in correct orientation"))
+        if endswith(bedfile, ".bed")
+            return Mmap.mmap(io)
+        else
+            return read(io)
+        end
+    end
+    nrows = (nsamples + 3) >> 2   # the number of rows in the Matrix{UInt8}
+    n, r = divrem(length(data), nrows)
+    iszero(r) || throw(ArgumentError("filesize of $bedfile is not a multiple of $nrows"))
+    reshape(data, (nrows, n))
+    return famfile
 end
-
