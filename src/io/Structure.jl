@@ -85,13 +85,14 @@ walnuts = structure("juglans_nigra.str", extracols = 0, extrarows = 0)
 """
 function structure(infile::String; silent::Bool = false, extracols::Int = 0, extrarows::Int = 0, allow_monomorphic::Bool = false, missingval::String = "-9", faststructure::Bool = false)
     # find the delimiter
-    delimcheck = join(open(readlines, `head -n $(2+extrarows) $(infile)`))
+    first_row = strip(open(readline, infile))
+    #delimcheck = join(open(readlines, `head -n $(2+extrarows) $(infile)`))
 
-    if occursin("\t", delimcheck) & occursin(" ", delimcheck)
+    if occursin("\t", first_row) & occursin(" ", first_row)
         error("$infile contains both tab and space delimiters. Please format the file so it uses either one or the other.")
-    elseif occursin("\t", delimcheck)
+    elseif occursin("\t", first_row)
         delim = "\t"
-    elseif occursin(" ", delimcheck)
+    elseif occursin(" ", first_row)
         delim = " "
     else
         error("Please format $infile to be either tab or space delimited")
@@ -99,93 +100,54 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
     
     if faststructure == true
         data_row = 1
-        first_row = split(strip(open(readline, infile)), delim)
-        n_loci = length(first_row)
-        locinames = ["locus_$i" for i in 1:n_loci-2]
+        #first_row = split(strip(open(readline, infile)), delim)
+        n_loci = length(split(first_row, delim))
+        locinames = ["marker_$i" for i in 1:n_loci-2]
     else
         data_row = 2 + extrarows
-        locinames = string.(split(strip(open(readline, infile)), delim))
+        locinames = Symbol.(split(first_row, delim))
     end
-    nloc = length(locinames)
-    dropcols = extracols == 0 ? [1,2] : collect(1:2+extracols)
-    names_parse = CSV.File(
-        infile,
-        delim = delim,
-        header = false,
-        datarow = data_row,
-        missingstrings = [missingval],
-        type = String,
-        ignorerepeated = true,
-        select = [1,2]
-     ) |> DataFrame
-
-    samplecount = countmap(names_parse[:,1])
-    ploidy = unique(values(samplecount))
-    # TODO make this flexible enough to take any ploidy
-    length(ploidy) >1 && throw(error("Multiple ploidies detected among samples. Samples must all be of a single ploidy"))
-    samplenames = unique(names_parse)  
-
     # read in the file as a table
-    geno_parse = CSV.File(
+    geno_parse = CSV.read(
         infile,
+        DataFrame,
         delim = delim,
         header = false,
         datarow = data_row,
-        missingstrings = [missingval],
-        type = Int32,
         ignorerepeated = true,
-        drop = dropcols
-     ) |> Tables.matrix
-
-    genos = Base.Iterators.partition(geno_parse, first(ploidy)) .|> sort!
-    try
-        genos = _SNP.(genos)
-    catch
-        genos = _MSat.(genos)
-    end
-
-    unique!(names_parse)
-    rename!(names_parse, [:name, :population])
-    nsamples = length(names_parse.name)
-    
-    #geno_parse.name .= replace.(geno_parse.name, "-" => "_")
-    loci_df = DataFrame(
-        :name => PooledArray(repeat(names_parse.name, nloc), compress = true),
-        :population => PooledArray(repeat(names_parse.population, nloc), compress = true),
-        :locus => PooledArray(repeat(locinames, inner = nsamples), compress = true),
-        :genotype => genos,
+        missingstrings = [missingval],
+        types = Dict(1=>String, 2=>String)
     )
-
-    # fix names, just in case
-    
-    
-    #= create new dataframe to add phased genotypes to
-    by_sample = groupby(geno_parse, :name)
-    loci_df = DataFrame(:locus => locinames)
-    for (key, eachsample) in pairs(by_sample)
-        insertcols!(
-            loci_df,    
-            Symbol(key.name) => map(i -> phase_structure(markertype, i...), eachcol(eachsample)[3:end])
-        )
+    # ignore any extra columns
+    if !iszero(extracols)
+        geno_parse = geno_parse[!, Not(collect(3:2+n))]
     end
-
-    # transpose the dataframe
-    loci_df = permutedims(loci_df, 1, :name)
-    =#
-
-    # create the metadata from the original file info
-    names_parse.ploidy = [samplecount[i] for i in names_parse.name]
-    names_parse.longitude = Vector{Union{Missing, Float32}}(undef, nsamples) 
-    names_parse.latitude = Vector{Union{Missing, Float32}}(undef, nsamples)
-
+    
+    # fix names, just in case
+    rename!(geno_parse, append!([:name, :population], locinames))
+    geno_parse.name .= replace.(geno_parse.name, "-" => "_")
+    geno_parse = stack(geno_parse, Not([1,2]))
+    rename!(geno_parse, [:name, :population, :locus, :genotype])
+    #return geno_parse
+    # convert columns to PooledArrays
+    geno_parse.name = PooledArray(geno_parse.name, compress = true)
+    geno_parse.population = PooledArray(geno_parse.population, compress = true)
+    geno_parse.locus = PooledArray(geno_parse.locus, compress = true)
     if !silent
-        @info "\n $(abspath(infile))\n data: loci = $(nloc), samples = $(nsamples), populations = $(length(unique(names_parse.population)))"
+        @info "\n $(abspath(infile))\n data: loci = $(length(geno_parse.locus.pool)), samples = $(length(geno_parse.name.pool)), populations = $(length(geno_parse.population.pool))"
         println()
     end
-
-    pd_out = PopData(names_parse, loci_df)
+    grp = groupby(geno_parse, [:name, :population, :locus])
+    #return grp
+    geno_df = 
+        try
+            DataFrames.combine(grp, 4 => _SNP => :genotype)
+        catch
+            DataFrames.combine(grp, 4 => _MSat => :genotype)
+        end
+    meta_df = generate_meta(geno_df)
+    pd_out = PopData(meta_df, geno_df)
     !allow_monomorphic && drop_monomorphic!(pd_out) 
-
     return pd_out
 end
 

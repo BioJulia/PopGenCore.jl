@@ -96,8 +96,9 @@ function genepop(
     # load in samples and genotypes
     pushfirst!(locinames, "name")
 
-    geno_parse = CSV.File(
+    geno_parse = CSV.read(
         infile,
+        DataFrame,
         delim = delim,
         header = locinames,
         datarow = pop_idx[1] + 1,
@@ -105,21 +106,14 @@ function genepop(
         missingstrings = ["-9", ""],
         normalizenames = true,
         ignorerepeated = true
-    ) |> DataFrame
+    )
 
     popnames = string.(1:length(popcounts))
     popnames = fill.(popnames,popcounts) |> Base.Iterators.flatten |> collect
     insertcols!(geno_parse, 2, :population => popnames)
     geno_parse.name .= strip.(geno_parse.name, ',')
-    #geno_type = determine_marker(geno_parse, digits)
-    sample_table = DataFrame(
-        name = geno_parse.name,
-        population = geno_parse.population,
-        longitude = Vector{Union{Missing,Float32}}(undef, sum(popcounts)),
-        latitude = Vector{Union{Missing,Float32}}(undef, sum(popcounts))
-    )
     # wide to long format
-    geno_parse = DataFrames.stack(geno_parse, DataFrames.Not([:name, :population]))
+    geno_parse = DataFrames.stack(geno_parse, DataFrames.Not([1,2]))
     rename!(geno_parse, [:name, :population, :locus, :genotype])
     select!(
         geno_parse, 
@@ -135,7 +129,6 @@ function genepop(
     catch
         geno_parse.genotype = phase.(geno_parse.genotype, Int16, digits)
     end
-
     sample_table = generate_meta(geno_parse)
     pd_out = PopData(sample_table, geno_parse)
     !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
