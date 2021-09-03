@@ -1,4 +1,5 @@
 export PopObj, PopData, show, Genotype, GenoArray, SNP, MSat
+export metadata, genodata
 
 """
     AbstractType PopObj
@@ -16,17 +17,17 @@ The data struct used for the PopGen population genetics ecosystem. You are
 **strongly** discouraged from manually creating tables to pass into a PopData,
 and instead should use the provided file importers and utilities.
 
-- `metadata` ::DataFrame sample information with the columns:
-    - `name` ::String the sample names
-    - `population` ::String population names
-    - `ploidy` ::Int8 ploidy in order of `ind`
-    - `longitude` ::Float32 longitude values
-    - `latitude` ::Float32 latitude values
-- `genodata` ::DataFrame Long-format table of sample genotype records
-    - `name` ::PooledArray the individual/sample names
-    - `population`::PooledArray of population names
-    - `locus` ::PooledArray of locus names
-    - `genotype` Tuple of Int8 (SNP) or Int16 (microsatellite)
+- `metadata` DataFrame of sample information with the columns:
+    - `name` - sample names [`String`]
+    - `population` - population names [`String`]
+    - `ploidy` - sample ploidy [`Int8`]
+    - `longitude` - longitude values [`Float32`, optional]
+    - `latitude` - latitude values   [`Float32`, optional]
+- `genodata` DataFrame of sample genotype records
+    - `name` - the individual/sample names [`PooledArray`]
+    - `population` - population names [`PooledArray`]
+    - `locus` - locus names [`PooledArray`]
+    - `genotype` - genotype values [`NTuple{N,Unsigned}`]
 """
 struct PopData <: PopObj
     metadata::DataFrame
@@ -50,13 +51,14 @@ struct PopData <: PopObj
 end
 
 
+
 """
     Genotype::DataType
-For convenience purposes, an alias for `NTuple{N, <:Integer} where N`, which is
+For convenience purposes, an alias for `NTuple{N, <:Unsigned} where N`, which is
 the type describing individual genotypes in PopData. Specifically, there exist
 `SNP` as an alias for `NTuple{N, Int8}` and `MSat` for `NTuple{N, Int16}`
 """
-const Genotype = NTuple{N, <:Integer} where N
+const Genotype = NTuple{N, <:Unsigned} where N
 
 """
     SNP::DataType
@@ -107,8 +109,8 @@ function Base.show(io::IO, data::PopData)
     end
     n_loc = length(loci(data))
     println(io, "PopData", "{" * ploidytext * ", ", n_loc, " " , marker * " loci}")
-    println(io, "  Samples: $(length(data.metadata.name))") #; printstyled(io, length(data.samples), "\n", bold = true)
-    print(io, "  Populations: $(length(data.genodata.population.pool))") # ; printstyled(io, length(data.populations), bold = true)
+    println(io, "  Samples: $(length(data.metadata.name))")
+    print(io, "  Populations: $(length(data.genodata.population.pool))")
     if "longitude" ∈ names(data.metadata)
         miss_count = count(ismissing, data.metadata.longitude)
         if miss_count == length(data.metadata.longitude)
@@ -126,17 +128,24 @@ function Base.show(io::IO, data::PopData)
     end
 end
 
-#=
-function metadata(data::PopData) 
+
+"""
+    metadata(::PopData)
+Method to show the `PopData` `metadata` field. 
+"""
+function metadata(data::PopData)
     s,f  = size(data.metadata)
     dimtext = "(" * string(s) * " samples, " * string(f) * " fields)"
     show(data.metadata, show_row_number = false, title = "Metadata of PopData " * dimtext )
 end
 
-function genotypes(data::PopData) 
+"""
+    genodata(::PopData)
+Method to show the `PopData` `genodata` field. 
+"""
+function genodata(data::PopData) 
     l = length(data.genodata.locus.pool)
     s = length(data.metadata.name)
     dimtext = "(" * string(s) * " samples, " * string(l) * " loci)"
     show(data.genodata, show_row_number = false, title = "Genotype information of PopData " * dimtext )
 end
-=#
