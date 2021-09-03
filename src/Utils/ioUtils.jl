@@ -41,13 +41,14 @@ function determine_marker(geno_parse::T, digits::Int) where T<:AbstractDataFrame
     end
 end
 
+#TODO change in docs
 """
-    find_ploidy(genotypes::T where T<:SubArray)
+    find_ploidy(genotypes::T where T<:AbstractVector)
 Used internally in the `genepop` and `delimited` file parsers to scan the genotypes
 of a sample and return the ploidy of the first non-missing locus.
 """
-@inline function find_ploidy(genotypes::T) where T<:GenoArray
-    return Int8(length(first(skipmissing(genotypes))))
+@inline function find_ploidy(genotypes::T) where T<:AbstractVector
+    @inbounds Int8(length(first(skipmissing(genotypes))))
 end
 
 
