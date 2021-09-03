@@ -24,7 +24,6 @@ include("io/VariantCall.jl")
 include("io/Read.jl")
 ##
 include("Datasets.jl")
-include("Permutations.jl")
 @init @require  VariantCallFormat="28eba6e3-a997-4ad9-87c6-d933b8bca6c1" begin
     include("io/VariantCallLazy.jl")
 end
