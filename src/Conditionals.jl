@@ -27,7 +27,7 @@ end
     isbinary(filepath::String)
 Returns `true` if the `filepath` is a binary file. 
 """
-function isbinary(path)
+function isbinary(filepath)
     !isvalid(String(read(filepath, 1000)))
 end
 
