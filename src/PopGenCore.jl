@@ -2,6 +2,7 @@ module PopGenCore
 
 using CSV, DataFrames, NaturalSort, PooledArrays, Requires, StaticArrays
 using StatsBase: countmap
+using Random: shuffle, shuffle!
 
 include("PopData.jl")
 ## Utilities
