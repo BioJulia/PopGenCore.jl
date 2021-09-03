@@ -3,7 +3,7 @@ export determine_marker, find_ploidy
 
 ## Utilities for file reading/writing ##
 
-#TODO Possibly deprecated
+#= Possibly deprecated
 """
     determine_marker(geno_parse::T, digits::Int) where T<:AbstractDataFrame
 Return either `Int8` or `Int16` depending on largest allelic value in all genotypes
@@ -40,6 +40,7 @@ function determine_marker(geno_parse::T, digits::Int) where T<:AbstractDataFrame
         return Int16
     end
 end
+=#
 
 #TODO change in docs
 """
@@ -69,8 +70,7 @@ map(i -> phase(i, Int16, 3), ["112131", "211112", "001003", "516500"])
 @inline function phase(loc::T, type::DataType, digit::Int) where T<:AbstractString
     loc == "-9" || iszero(parse(Int, loc)) && return missing
     phased = map(i -> parse(type, join(i)), Iterators.partition(loc, digit))
-    sort!(phased)
-    Tuple(phased)
+    NTuple{length(phased), type}(sort(phased))
 end
 
 phase(loc::Missing, type::DataType, digit::Int) = missing
@@ -85,7 +85,7 @@ phase(loc::Missing, type::DataType, digit::Int) = missing
         d,r = divrem(d, units)
         @inbounds push!(out, r)
     end
-    return Tuple(sort(out))
+    return NTuple{length(out), type}(sort(out))
 end
 
 

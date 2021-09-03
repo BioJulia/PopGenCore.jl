@@ -27,7 +27,7 @@ and instead should use the provided file importers and utilities.
     - `name` - the individual/sample names [`PooledArray`]
     - `population` - population names [`PooledArray`]
     - `locus` - locus names [`PooledArray`]
-    - `genotype` - genotype values [`NTuple{N,Unsigned}`]
+    - `genotype` - genotype values [`NTuple{N,Signed}`]
 """
 struct PopData <: PopObj
     metadata::DataFrame
@@ -54,11 +54,11 @@ end
 
 """
     Genotype::DataType
-For convenience purposes, an alias for `NTuple{N, <:Unsigned} where N`, which is
+For convenience purposes, an alias for `NTuple{N, <:Signed} where N`, which is
 the type describing individual genotypes in PopData. Specifically, there exist
 `SNP` as an alias for `NTuple{N, Int8}` and `MSat` for `NTuple{N, Int16}`
 """
-const Genotype = NTuple{N, <:Unsigned} where N
+const Genotype = NTuple{N, <:Signed} where N
 
 """
     SNP::DataType

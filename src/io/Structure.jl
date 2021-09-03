@@ -86,8 +86,6 @@ walnuts = structure("juglans_nigra.str", extracols = 0, extrarows = 0)
 function structure(infile::String; silent::Bool = false, extracols::Int = 0, extrarows::Int = 0, allow_monomorphic::Bool = false, missingval::String = "-9", faststructure::Bool = false)
     # find the delimiter
     first_row = strip(open(readline, infile))
-    #delimcheck = join(open(readlines, `head -n $(2+extrarows) $(infile)`))
-
     if occursin("\t", first_row) & occursin(" ", first_row)
         error("$infile contains both tab and space delimiters. Please format the file so it uses either one or the other.")
     elseif occursin("\t", first_row)
@@ -128,7 +126,7 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
     geno_parse.name .= replace.(geno_parse.name, "-" => "_")
     geno_parse = stack(geno_parse, Not([1,2]))
     rename!(geno_parse, [:name, :population, :locus, :genotype])
-    #return geno_parse
+
     # convert columns to PooledArrays
     geno_parse.name = PooledArray(geno_parse.name, compress = true)
     geno_parse.population = PooledArray(geno_parse.population, compress = true)
@@ -138,7 +136,7 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
         println()
     end
     grp = groupby(geno_parse, [:name, :population, :locus])
-    #return grp
+
     geno_df = 
         try
             DataFrames.combine(grp, 4 => _SNP => :genotype)
