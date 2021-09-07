@@ -1,4 +1,4 @@
-# this function the getindex tool OpenMendel/SnpArrays.jl uses 
+# this function copies the getindex tool OpenMendel/SnpArrays.jl uses 
 # to pull out the byte values from the compressed hex genotypes
 # Repo: https://github.com/OpenMendel/SnpArrays.jl
 @inline function _plinkindex(s::Matrix{UInt8}, i::Integer, j::Integer)
@@ -29,9 +29,15 @@ end
     Matrix{Union{Missing, NTuple{2,Int8}}}(_SNP.(genomatrix))
 end
 
+function checkplinkfiles(infile::String)
+    basefile = splitext(infile)[1]
+    isfile(basefile * ".bim")
+    isfile(basefile * ".fam")
+end
 
 function plink(infile::String; keepfields::Union{Symbol,Vector{Symbol}} = :all, silent::Bool = false)
     basefile = splitext(infile)[1]
+    !isfile(basefile * ".fam") && throw(ArgumentError("$(basefile * ".fam") is required but wasn't found")) 
     famfile = CSV.read(
         basefile * ".fam", DataFrame, 
         header = [:population, :name, :sire, :dam, :sex, :phenotype],
@@ -44,21 +50,18 @@ function plink(infile::String; keepfields::Union{Symbol,Vector{Symbol}} = :all, 
     damcheck = !all(ismissing.(famfile.dam)) ?  "(✔)" : "(𐄂)"
     sexcheck = !all(ismissing.(famfile.sex)) ?  "(✔)" : "(𐄂)"
     phenotypecheck = !all(ismissing.(famfile.phenotype)) ?  "(✔)" : "(𐄂)"
-    bimfile = CSV.read(
-        basefile * ".bim",
-        DataFrame,
-        header = [:chrom, :snp, :cM, :bp, :allele1, :allele2],
-        missingstrings = ["0"],
-        drop = [3,4],
-        types = Dict(:chrom => String, :allele1 => Char, :allele2 => Char),
-        pool=0.3
-    )
-    locinames = bimfile.chrom .* "_" .* bimfile.snp
-    nloci =  length(locinames)
-
-    if !silent
-        @info "\n $(abspath(infile))\n data: loci = $(nloci), samples = $(nsamples), populations = $(npopulations)\n .fam: sire $(sirecheck), dam $(damcheck), sex $(sexcheck), phenotype $(phenotypecheck)"
-        println()
+    bimfound = isfile(basefile * ".bim")
+    if bimfound
+        bimfile = CSV.read(
+            basefile * ".bim",
+            DataFrame,
+            header = [:chrom, :snp, :cM, :bp, :allele1, :allele2],
+            missingstrings = ["0"],
+            drop = [3,4],
+            types = Dict(:chrom => String, :allele1 => Char, :allele2 => Char),
+            pool=0.3
+        )
+        locinames = bimfile.chrom .* "_" .* bimfile.snp
     end
     if endswith(infile, ".bed")
         bedfile = basefile * ".bed"
@@ -70,9 +73,18 @@ function plink(infile::String; keepfields::Union{Symbol,Vector{Symbol}} = :all, 
         nrows = (nsamples + 3) >> 2   # the number of rows in the Matrix{UInt8}
         n, r = divrem(length(data), nrows)
         iszero(r) || throw(ArgumentError("The filesize of $bedfile is not a multiple of $nrows (and it should be)"))
+        if !silent
+            if !bimfound
+                @info "\n $(abspath(infile))\n data: loci = $(n), samples = $(nsamples), populations = $(npopulations)\n .fam: sire $(sirecheck), dam $(damcheck), sex $(sexcheck), phenotype $(phenotypecheck)\n $(basefile * ".bim") not found, generating new marker names"
+            else
+                @info "\n $(abspath(infile))\n data: loci = $(n), samples = $(nsamples), populations = $(npopulations)\n .fam: sire $(sirecheck), dam $(damcheck), sex $(sexcheck), phenotype $(phenotypecheck)"
+            end
+            println()
+        end
+        locinames = bimfound ? locinames : ["snp_" * "$i" for i in 1:n]
         genodf = DataFrame(
-            :name => PooledArray(repeat(famfile.name, nloci) , compress = true),
-            :population => PooledArray(repeat(famfile.population, nloci) , compress = true),
+            :name => PooledArray(repeat(famfile.name, n) , compress = true),
+            :population => PooledArray(repeat(famfile.population, n) , compress = true),
             :locus => PooledArray(repeat(locinames, inner = nsamples) , compress = true),
             :genotype => vec(_SNP(_plinkindex(reshape(data, (nrows, n))))) 
         )
