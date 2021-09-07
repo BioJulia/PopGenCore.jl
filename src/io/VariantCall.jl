@@ -6,7 +6,7 @@ Open Variant Call Format file `.vcf[.gz]`, or `.bcf[.gz]` and return an `IO` str
 """
 function openvcf(infile::String)
     if endswith(infile, ".gz")
-        return GzipDecompressor(open(infile, "r"))
+        return GzipDecompressorStream(open(infile, "r"))
     else
         return open(infile, "r")
     end
@@ -40,14 +40,15 @@ julia> mydata.genodata.genotype =  mydata.genodata.genotype |> Array{Union{Missi
 """
 function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, allow_monomorphic::Bool = false)
     bases = (A = Int8(1), T = Int8(2), C = Int8(3), G = Int8(4), miss = Int8(0))
+    counts = countlines(openvcf(infile))
     f = openvcf(infile)
     stream = BCF.Reader(f)
-    nmarkers = countlines(f) - length(header(stream)) - 1
+    nmarkers = counts - length(header(stream)) - 1
     sample_ID = header(stream).sampleID
     nsamples = length(sample_ID)
     geno_df = DataFrame(:name => sample_ID, :population =>  "missing")
     if silent == false
-        @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ---> population info must be added"
+        @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ⟶  population info must be added"
         println()
     end
 
@@ -121,14 +122,15 @@ julia> mydata.genodata.genotype =  mydata.genodata.genotype |> Array{Union{Missi
 """
 function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, allow_monomorphic::Bool = false)
     bases = (A = Int8(1), T = Int8(2), C = Int8(3), G = Int8(4), miss = Int8(0))
+    counts = countlines(openvcf(infile))
     f = openvcf(infile)
     stream = VCF.Reader(f)
-    nmarkers = countlines(f) - length(header(stream)) - 1
+    nmarkers = counts - length(header(stream)) - 1
     sample_ID = header(stream).sampleID
     nsamples = length(sample_ID)
     geno_df = DataFrame(:name => sample_ID, :population =>  "missing")
     if silent == false
-        @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ---> population info must be added"
+        @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ⟶  population info must be added"
         println()
     end
 
