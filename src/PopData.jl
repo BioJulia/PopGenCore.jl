@@ -1,5 +1,5 @@
 export PopObj, PopData, show, Genotype, GenoArray, SNP, MSat
-export metadata, genodata
+export metadata, genodata, getindex
 
 """
     AbstractType PopObj
@@ -150,4 +150,29 @@ function genodata(data::PopData)
     s = length(data.metadata.name)
     dimtext = "(" * string(s) * " samples, " * string(l) * " loci)"
     show(data.genodata, show_row_number = false, title = "Genotype information of PopData " * dimtext )
+end
+
+
+function Base.getindex(data::PopData, idx::Symbol)
+    if idx == :metadata
+        return data.metadata
+    elseif idx == :genodata
+        return data.genodata
+    elseif idx == :name
+        return data.metadata.name
+    elseif idx == :population
+        return data.metadata.population
+    elseif idx == :ploidy
+        return data.metadata.ploidy
+    elseif idx == :locus
+        return data.genodata.locus.pool
+    elseif idx == :coordinates
+        return data.metadata[:, [:longitude, :latitude]]
+    else
+        throw(ArgumentError("Cannot index PopData with the \':$idx\' field"))
+    end
+end
+
+function Base.getindex(data::PopData, args...)
+    getindex(data.genodata, args...)
 end
