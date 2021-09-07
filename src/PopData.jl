@@ -43,7 +43,9 @@ struct PopData <: PopObj
         if genocheck != genocols
             throw(error("genodata missing columns $(symdiff(genocheck, genocols))"))
         end
-        sort!(loci, [:locus, :population, :name], lt = natural)
+        if !issorted(loci, [:locus, :population, :name], lt = natural)
+            sort!(loci, [:locus, :population, :name], lt = natural)
+        end
         sort(meta.name) != sort(loci.name.pool) && throw(ArgumentError("meta and loci dataframes do not contain the same sample names"))
         sort(unique(meta.population)) != sort(loci.population.pool) && throw(ArgumentError("metadata and genotypes dataframes do not contain the same population names"))
         new(meta, loci)
