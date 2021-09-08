@@ -338,6 +338,7 @@ const popnames! = populations!
 Edit a `PopData` object in-place by excluding all occurences of the specified information.
 The keywords can be used in any combination. Synonymous with `omit!` and `remove!`. All
 values are converted to `String` for filtering, so `Symbol` and numbers will also work.
+This can be considered a simpler and more rudimentary syntax for subsetting PopData.
 
 ### Keyword Arguments
 #### `locus`
@@ -355,10 +356,15 @@ The keywords `names`, `sample`, and `samples` also work.
 **Examples**
 ```
 cats = @nancycats;
+cats = @nancycats;
 exclude!(cats, name = "N100", population = 1:5)
+# equivalent to cats[(cats.genodata.name .!= "N100") .& (cats.genodata.population .∉ Ref(string.(1:5))), :]
+
 exclude!(cats, name = ["N100", "N102", "N211"], locus = ["fca8", "fca23"])
+# equivalent to cats[(cats.genodata.name .∉ Ref(["N100", "N102", "N211"])) .& (cats.genodata.locus .∉ Ref(["fca8","fca23"])), :]
+
 exclude!(cats, name = "N102", locus = :fca8, population = "3")
-```
+# equivalent to cats[(cats.genodata.name .!= "N102") .& (cats.genodata.locus .!= "fca8") .& (cats.genodata.population .!= "3"), :]```
 """
 function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing, name::Any = nothing)
     filter_by = Dict{Symbol,Vector{String}}()
@@ -434,7 +440,7 @@ const remove! = exclude!
 Returns a new `PopData` object excluding all occurrences of the specified keywords.
 The keywords can be used in any combination. Synonymous with `omit` and `remove`. All
 values are converted to `String` for filtering, so `Symbol` and numbers will also work.
-
+This can be considered a simpler and more rudimentary syntax for subsetting PopData.
 ### Keyword Arguments
 #### `locus`
 A `String` or `Vector{String}` of loci you want to remove from the `PopData`.
@@ -449,8 +455,13 @@ A `String` or `Vector{String}` of samples you want to remove from the `PopData`.
 ```
 cats = @nancycats;
 exclude(cats, name = "N100", population = 1:5)
+# equivalent to cats[(cats.genodata.name .!= "N100") .& (cats.genodata.population .∉ Ref(string.(1:5))), :]
+
 exclude(cats, name = ["N100", "N102", "N211"], locus = ["fca8", "fca23"])
+# equivalent to cats[(cats.genodata.name .∉ Ref(["N100", "N102", "N211"])) .& (cats.genodata.locus .∉ Ref(["fca8","fca23"])), :]
+
 exclude(cats, name = "N102", locus = :fca8, population = "3")
+# equivalent to cats[(cats.genodata.name .!= "N102") .& (cats.genodata.locus .!= "fca8") .& (cats.genodata.population .!= "3"), :]
 ```
 """
 function exclude(data::PopData; population::Any = nothing, locus::Any = nothing, name::Any = nothing)
@@ -463,10 +474,11 @@ const omit = exclude
 const remove = exclude
 
 """
-    keep(data::PopData, kwargs...)
+    keep!(data::PopData, kwargs...)
 Edit a `PopData` object in-place by keeping only the occurrences of the specified keyword.
 Unlike `exclude!()`. only one keyword can be used at a time. All values are 
-converted to `String` for filtering, so `Symbol` and numbers will also work.
+converted to `String` for filtering, so `Symbol` and numbers will also work. This can
+be considered a simpler and more rudimentary syntax for subsetting PopData.
 
 ### Keyword Arguments
 #### `locus`
@@ -479,11 +491,18 @@ A `String` or `Vector{String}` of populations you want to keep in the `PopData`.
 A `String` or `Vector{String}` of samples you want to keep in the `PopData`.
 
 **Examples**
+
 ```
 cats = @nancycats;
-keep(cats, population = 1:5)
-keep(cats, name = ["N100", "N102", "N211"])
-keep(cats, locus = [:fca8, "fca37"])
+keep!(cats, population = 1:5)
+# equivalent to cats[cats.genodata.population .∈ Ref(string.(1:5)), :]
+
+keep!(cats, name = ["N100", "N102", "N211"])
+# equivalent to cats[cats.genodata.name .∈ Ref(["N100", "N102", "N211"]), :]
+
+keep!(cats, locus = [:fca8, "fca37"])
+# equivalent to cats[cats.genodata.locus .∈ Ref(["fca8", "fca37"]), :]
+```
 """
 function keep!(data::PopData; population::Any = nothing, locus::Any = nothing, name::Any = nothing)
     count(!isnothing, [population, locus, name]) > 1 && throw(ArgumentError("Please specify only one of \`population\`, \`locus\`, or \`name\` keyword arguments"))
@@ -544,6 +563,7 @@ end
 Returns a new `PopData` object keeping only the occurrences of the specified keyword.
 Unlike `exclude()`. only one keyword can be used at a time. All values are 
 converted to `String` for filtering, so `Symbol` and numbers will also work.
+This can be considered a simpler and more rudimentary syntax for subsetting PopData.
 
 ### Keyword Arguments
 #### `locus`
@@ -559,8 +579,13 @@ A `String` or `Vector{String}` of samples you want to keep in the `PopData`.
 ```
 cats = @nancycats;
 keep(cats, population = 1:5)
+# equivalent to cats[cats.genodata.population .∈ Ref(string.(1:5)), :]
+
 keep(cats, name = ["N100", "N102", "N211"])
+# equivalent to cats[cats.genodata.name .∈ Ref(["N100", "N102", "N211"]), :]
+
 keep(cats, locus = [:fca8, "fca37"])
+# equivalent to cats[cats.genodata.locus .∈ Ref(["fca8", "fca37"]), :]
 ```
 """
 function keep(data::PopData; population::Any = nothing, locus::Any = nothing, name::Any = nothing)

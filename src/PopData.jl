@@ -99,20 +99,22 @@ function Base.show(io::IO, data::PopData)
         if length(ploidy) == 1
             ploidy = first(ploidy)
             ploidytext = 
-                ploidy == 1 ? "Haploid" :
-                ploidy == 2 ? "Diploid" :
-                ploidy == 3 ? "Triploid" :
-                ploidy == 4 ? "Tetraploid" :
-                ploidy == 5 ? "Pentaploid" :
-                ploidy == 6 ? "Hexaploid" : "Octaploid"
+                ploidy == 1 ? "Haploid, " :
+                ploidy == 2 ? "Diploid, " :
+                ploidy == 3 ? "Triploid, " :
+                ploidy == 4 ? "Tetraploid, " :
+                ploidy == 5 ? "Pentaploid, " :
+                ploidy == 6 ? "Hexaploid, " : "Octaploid, "
+        elseif isempty(ploidy) 
+            ploidytext = ""
         else
-            ploidytext = "Mixed-ploidy"
+            ploidytext = "Mixed-ploidy, "
         end
     else
-        ploidytext = "Unknown-ploidy"
+        ploidytext = "Unknown-ploidy, "
     end
     n_loc = length(loci(data))
-    println(io, "PopData", "{" * ploidytext * ", ", n_loc, " " , marker * " loci}")
+    println(io, "PopData", "{" * ploidytext, n_loc, " " , marker * " loci}")
     println(io, "  Samples: $(length(data.metadata.name))")
     print(io, "  Populations: $(length(data.genodata.population.pool))")
     if "longitude" ∈ names(data.metadata)
@@ -171,10 +173,21 @@ function Base.getindex(data::PopData, idx::Symbol)
     elseif idx == :coordinates
         return data.metadata[:, [:longitude, :latitude]]
     else
-        throw(ArgumentError("Cannot index PopData with the \':$idx\' field"))
+        throw(ArgumentError("Cannot directly index PopData with the \':$idx\' field"))
     end
 end
 
 function Base.getindex(data::PopData, args...)
-    getindex(data.genodata, args...)
+    geno = getindex(data.genodata, args...)
+    transform!(
+        geno,
+        1 => (i -> PooledArray(i, compress = true)) => :name,
+        2 => (i -> PooledArray(i, compress = true)) => :population,
+        3 => (i -> PooledArray(i, compress = true)) => :locus,
+        4
+    )
+    PopData(        
+        data.metadata[data.metadata.name .∈ Ref(geno.name.pool), :],
+        geno
+    )
 end
