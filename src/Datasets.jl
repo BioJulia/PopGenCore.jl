@@ -1,16 +1,17 @@
 ## test data available for use in PopGen
-export dataset, @nancycats, @gulfsharks
+export @nancycats, @gulfsharks
 
 """
     dataset(::String)
 Load an example dataset from either `"gulfsharks"` (SNP) or `"nancycats"` (microsatellite). 
 Can also use `"sharks"` and `"cats"` as shorthands. Use `?@nancycats` and 
-`?@gulfsharks` to learn more about these datasets.
+`?@gulfsharks` to learn more about these datasets. Use `PopGenCore.dataset` if using
+`PopGenCore.jl` directly.
 
 ### Example
 ```
-ncats = dataset("nancycats")
-gsharks = dataset("sharks")
+ncats = PopGen.dataset("nancycats")
+gsharks = PopGen.dataset("sharks")
 ```
 """
 function dataset(name::String)
