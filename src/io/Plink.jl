@@ -36,6 +36,7 @@ function checkplinkfiles(infile::String)
 end
 
 function plink(infile::String; keepfields::Union{Symbol,Vector{Symbol}} = :all, silent::Bool = false)
+    isfile(infile) || throw(ArgumentError("$infile not found."))
     basefile = splitext(infile)[1]
     !isfile(basefile * ".fam") && throw(ArgumentError("$(basefile * ".fam") is required but wasn't found")) 
     famfile = CSV.read(

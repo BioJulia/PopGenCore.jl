@@ -53,7 +53,7 @@ function delimited(
     silent::Bool = false,
     allow_monomorphic::Bool = false
     )
-
+    isfile(infile) || throw(ArgumentError("$infile not found."))
     dlm = delim == "auto" ? nothing : delim
     file_parse = CSV.read(infile, DataFrame, delim = dlm, missingstrings = ["-9", ""])
     locinames = names(file_parse)[5:end]

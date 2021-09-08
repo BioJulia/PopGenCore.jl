@@ -85,6 +85,7 @@ walnuts = structure("juglans_nigra.str", extracols = 0, extrarows = 0)
 """
 function structure(infile::String; silent::Bool = false, extracols::Int = 0, extrarows::Int = 0, allow_monomorphic::Bool = false, missingval::String = "-9", faststructure::Bool = false)
     # find the delimiter
+    isfile(infile) || throw(ArgumentError("$infile not found."))
     first_row = strip(open(readline, infile))
     if occursin("\t", first_row) & occursin(" ", first_row)
         error("$infile contains both tab and space delimiters. Please format the file so it uses either one or the other.")

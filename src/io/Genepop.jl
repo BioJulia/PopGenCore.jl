@@ -47,6 +47,7 @@ function genepop(
     silent::Bool = false,
     allow_monomorphic::Bool = false
 )
+    isfile(infile) || throw(ArgumentError("$infile not found."))
     # open the file as lines of strings to suss out loci names, pop idx, and popcounts
     gpop_readlines = readlines(infile)
 

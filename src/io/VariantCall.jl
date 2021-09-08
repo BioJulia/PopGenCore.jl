@@ -5,6 +5,7 @@ export bcf, vcf
 Open Variant Call Format file `.vcf[.gz]`, or `.bcf[.gz]` and return an `IO` stream in reading mode `"r"`.
 """
 function openvcf(infile::String)
+    isfile(infile) || throw(ArgumentError("$infile not found."))
     if endswith(infile, ".gz")
         return GzipDecompressorStream(open(infile, "r"))
     else
@@ -39,7 +40,6 @@ julia> mydata.genodata.genotype =  mydata.genodata.genotype |> Array{Union{Missi
 ```
 """
 function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, allow_monomorphic::Bool = false)
-    bases = (A = Int8(1), T = Int8(2), C = Int8(3), G = Int8(4), miss = Int8(0))
     counts = countlines(openvcf(infile))
     f = openvcf(infile)
     stream = BCF.Reader(f)
@@ -47,6 +47,7 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     sample_ID = header(stream).sampleID
     nsamples = length(sample_ID)
     geno_df = DataFrame(:name => sample_ID, :population =>  "missing")
+    bases = (A = Int8(1), T = Int8(2), C = Int8(3), G = Int8(4), miss = Int8(0))
     if silent == false
         @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ⟶  population info must be added"
         println()
@@ -81,9 +82,6 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         :locus => (i -> PooledArray(i |> Vector{String}, compress = true)) => :locus, 
         :genotype => (j -> map(i -> all(0 .== i) ? missing : i, j)) => :genotype
     )
-
-    # replace missing genotypes as missing
-    sort!(geno_df, [:locus, :population, :name], lt = natural)
     meta_df = generate_meta(geno_df)
     pd_out = PopData(meta_df, geno_df)
     !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
@@ -121,7 +119,6 @@ julia> mydata.genodata.genotype =  mydata.genodata.genotype |> Array{Union{Missi
 ```
 """
 function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, allow_monomorphic::Bool = false)
-    bases = (A = Int8(1), T = Int8(2), C = Int8(3), G = Int8(4), miss = Int8(0))
     counts = countlines(openvcf(infile))
     f = openvcf(infile)
     stream = VCF.Reader(f)
@@ -129,6 +126,7 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     sample_ID = header(stream).sampleID
     nsamples = length(sample_ID)
     geno_df = DataFrame(:name => sample_ID, :population =>  "missing")
+    bases = (A = Int8(1), T = Int8(2), C = Int8(3), G = Int8(4), miss = Int8(0))
     if silent == false
         @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ⟶  population info must be added"
         println()
@@ -163,9 +161,6 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         :locus => (i -> PooledArray(i |> Vector{String}, compress = true)) => :locus, 
         :genotype => (j -> map(i -> all(0 .== i) ? missing : i, j)) => :genotype
     )
-
-    # replace missing genotypes as missing
-    sort!(geno_df, [:locus, :population, :name], lt = natural)
     meta_df = generate_meta(geno_df)
     pd_out = PopData(meta_df, geno_df)
     !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
