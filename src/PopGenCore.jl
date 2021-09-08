@@ -2,7 +2,7 @@ __precompile__()
 
 module PopGenCore
 
-using CSV, DataFrames, NaturalSort, PooledArrays, StaticArrays
+using CSV, DataFrames, PooledArrays, StaticArrays
 using CodecZlib, VariantCallFormat
 using StatsBase: countmap
 using Random: shuffle, shuffle!

@@ -1,7 +1,7 @@
 export add_meta!, locations, locations!
 export genotypes, get_genotypes, get_genotype
 export populations, population, populations!, population!
-export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!
+export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, filter!
 
 
 """
@@ -338,7 +338,8 @@ const popnames! = populations!
 Edit a `PopData` object in-place by excluding all occurences of the specified information.
 The keywords can be used in any combination. Synonymous with `omit!` and `remove!`. All
 values are converted to `String` for filtering, so `Symbol` and numbers will also work.
-This can be considered a simpler and more rudimentary syntax for subsetting PopData.
+This can be considered a simpler and more rudimentary syntax for subsetting 
+or filtering PopData.
 
 ### Keyword Arguments
 #### `locus`
@@ -356,15 +357,9 @@ The keywords `names`, `sample`, and `samples` also work.
 **Examples**
 ```
 cats = @nancycats;
-cats = @nancycats;
 exclude!(cats, name = "N100", population = 1:5)
-# equivalent to cats[(cats.genodata.name .!= "N100") .& (cats.genodata.population .∉ Ref(string.(1:5))), :]
-
 exclude!(cats, name = ["N100", "N102", "N211"], locus = ["fca8", "fca23"])
-# equivalent to cats[(cats.genodata.name .∉ Ref(["N100", "N102", "N211"])) .& (cats.genodata.locus .∉ Ref(["fca8","fca23"])), :]
-
 exclude!(cats, name = "N102", locus = :fca8, population = "3")
-# equivalent to cats[(cats.genodata.name .!= "N102") .& (cats.genodata.locus .!= "fca8") .& (cats.genodata.population .!= "3"), :]```
 """
 function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing, name::Any = nothing)
     filter_by = Dict{Symbol,Vector{String}}()
@@ -409,18 +404,15 @@ function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing
     filter_keys = Symbol.(keys(filter_by))
 
     if length(filter_keys) == 1
-        filter!(filter_keys[1] => x -> x ∉ filter_by[filter_keys[1]] , data.genodata)
+        filter!(data, filter_keys[1] => x -> x ∉ filter_by[filter_keys[1]])
     elseif length(filter_keys) == 2
-        filter!([filter_keys[1], filter_keys[2]] => (x,y) -> x ∉ filter_by[filter_keys[1]] && y ∉ filter_by[filter_keys[2]] , data.genodata)
+        filter!(data, [filter_keys[1], filter_keys[2]] => (x,y) -> x ∉ filter_by[filter_keys[1]] && y ∉ filter_by[filter_keys[2]])
     elseif length(filter_keys) == 3
-        filter!([filter_keys[1], filter_keys[2], filter_keys[3]] => (x,y,z) -> x ∉ filter_by[filter_keys[1]] && y ∉ filter_by[filter_keys[2]] && z ∉ filter_by[filter_keys[3]] , data.genodata)
+        filter!(data, [filter_keys[1], filter_keys[2], filter_keys[3]] => (x,y,z) -> x ∉ filter_by[filter_keys[1]] && y ∉ filter_by[filter_keys[2]] && z ∉ filter_by[filter_keys[3]])
     else
         throw(ArgumentError("Please specify at least one filter parameter of population, locus, or name"))   
     end
 
-    # make sure to update all the PooledArray pools
-    [data.genodata[!, i] = PooledArray(data.genodata[!, i], compress = true) for i in [:population, :locus, :name]]
-    data.metadata = intersect(data.metadata.name, data.genodata.name.pool) != data.metadata.name ? data.metadata[data.metadata.name .∈ Ref(data.genodata.name.pool), :] : data.metadata
     return
 end
 
@@ -432,7 +424,9 @@ const remove! = exclude!
 Returns a new `PopData` object excluding all occurrences of the specified keywords.
 The keywords can be used in any combination. Synonymous with `omit` and `remove`. All
 values are converted to `String` for filtering, so `Symbol` and numbers will also work.
-This can be considered a simpler and more rudimentary syntax for subsetting PopData.
+This can be considered a simpler and more rudimentary syntax for subsetting 
+or filtering PopData.
+
 ### Keyword Arguments
 #### `locus`
 A `String` or `Vector{String}` of loci you want to remove from the `PopData`.
@@ -447,13 +441,8 @@ A `String` or `Vector{String}` of samples you want to remove from the `PopData`.
 ```
 cats = @nancycats;
 exclude(cats, name = "N100", population = 1:5)
-# equivalent to cats[(cats.genodata.name .!= "N100") .& (cats.genodata.population .∉ Ref(string.(1:5))), :]
-
 exclude(cats, name = ["N100", "N102", "N211"], locus = ["fca8", "fca23"])
-# equivalent to cats[(cats.genodata.name .∉ Ref(["N100", "N102", "N211"])) .& (cats.genodata.locus .∉ Ref(["fca8","fca23"])), :]
-
 exclude(cats, name = "N102", locus = :fca8, population = "3")
-# equivalent to cats[(cats.genodata.name .!= "N102") .& (cats.genodata.locus .!= "fca8") .& (cats.genodata.population .!= "3"), :]
 ```
 """
 function exclude(data::PopData; population::Any = nothing, locus::Any = nothing, name::Any = nothing)
@@ -467,10 +456,11 @@ const remove = exclude
 
 """
     keep!(data::PopData, kwargs...)
-Edit a `PopData` object in-place by keeping only the occurrences of the specified keyword.
-Unlike `exclude!()`. only one keyword can be used at a time. All values are 
-converted to `String` for filtering, so `Symbol` and numbers will also work. This can
-be considered a simpler and more rudimentary syntax for subsetting PopData.
+Edit a `PopData` object in-place by keeping only the occurrences of the specified keywords.
+If using multiple fields, they will be chained together as "`or`" statements.
+All values are converted to `String` for filtering, so `Symbol` and numbers will also work.
+This can be considered a simpler and more rudimentary syntax for subsetting 
+or filtering PopData.
 
 ### Keyword Arguments
 #### `locus`
@@ -487,65 +477,66 @@ A `String` or `Vector{String}` of samples you want to keep in the `PopData`.
 ```
 cats = @nancycats;
 keep!(cats, population = 1:5)
-# equivalent to cats[cats.genodata.population .∈ Ref(string.(1:5)), :]
 
+# keep 4 populations and 3 specific samples
 keep!(cats, name = ["N100", "N102", "N211"])
-# equivalent to cats[cats.genodata.name .∈ Ref(["N100", "N102", "N211"]), :]
 
-keep!(cats, locus = [:fca8, "fca37"])
-# equivalent to cats[cats.genodata.locus .∈ Ref(["fca8", "fca37"]), :]
+# keep 2 loci, 2 populations, and 10 specific individuals
+keep!(cats, locus = [:fca8, "fca37"], population = [7,8], name = samples(cats)[1:10])
 ```
 """
 function keep!(data::PopData; population::Any = nothing, locus::Any = nothing, name::Any = nothing)
-    count(!isnothing, [population, locus, name]) > 1 && throw(ArgumentError("Please specify only one of \`population\`, \`locus\`, or \`name\` keyword arguments"))
-
     filter_by = Dict{Symbol,Vector{String}}()
 
     if !isnothing(population)
         filter_by[:population] = typeof(population) <: AbstractArray ? string.(population) : [string(population)]
         err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.metadata.population))]
         if length(err) > 0
-            notice = "Criteria not found in PopData\nPopulations: "
-            notice *= "\"" * err[1] * "\""
+            printstyled("Populations not found: ", bold = true)
+            print("\"" * err[1] * "\"")
             if length(err) > 1
-                [notice *= ", \"$i\"" for i in err[2:end]]
+                [print(", \"$i\"") for i in err[2:end]] ; print("\n")
             end
-            throw(ArgumentError(notice))
+            println()
         end
     end
     if !isnothing(locus)
         filter_by[:locus] = typeof(locus) <: AbstractArray ? string.(locus) : [string(locus)]
         err = filter_by[:locus][filter_by[:locus] .∉ Ref(loci(data))]
         if length(err) > 0
-            notice = "Criteria not found in PopData\nLoci: "
-            notice *= "\"" * err[1] * "\""
+            printstyled("Loci not found: ", bold = true)
+            print("\"" * err[1] * "\"")
             if length(err) > 1
-                [notice *= ", \"$i\"" for i in err[2:end]]
+                [print(", \"$i\"") for i in err[2:end]] ; print("\n")
             end
-            throw(ArgumentError(notice))
+            println()
         end
     end
     if !isnothing(name)
         filter_by[:name] = typeof(name) <: AbstractArray ? string.(name) : [string(name)]
         err = filter_by[:name][filter_by[:name] .∉ Ref(data.metadata.name)]
         if length(err) > 0
-            notice = "Criteria not found in PopData\nSamples: "
-            notice *= "\"" * err[1] * "\""
+            printstyled("Samples not found: ", bold = true)
+            print("\"" * err[1] * "\"")
             if length(err) > 1
-                [notice *= ", \"$i\"" for i in err[2:end]]
+                [print(", \"$i\"") for i in err[2:end]] ; print("\n")
             end
-            throw(ArgumentError(notice))
+            println()
         end
     end
 
     filter_keys = Symbol.(keys(filter_by))
-    meta_keys = filter_keys[filter_keys .!= :locus]
 
-    filter!(filter_keys[1] => x -> x ∈ filter_by[filter_keys[1]] , data.genodata)
-    if !isempty(meta_keys)
-        filter!(meta_keys[1] => x -> x ∈ filter_by[meta_keys[1]] , data.metadata)
+    if length(filter_keys) == 1
+        filter!(data, filter_keys[1] => x -> x ∈ filter_by[filter_keys[1]])
+    elseif length(filter_keys) == 2
+        filter!(data, [filter_keys[1], filter_keys[2]] => (x,y) -> x ∈ filter_by[filter_keys[1]] || y ∈ filter_by[filter_keys[2]])
+    elseif length(filter_keys) == 3
+        filter!(data, [filter_keys[1], filter_keys[2], filter_keys[3]] => (x,y,z) -> x ∈ filter_by[filter_keys[1]] || y ∈ filter_by[filter_keys[2]] || z ∈ filter_by[filter_keys[3]])
+    else
+        throw(ArgumentError("Please specify at least one filter parameter of population, locus, or name"))   
     end
-    [data.genodata[!, i] = PooledArray(data.genodata[!, i], compress = true) for i in [:population, :locus, :name]]
+
     return
 end
 
@@ -555,7 +546,8 @@ end
 Returns a new `PopData` object keeping only the occurrences of the specified keyword.
 Unlike `exclude()`. only one keyword can be used at a time. All values are 
 converted to `String` for filtering, so `Symbol` and numbers will also work.
-This can be considered a simpler and more rudimentary syntax for subsetting PopData.
+This can be considered a simpler and more rudimentary syntax for subsetting 
+or filtering PopData.
 
 ### Keyword Arguments
 #### `locus`
@@ -584,4 +576,123 @@ function keep(data::PopData; population::Any = nothing, locus::Any = nothing, na
     tmp = copy(data)
     keep!(tmp; population = population, locus = locus, name = name)
     return tmp
+end
+
+"""
+    filter(data::PopData, args...)
+A drop-in replacement for DataFrames.filter where `PopData` is the first
+argument and the filtering conditions are the second argument. Returns a
+new `PopData`. **Note** the argument order is opposite of that from DataFrames.jl.
+
+**Example**
+```
+x = @nancycats ;
+
+y = filter(x, :name => i -> i ∈ samples(x)[1:10]) ;
+
+show(x)
+PopData{Diploid, 9 Microsatellite loci}
+  Samples: 237
+  Populations: 17
+
+show(y)
+PopData{Diploid, 9 Microsatellite loci}
+  Samples: 10
+  Populations: 1
+```
+"""
+function filter(data::PopData, args...)
+    out = copy(data) 
+    filter!(out, args...)
+    return out
+end
+
+"""
+    filter(data::PopData, args...)
+A drop-in replacement for the DataFrames.filter! where `PopData` is the first
+argument and the filtering conditions are the second argument. Mutates the 
+`PopData` in place and returns it. **Note** the argument order is opposite of that from DataFrames.jl.
+
+**Example**
+```
+x = @nancycats ;
+
+filter!(x, :name => i -> i ∈ samples(x)[1:10]) ;
+
+show(x)
+PopData{Diploid, 9 Microsatellite loci}
+  Samples: 10
+  Populations: 1
+```
+"""
+function Base.filter!(data::PopData, args...)
+    geno = filter!(args..., data.genodata)
+    transform!(
+        geno,
+        1 => (i -> PooledArray(i, compress = true)) => :name,
+        2 => (i -> PooledArray(i, compress = true)) => :population,
+        3 => (i -> PooledArray(i, compress = true)) => :locus,
+        4
+    )
+    if intersect(data.metadata.name, geno.name.pool) != data.metadata.name
+        filter!(:name => x -> x ∈ geno.name.pool, data.metadata)
+    end
+    return data
+end
+
+
+
+function keep2!(data::PopData; population::Any = nothing, locus::Any = nothing, name::Any = nothing)
+    filter_by = Dict{Symbol,Vector{String}}()
+
+    if !isnothing(population)
+        filter_by[:population] = typeof(population) <: AbstractArray ? string.(population) : [string(population)]
+        err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.metadata.population))]
+        if length(err) > 0
+            printstyled("Populations not found: ", bold = true)
+            print("\"" * err[1] * "\"")
+            if length(err) > 1
+                [print(", \"$i\"") for i in err[2:end]] ; print("\n")
+            end
+            println()
+        end
+    end
+    if !isnothing(locus)
+        filter_by[:locus] = typeof(locus) <: AbstractArray ? string.(locus) : [string(locus)]
+        err = filter_by[:locus][filter_by[:locus] .∉ Ref(loci(data))]
+        if length(err) > 0
+            printstyled("Loci not found: ", bold = true)
+            print("\"" * err[1] * "\"")
+            if length(err) > 1
+                [print(", \"$i\"") for i in err[2:end]] ; print("\n")
+            end
+            println()
+        end
+    end
+    if !isnothing(name)
+        filter_by[:name] = typeof(name) <: AbstractArray ? string.(name) : [string(name)]
+        err = filter_by[:name][filter_by[:name] .∉ Ref(data.metadata.name)]
+        if length(err) > 0
+            printstyled("Samples not found: ", bold = true)
+            print("\"" * err[1] * "\"")
+            if length(err) > 1
+                [print(", \"$i\"") for i in err[2:end]] ; print("\n")
+            end
+            println()
+        end
+    end
+
+    filter_keys = Symbol.(keys(filter_by))
+
+    if length(filter_keys) == 1
+        filter!(data, filter_keys[1] => x -> x ∈ filter_by[filter_keys[1]])
+    elseif length(filter_keys) == 2
+        filter!(data, [filter_keys[1], filter_keys[2]] => (x,y) -> x ∈ filter_by[filter_keys[1]] || y ∈ filter_by[filter_keys[2]])
+    elseif length(filter_keys) == 3
+        filter!(data, [filter_keys[1], filter_keys[2], filter_keys[3]] => (x,y,z) -> x ∈ filter_by[filter_keys[1]] || y ∈ filter_by[filter_keys[2]] || z ∈ filter_by[filter_keys[3]])
+    else
+        throw(ArgumentError("Please specify at least one filter parameter of population, locus, or name"))   
+    end
+
+    return
 end

@@ -187,8 +187,5 @@ function Base.getindex(data::PopData, args...)
         4
     )
     newmeta = intersect(data.metadata.name, geno.name.pool) != data.metadata.name ? data.metadata[data.metadata.name .∈ Ref(geno.name.pool), :] : data.metadata
-    PopData(        
-        newmeta,
-        geno
-    )
+    PopData(newmeta, geno)
 end
