@@ -1,13 +1,13 @@
 ---
 name: Feature request
 about: Suggest a new feature
-title: "[feature]"
+title: ""
 labels: enhancement
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem and which?**
+**Is it related to a problem?**
 
 **Describe the solution/feature you'd like (with examples)**
 ```julia
