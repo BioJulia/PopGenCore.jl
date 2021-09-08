@@ -407,28 +407,20 @@ function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing
     end
 
     filter_keys = Symbol.(keys(filter_by))
-    meta_keys = filter_keys[filter_keys .!= :locus]
 
     if length(filter_keys) == 1
         filter!(filter_keys[1] => x -> x ∉ filter_by[filter_keys[1]] , data.genodata)
-        if !isempty(meta_keys)
-            filter!(meta_keys[1] => x -> x ∉ filter_by[meta_keys[1]] , data.metadata)
-        end
     elseif length(filter_keys) == 2
         filter!([filter_keys[1], filter_keys[2]] => (x,y) -> x ∉ filter_by[filter_keys[1]] && y ∉ filter_by[filter_keys[2]] , data.genodata)
-        if !isempty(meta_keys)
-            [filter!(i => x -> x ∉ filter_by[i] , data.metadata) for i in meta_keys]
-        end
     elseif length(filter_keys) == 3
         filter!([filter_keys[1], filter_keys[2], filter_keys[3]] => (x,y,z) -> x ∉ filter_by[filter_keys[1]] && y ∉ filter_by[filter_keys[2]] && z ∉ filter_by[filter_keys[3]] , data.genodata)
-        if !isempty(meta_keys)
-            [filter!(i => x -> x ∉ filter_by[i] , data.metadata) for i in meta_keys]
-        end
     else
         throw(ArgumentError("Please specify at least one filter parameter of population, locus, or name"))   
     end
+
     # make sure to update all the PooledArray pools
-    [data.genodata[!, i] = PooledArray(Array(data.genodata[!, i])) for i in [:population, :locus, :name]]
+    [data.genodata[!, i] = PooledArray(data.genodata[!, i], compress = true) for i in [:population, :locus, :name]]
+    data.metadata = intersect(data.metadata.name, data.genodata.name.pool) != data.metadata.name ? data.metadata[data.metadata.name .∈ Ref(data.genodata.name.pool), :] : data.metadata
     return
 end
 
@@ -553,7 +545,7 @@ function keep!(data::PopData; population::Any = nothing, locus::Any = nothing, n
     if !isempty(meta_keys)
         filter!(meta_keys[1] => x -> x ∈ filter_by[meta_keys[1]] , data.metadata)
     end
-    [data.genodata[!, i] = PooledArray(Array(data.genodata[!, i])) for i in [:population, :locus, :name]]
+    [data.genodata[!, i] = PooledArray(data.genodata[!, i], compress = true) for i in [:population, :locus, :name]]
     return
 end
 
