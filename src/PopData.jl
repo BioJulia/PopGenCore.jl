@@ -186,8 +186,9 @@ function Base.getindex(data::PopData, args...)
         3 => (i -> PooledArray(i, compress = true)) => :locus,
         4
     )
+    newmeta = intersect(data.metadata.name, geno.name.pool) != data.metadata.name ? data.metadata[data.metadata.name .∈ Ref(geno.name.pool), :] : data.metadata
     PopData(        
-        data.metadata[data.metadata.name .∈ Ref(geno.name.pool), :],
+        newmeta,
         geno
     )
 end
