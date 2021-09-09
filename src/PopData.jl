@@ -46,10 +46,15 @@ function PopDataInfo!(data::PopData)
     data.info.samples = length(data.genodata.name.pool)
     data.info.loci = length(data.genodata.locus.pool)
     data.info.populations = length(data.genodata.population.pool)
-    ploidy = unique(data.metadata.ploidy)
-    ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
+    if "ploidy" ∈ names(data.metadata)
+        ploidy = unique(data.metadata.ploidy)
+        ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
+    else
+        ploidy = Int8(0)
+    end       
     data.info.ploidy = ploidy
     data.info.biallelic = data.info.biallelic ? true : isbiallelic(data)
+    return
 end
 
 function PopDataInfo(metadf::DataFrame, genodf::DataFrame)
@@ -106,6 +111,9 @@ struct PopData <: PopObj
     genodata::DataFrame
     info::PopDataInfo
     function PopData(meta::DataFrame, loci::DataFrame)
+        if "ploidy" ∉ names(meta)
+            insertcols!(meta, 3, :ploidy => Int8(0))
+        end
         metacols = ["name", "population", "ploidy"]
         metacheck = intersect(metacols, names(meta))
         if metacheck != metacols
@@ -155,6 +163,17 @@ cases.
 """
 const GenoArray = AbstractVector{S} where S<:Union{Missing,Genotype}
 
+function _ploidy2text(ploidy::Int8)
+    ploidy == 0 ? "" :
+    ploidy == 1 ? "Haploid" :
+    ploidy == 2 ? "Diploid" :
+    ploidy == 3 ? "Triploid" :
+    ploidy == 4 ? "Tetraploid" :
+    ploidy == 5 ? "Pentaploid" :
+    ploidy == 6 ? "Hexaploid" : "Octaploid"
+end
+
+_ploidy2text(ploidy::Vector{Int8}) = "Mixed-ploidy"
 
 function Base.show(io::IO, data::PopData)
     if occursin("Int16", string(eltype(data.genodata.genotype)))
@@ -162,24 +181,10 @@ function Base.show(io::IO, data::PopData)
     else
         marker = "SNP"
     end
-    ploidy = data.info.ploidy
-
-    if typeof(ploidy) == Int8
-        ploidytext = 
-                ploidy == 0 ? "" :
-                ploidy == 1 ? "Haploid, " :
-                ploidy == 2 ? "Diploid, " :
-                ploidy == 3 ? "Triploid, " :
-                ploidy == 4 ? "Tetraploid, " :
-                ploidy == 5 ? "Pentaploid, " :
-                ploidy == 6 ? "Hexaploid, " : "Octaploid, "
-    elseif isempty(ploidy) 
-        ploidytext = ""
-    else
-        ploidytext = "Mixed-ploidy, "
-    end
+    ploidy = _ploidy2text(data.info.ploidy)
+    ploidy = ploidy == "" ? "" : ploidy * ", "
     n_loc = data.info.loci
-    println(io, "PopData", "{" * ploidytext, n_loc, " " , marker * " loci}")
+    println(io, "PopData", "{" * ploidy, n_loc, " " , marker * " loci}")
     println(io, "  Samples: $(data.info.samples)")
     print(io, "  Populations: $(data.info.populations)")
     if "longitude" ∈ names(data.metadata)
