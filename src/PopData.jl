@@ -42,20 +42,6 @@ function PopDataInfo(genodf::DataFrame)
     )
 end
 
-function PopDataInfo!(data::PopData)
-    data.info.samples = length(data.genodata.name.pool)
-    data.info.loci = length(data.genodata.locus.pool)
-    data.info.populations = length(data.genodata.population.pool)
-    if "ploidy" ∈ names(data.metadata)
-        ploidy = unique(data.metadata.ploidy)
-        ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
-    else
-        ploidy = Int8(0)
-    end       
-    data.info.ploidy = ploidy
-    data.info.biallelic = data.info.biallelic ? true : isbiallelic(data)
-    return
-end
 
 function PopDataInfo(metadf::DataFrame, genodf::DataFrame)
     ploidy = unique(metadf.ploidy)
@@ -130,6 +116,21 @@ struct PopData <: PopObj
     end
 end
 
+
+function PopDataInfo!(data::PopData)
+    data.info.samples = length(data.genodata.name.pool)
+    data.info.loci = length(data.genodata.locus.pool)
+    data.info.populations = length(data.genodata.population.pool)
+    if "ploidy" ∈ names(data.metadata)
+        ploidy = unique(data.metadata.ploidy)
+        ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
+    else
+        ploidy = Int8(0)
+    end       
+    data.info.ploidy = ploidy
+    data.info.biallelic = data.info.biallelic ? true : isbiallelic(data)
+    return
+end
 
 
 """
