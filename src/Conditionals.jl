@@ -9,25 +9,26 @@ Returns `true` if the `GenoArray` is biallelic, `false` if not.
     length(unique(Base.Iterators.flatten(skipmissing(data)))) == 2
 end
 
+# method for using just a genodata input
+function isbiallelic(data::DataFrame)
+    tmp = sort(data, [:locus, :name])
+    prt = Base.Iterators.partition(tmp.genotype, length(data.name.pool))
+    bi = findfirst(!isbiallelic, collect(prt))
+    isnothing(bi) ? true : false
+end
 
 """
     isbiallelic(data::PopData)
 Returns `true` all the loci in the `PopData` are biallelic, `false` if not.
 """
-function isbiallelic(data::PopData)
-    tmp = issorted(data.genodata, [:locus, :name], lt = natural) ? data.genodata : sort(data.genodata, [:locus, :name], lt = natural)
-    prt = Base.Iterators.partition(tmp.genotype, length(samples(data)))
-    #all([isbiallelic(i) for i in prt])
-    bi = findfirst(!isbiallelic, collect(prt))
-    isnothing(bi) ? true : false
-end
+isbiallelic(data::PopData) = data.info.biallelic
 
 
 """
     isbinary(filepath::String)
 Returns `true` if the `filepath` is a binary file. 
 """
-function isbinary(filepath)
+function isbinary(filepath::String)
     !isvalid(String(read(filepath, 1000)))
 end
 

@@ -637,62 +637,6 @@ function Base.filter!(data::PopData, args...)
     if intersect(data.metadata.name, geno.name.pool) != data.metadata.name
         filter!(:name => x -> x ∈ geno.name.pool, data.metadata)
     end
+    PopDataInfo!(data)
     return data
-end
-
-
-
-function keep2!(data::PopData; population::Any = nothing, locus::Any = nothing, name::Any = nothing)
-    filter_by = Dict{Symbol,Vector{String}}()
-
-    if !isnothing(population)
-        filter_by[:population] = typeof(population) <: AbstractArray ? string.(population) : [string(population)]
-        err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.metadata.population))]
-        if length(err) > 0
-            printstyled("Populations not found: ", bold = true)
-            print("\"" * err[1] * "\"")
-            if length(err) > 1
-                [print(", \"$i\"") for i in err[2:end]] ; print("\n")
-            end
-            println()
-        end
-    end
-    if !isnothing(locus)
-        filter_by[:locus] = typeof(locus) <: AbstractArray ? string.(locus) : [string(locus)]
-        err = filter_by[:locus][filter_by[:locus] .∉ Ref(loci(data))]
-        if length(err) > 0
-            printstyled("Loci not found: ", bold = true)
-            print("\"" * err[1] * "\"")
-            if length(err) > 1
-                [print(", \"$i\"") for i in err[2:end]] ; print("\n")
-            end
-            println()
-        end
-    end
-    if !isnothing(name)
-        filter_by[:name] = typeof(name) <: AbstractArray ? string.(name) : [string(name)]
-        err = filter_by[:name][filter_by[:name] .∉ Ref(data.metadata.name)]
-        if length(err) > 0
-            printstyled("Samples not found: ", bold = true)
-            print("\"" * err[1] * "\"")
-            if length(err) > 1
-                [print(", \"$i\"") for i in err[2:end]] ; print("\n")
-            end
-            println()
-        end
-    end
-
-    filter_keys = Symbol.(keys(filter_by))
-
-    if length(filter_keys) == 1
-        filter!(data, filter_keys[1] => x -> x ∈ filter_by[filter_keys[1]])
-    elseif length(filter_keys) == 2
-        filter!(data, [filter_keys[1], filter_keys[2]] => (x,y) -> x ∈ filter_by[filter_keys[1]] || y ∈ filter_by[filter_keys[2]])
-    elseif length(filter_keys) == 3
-        filter!(data, [filter_keys[1], filter_keys[2], filter_keys[3]] => (x,y,z) -> x ∈ filter_by[filter_keys[1]] || y ∈ filter_by[filter_keys[2]] || z ∈ filter_by[filter_keys[3]])
-    else
-        throw(ArgumentError("Please specify at least one filter parameter of population, locus, or name"))   
-    end
-
-    return
 end

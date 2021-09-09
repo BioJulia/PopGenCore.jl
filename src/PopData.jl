@@ -7,11 +7,77 @@ Generic AbstractType for use in PopGen.jl
 """
 abstract type PopObj end
 
+
+"""
+```
+mutable struct PopDataInfo
+    samples::Int64
+    loci::Int64
+    populations::Int64
+    ploidy::Union{Int8, Vector{Int8}}
+    biallelic::Bool
+end
+```
+The data struct used internally as `PopData.info` fields to store basic information
+about the `PopData` for easy access.
+"""
+mutable struct PopDataInfo
+    samples::Int64
+    loci::Int64
+    populations::Int64
+    ploidy::Union{Int8, Vector{Int8}}
+    biallelic::Bool
+end
+
+# constructor for just the genodata dataframe
+function PopDataInfo(genodf::DataFrame)
+    ploidy = unique(DataFrames.combine(groupby(genodf, :name), :genotype => find_ploidy => :ploidy))
+    ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
+    PopDataInfo(
+        length(genodf.name.pool),
+        length(genodf.locus.pool),
+        length(genodf.population.pool),
+        ploidy,
+        isbiallelic(genodf)
+    )
+end
+
+function PopDataInfo!(data::PopData)
+    data.info.samples = length(data.genodata.name.pool)
+    data.info.loci = length(data.genodata.locus.pool)
+    data.info.populations = length(data.genodata.population.pool)
+    ploidy = unique(data.metadata.ploidy)
+    ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
+    data.info.ploidy = ploidy
+    data.info.biallelic = data.info.biallelic ? true : isbiallelic(data)
+end
+
+function PopDataInfo(metadf::DataFrame, genodf::DataFrame)
+    ploidy = unique(metadf.ploidy)
+    ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
+    PopDataInfo(
+        length(metadf.name),
+        length(genodf.locus.pool),
+        length(genodf.population.pool),
+        ploidy,
+        isbiallelic(genodf)
+    )
+end
+
+function Base.show(io::IO, data::PopDataInfo)
+    println(io, "    samples: ", data.samples)
+    println(io, "       loci: ", data.loci)
+    println(io, "populations: ", data.populations)
+    println(io, "     ploidy: ", data.ploidy...)
+    println(io, "  biallelic: ", data.biallelic)
+end
+
 """
 ```
 PopData
     metadata::DataFrame
     genodata::DataFrame
+    info::PopDataInfo
 ```
 The data struct used for the PopGen population genetics ecosystem. You are
 **strongly** discouraged from manually creating tables to pass into a PopData,
@@ -28,10 +94,17 @@ and instead should use the provided file importers and utilities.
     - `population` - population names [`PooledArray`]
     - `locus` - locus names [`PooledArray`]
     - `genotype` - genotype values [`NTuple{N,Signed}`]
+- `info` PopDataInfo of summary data information
+    - `samples` - the number of samples in the data
+    - `loci` - the number of loci in the data
+    - `populations` - the number of populations in the data
+    - `ploidy` - the ploidy (or ploidies) present in the data
+    - `biallelic` - if all the markers are biallelic
 """
 struct PopData <: PopObj
     metadata::DataFrame
     genodata::DataFrame
+    info::PopDataInfo
     function PopData(meta::DataFrame, loci::DataFrame)
         metacols = ["name", "population", "ploidy"]
         metacheck = intersect(metacols, names(meta))
@@ -43,14 +116,9 @@ struct PopData <: PopObj
         if genocheck != genocols
             throw(error("genodata missing columns $(symdiff(genocheck, genocols))"))
         end
-        #=
-        if !issorted(loci, [:locus, :population, :name], lt = natural)
-            sort!(loci, [:locus, :population, :name], lt = natural)
-        end
-        =#
         sort(meta.name) != sort(loci.name.pool) && throw(ArgumentError("meta and loci dataframes do not contain the same sample names"))
         sort(unique(meta.population)) != sort(loci.population.pool) && throw(ArgumentError("metadata and genotypes dataframes do not contain the same population names"))
-        new(meta, loci)
+        new(meta, loci, PopDataInfo(meta,loci))
     end
 end
 
@@ -94,29 +162,26 @@ function Base.show(io::IO, data::PopData)
     else
         marker = "SNP"
     end
-    if "ploidy" ∈ names(data.metadata)
-        ploidy = unique(data.metadata.ploidy) |> sort
-        if length(ploidy) == 1
-            ploidy = first(ploidy)
-            ploidytext = 
+    ploidy = data.info.ploidy
+
+    if typeof(ploidy) == Int8
+        ploidytext = 
+                ploidy == 0 ? "" :
                 ploidy == 1 ? "Haploid, " :
                 ploidy == 2 ? "Diploid, " :
                 ploidy == 3 ? "Triploid, " :
                 ploidy == 4 ? "Tetraploid, " :
                 ploidy == 5 ? "Pentaploid, " :
                 ploidy == 6 ? "Hexaploid, " : "Octaploid, "
-        elseif isempty(ploidy) 
-            ploidytext = ""
-        else
-            ploidytext = "Mixed-ploidy, "
-        end
+    elseif isempty(ploidy) 
+        ploidytext = ""
     else
-        ploidytext = "Unknown-ploidy, "
+        ploidytext = "Mixed-ploidy, "
     end
-    n_loc = length(loci(data))
+    n_loc = data.info.loci
     println(io, "PopData", "{" * ploidytext, n_loc, " " , marker * " loci}")
-    println(io, "  Samples: $(length(data.metadata.name))")
-    print(io, "  Populations: $(length(data.genodata.population.pool))")
+    println(io, "  Samples: $(data.info.samples)")
+    print(io, "  Populations: $(data.info.populations)")
     if "longitude" ∈ names(data.metadata)
         miss_count = count(ismissing, data.metadata.longitude)
         if miss_count == length(data.metadata.longitude)
