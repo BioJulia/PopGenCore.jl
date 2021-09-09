@@ -1,7 +1,6 @@
 module  TestIO
 
 using PopGenCore
-using PopGenCore: read
 using Test
 
 #cats_gen = normpath(joinpath(@__DIR__,"data/", "nancycats.gen"))

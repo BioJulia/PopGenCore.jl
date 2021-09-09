@@ -1,7 +1,6 @@
 module  TestTypesDatasets
 
 using PopGenCore
-using PopGenCore: read
 using DataFrames
 using PooledArrays
 using Test

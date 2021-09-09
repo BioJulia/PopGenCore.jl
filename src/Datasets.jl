@@ -39,7 +39,7 @@ ncats = @nancycats
 macro nancycats()
     return esc(quote
         filename = normpath(joinpath(@__DIR__,"..","data", "nancycats.gen"))
-        read(filename, silent = true, allow_monomorphic = true)
+        genepop(filename, silent = true, allow_monomorphic = true)
     end)
 end
 
@@ -59,6 +59,6 @@ sharks = @gulfsharks
 macro gulfsharks()
     return esc(quote
         filename = normpath(joinpath(@__DIR__,"..","data", "gulfsharks.csv"))
-        read(filename, silent = true, allow_monomorphic = true)
+        delimited(filename, silent = true, allow_monomorphic = true)
     end)
 end

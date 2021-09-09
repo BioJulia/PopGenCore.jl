@@ -1,7 +1,6 @@
 module  TestManipulate
 
 using PopGenCore
-using PopGenCore: read
 using DataFrames
 using StatsBase
 using Test
