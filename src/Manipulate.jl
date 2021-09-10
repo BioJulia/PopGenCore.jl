@@ -20,17 +20,23 @@ must be in the same order as the samples in `Popdata.metadata`.
 """
 function add_meta!(popdata::PopData, metadata::T; name::String, loci::Bool = true, categorical::Bool = true) where T <: AbstractVector
     length(metadata) != length(popdata.metadata.name) && error("Provided metadata vector (n = $length(metadata)) and samples in PopData (n = $length(popdata.metadata.name)) have different lengths")
-    @info "Adding $Symbol(name) column to .metadata dataframe"
-    # add to meta
-    insertcols!(popdata.metadata, Symbol(name) => metadata)
+    symbolname = Symbol(name) 
+    infotext = "\nAdding :$(symbolname) column to metadata" 
+    if loci
+        infotext *= " and genodata"
+    end
+    @info infotext
 
+    # add to meta
+    insertcols!(popdata.metadata, symbolname => metadata)
     # add to loci
     if loci
-        @info "Adding $Symbol(name) column to .metadata and .genodata dataframes"
-        tmp = DataFrame(:name => popdata.metadata.name, Symbol(name) => metadata)
-        popdata.genodata = outerjoin(popdata.genodata, tmp, on = :name)
+        tmp = DataFrame(:name => popdata.metadata.name, symbolname => metadata)
+        filled = outerjoin(select(popdata.genodata, :name), tmp, on = :name)[!, symbolname]
         if categorical == true
-            popdata.genodata[name] = PooledArray(popdata.genodata[name], compress = true)
+            popdata.genodata[!, symbolname] = PooledArray(filled, compress = true)
+        else
+            popdata.genodata[!, symbolname] = filled
         end
     end
     return
@@ -56,16 +62,22 @@ function add_meta!(popdata::PopData, samples::Vector{String}, metadata::T; name:
     length(samples) != length(popdata.metadata.name) && error("Provided sample vector (n = $length(samples)) and samples in PopData (n = $length(popdata.metadata.name)) have different lengths")
     length(samples) != length(metadata) && error("Sample names (n = $length(samples)) and metadata vectors (n = $length(metadata)) have different lengths")
     sort(samples) != sort(popdata.metadata.name) && error("Sample names are not identical")
-    @info "Adding $Symbol(name) column to .metadata dataframe"
+    symbolname = Symbol(name) 
+    infotext = "\nAdding :$(symbolname) column to metadata" 
+    if loci
+        infotext *= " and genodata"
+    end
+    @info infotext
 
-    tmp = DataFrame(:name => samples, Symbol(name) => metadata)
-    popdata.metadata = outerjoin(popdata.metadata, tmp, on = :name)
+    tmp = DataFrame(:name => samples, symbolname => metadata)
+    popdata.metadata[!, symbolname] = outerjoin(select(popdata.metadata, :name), tmp, on = :name)[!, symbolname]
 
     if loci
-        @info "Adding $Symbol(name) column to .metadata and .genodata dataframes"
-        popdata.genodata = outerjoin(popdata.genodata, tmp, on = :name)
+        filled = outerjoin(select(popdata.genodata, :name), tmp, on = :name)[!, symbolname]
         if categorical == true
-            popdata.genodata[name] = PooledArray(popdata.genodata[name], compress = true)
+            popdata.genodata[!, symbolname] = PooledArray(filled, compress = true)
+        else
+            popdata.genodata[!, symbolname] = filled
         end
     end
     return
