@@ -158,41 +158,39 @@ genepop(fewer_cats, filename = "filtered_nancycats.gen", digits = 3, format = "h
 ```
 """
 function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3, format::String = "vertical", miss::Int = 0)
-    open(filename, "w") do outfile
-        println(outfile, "genepop generated from PopData by PopGen.jl")
-        if format in ["h", "horizontal"]
-            [print(outfile, i, ",") for i in loci(data)[1:end-1]];
-            print(outfile, loci(data)[end])
-        else
-            [print(outfile,i, "\n") for i in loci(data)[1:end-1]];
-            print(outfile, loci(data)[end])
+    outfile = open(filename, "w") 
+    println(outfile, "genepop generated from PopData by PopGen.jl")
+    if format in ["h", "horizontal"]
+        join(outfile, loci(data), ",")
+    else
+        join(outfile, loci(data), "\n")
+    end
+    print(outfile, "\n")
+    if lowercase(format) != "ibd"
+        pops = Vector{String}()
+        for (keys, sample) in pairs(groupby(data.genodata, [:name, :population]))
+            if keys.population ∉ pops
+                push!(pops, keys.population)
+                println(outfile, "POP")
+            end
+            samplename = keys.name
+            sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
+            format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
+            join(outfile, vcat(samplename * ",", format_geno), "\t")
+            print(outfile, "\n")
         end
-        if lowercase(format) != "ibd"
-            pops = Vector{String}()
-            for (keys, sample) in pairs(groupby(data.genodata, [:name, :population]))
-                if keys.population ∉ pops
-                    push!(pops, keys.population)
-                    print(outfile, "\n", "POP")
-                end
-                samplename = sample.name[1]
-                sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
-                print(outfile, "\n", samplename, ",\t")
-                format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
-                [print(outfile, i, "\t") for i in format_geno[1:end-1]]
-                print(outfile, format_geno[end])
-            end
-        else
-            for (keys, sample) in pairs(groupby(data.genodata, :name))
-                samplename = sample.name[1]
-                sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
-                print(outfile, "\n", "POP")
-                long = data.metadata[data.metadata.name .== keys.name, :longitude][1]
-                lat = data.metadata[data.metadata.name .== keys.name, :latitude][1]
-                print(outfile, "\n", long, "\t", lat, "\t", keys.name, ",\t")
-                format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
-                [print(outfile, i, "\t") for i in format_geno[1:end-1]]
-                print(outfile, format_geno[end])
-            end
+    else
+        for (keys, sample) in pairs(groupby(data.genodata, :name))
+            samplename = keys.name
+            sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
+            println(outfile, "POP")
+            long = data.metadata[data.metadata.name .== keys.name, :longitude][1]
+            lat = data.metadata[data.metadata.name .== keys.name, :latitude][1]
+            coords = join(string.([long, lat]), "\t") * ","
+            format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
+            join(outfile, vcat(coords, format_geno), "\t")
+            print(outfile, "\n")
         end
     end
+    close(outfile)
 end

@@ -184,7 +184,7 @@ function structure(data::PopData; filename::String, faststructure::Bool = false,
         throw(ArgumentError("Please choose from either \"tab\" (default) or \"space\" delimiters."))
     end
 
-    faststructure == false && println(outfile, join([i * dlm for i in loci(data)]))
+    faststructure == false && println(outfile, join(loci(data), dlm))
     
     # remap populations as integers
     pops = unique(data.metadata.population)
@@ -206,9 +206,7 @@ function structure(data::PopData; filename::String, faststructure::Bool = false,
 
         # write the alleles to the file
         for allele in 1:ploid
-            tmp_alleles = getindex.(genos, allele)
-            allele_row = join([string(i, dlm) for i in tmp_alleles[1:end-1]])
-            allele_row *= string(tmp_alleles[end])
+            allele_row = join(getindex.(genos, allele), dlm)
             println(outfile, sampl, dlm, pop_mappings[pop_id], dlm, allele_row)
         end
     end
