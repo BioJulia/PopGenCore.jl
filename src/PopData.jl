@@ -1,4 +1,4 @@
-export PopObj, PopData, show, Genotype, GenoArray, SNP, MSat
+export PopObj, PopData, PopDataInfo, show, Genotype, GenoArray, SNP, MSat
 export metadata, genodata, getindex
 
 """
