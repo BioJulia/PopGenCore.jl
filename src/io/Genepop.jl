@@ -102,7 +102,7 @@ function genepop(
         DataFrame,
         delim = delim,
         header = locinames,
-        datarow = pop_idx[1] + 1,
+        skipto = pop_idx[1] + 1,
         comment = popsep,
         missingstring = ["-9", ""],
         normalizenames = true,

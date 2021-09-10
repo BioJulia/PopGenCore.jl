@@ -67,7 +67,7 @@ julia> sim_pairs(a)
 function sim_pairs(data::Vector{String})
     n = length(data)
     isodd(n) && error("Expected an even number of samples, but got $n")
-    Tuple.(Base.Iterators.partition(sort(data, lt = natural), 2))
+    Tuple.(Base.Iterators.partition(sort(data), 2))
 end
 
 

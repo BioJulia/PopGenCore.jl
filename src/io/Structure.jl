@@ -112,7 +112,7 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
         DataFrame,
         delim = delim,
         header = false,
-        datarow = data_row,
+        skipto = data_row,
         ignorerepeated = true,
         missingstring = [missingval],
         types = Dict(1=>String, 2=>String)

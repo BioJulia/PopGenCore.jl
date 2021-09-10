@@ -12,9 +12,11 @@ sharks = @gulfsharks;
     @test typeof(cats) == PopData
     @test typeof(cats.metadata) == DataFrame
     @test typeof(cats.genodata) == DataFrame
+    @test typeof(cats.info) == PopDataInfo
     @test typeof(sharks) == PopData
     @test typeof(sharks.metadata) == DataFrame
     @test typeof(sharks.genodata) == DataFrame
+    @test typeof(sharks.info) == PopDataInfo
 end
 
 @testset "Dataset dimensions" begin
@@ -34,8 +36,8 @@ end
 end
 
 @testset "Nancycats column types" begin
-    @test typeof(cats.metadata.name) <: Vector{AbstractString}
-    @test typeof(cats.metadata.population) <: Vector{AbstractString}
+    @test eltype(cats.metadata.name) <: AbstractString
+    @test eltype(cats.metadata.population) <: AbstractString
     @test typeof(cats.metadata.ploidy) == Vector{Int8}
     @test typeof(cats.metadata.latitude) ==  Vector{Union{Missing, Float32}}
     @test typeof(cats.metadata.longitude) == Vector{Union{Missing, Float32}}
@@ -50,11 +52,11 @@ end
 end
 
 @testset "Gulfsharks column types" begin
-    @test typeof(sharks.metadata.name) <: Vector{AbstractString}
-    @test typeof(sharks.metadata.population) <: Vector{AbstractString}
-    @test typeof(sharks.metadata.ploidy) == Vector{Int8}
-    @test typeof(sharks.metadata.latitude) ==  Vector{Float64}
-    @test typeof(sharks.metadata.longitude) == Vector{Float64}
+    @test eltype(sharks.metadata.name) <: AbstractString
+    @test eltype(sharks.metadata.population) <: AbstractString
+    @test eltype(sharks.metadata.ploidy) == Int8
+    @test eltype(sharks.metadata.latitude) ==  Float64
+    @test eltype(sharks.metadata.longitude) == Float64
     @test typeof(sharks.genodata.name) <: PooledArray
     @test eltype(sharks.genodata.name) <: AbstractString
     @test typeof(sharks.genodata.population) <: PooledArray
