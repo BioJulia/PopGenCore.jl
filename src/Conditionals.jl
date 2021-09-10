@@ -29,7 +29,7 @@ isbiallelic(data::PopData) = data.info.biallelic
 Returns `true` if the `filepath` is a binary file. 
 """
 function isbinary(filepath::String)
-    !isvalid(String(read(filepath, 1000)))
+    !isvalid(String(Base.read(filepath, 1000)))
 end
 
 

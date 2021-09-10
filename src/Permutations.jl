@@ -79,7 +79,7 @@ then ploidy will be identified from the PopData. If performance is important,
 it would be best to identify ploidy in advance and set it to a specific integer.
 """
 @inline function permute_alleles!(data::PopData; ploidy::Union{Nothing, Int} = nothing, by::String = "locus")
-    if ploidy == nothing
+    if ploidy === nothing
         tmp = unique(data.metadata.ploidy)
         length(tmp) > 1 && error("This permutation method is not appropriate for mixed-ploidy data")
         ploidy = first(tmp)
