@@ -34,33 +34,33 @@ end
 end
 
 @testset "Nancycats column types" begin
-    @test typeof(cats.metadata.name) == Vector{String}
-    @test typeof(cats.metadata.population) == Vector{String}
+    @test typeof(cats.metadata.name) <: Vector{AbstractString}
+    @test typeof(cats.metadata.population) <: Vector{AbstractString}
     @test typeof(cats.metadata.ploidy) == Vector{Int8}
     @test typeof(cats.metadata.latitude) ==  Vector{Union{Missing, Float32}}
     @test typeof(cats.metadata.longitude) == Vector{Union{Missing, Float32}}
     @test typeof(cats.genodata.name) <: PooledArray
-    @test eltype(cats.genodata.name) == String
+    @test eltype(cats.genodata.name) <: AbstractString
     @test typeof(cats.genodata.population) <: PooledArray
-    @test eltype(cats.genodata.population) == String
+    @test eltype(cats.genodata.population) <: AbstractString
     @test typeof(cats.genodata.locus) <: PooledArray
-    @test eltype(cats.genodata.locus) == String
+    @test eltype(cats.genodata.locus) <: AbstractString
     @test typeof(cats.genodata.genotype) <: GenoArray
     @test eltype(cats.genodata.genotype) <: Union{Missing, Genotype}
 end
 
 @testset "Gulfsharks column types" begin
-    @test typeof(sharks.metadata.name) == Vector{String}
-    @test typeof(sharks.metadata.population) == Vector{String}
+    @test typeof(sharks.metadata.name) <: Vector{AbstractString}
+    @test typeof(sharks.metadata.population) <: Vector{AbstractString}
     @test typeof(sharks.metadata.ploidy) == Vector{Int8}
     @test typeof(sharks.metadata.latitude) ==  Vector{Float64}
     @test typeof(sharks.metadata.longitude) == Vector{Float64}
     @test typeof(sharks.genodata.name) <: PooledArray
-    @test eltype(sharks.genodata.name) == String
+    @test eltype(sharks.genodata.name) <: AbstractString
     @test typeof(sharks.genodata.population) <: PooledArray
-    @test eltype(sharks.genodata.population) == String
+    @test eltype(sharks.genodata.population) <: AbstractString
     @test typeof(sharks.genodata.locus) <: PooledArray
-    @test eltype(sharks.genodata.locus) == String
+    @test eltype(sharks.genodata.locus) <: AbstractString
     @test typeof(sharks.genodata.genotype) <: GenoArray
     @test eltype(sharks.genodata.genotype) <: Union{Missing, Genotype}
 end
