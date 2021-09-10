@@ -336,7 +336,7 @@ function populations!(data::PopData, samples::Vector{String}, populations::Vecto
         loci_df[(name = sample,)].population .= new_pop
     end
     # drop old levels
-    data.genodata.population = PooleArray(data.genodata.population, compress = true)
+    data.genodata.population = PooledArray(data.genodata.population, compress = true)
     return
 end
 
