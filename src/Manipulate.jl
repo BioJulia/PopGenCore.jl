@@ -3,7 +3,7 @@ export genotypes, get_genotypes, get_genotype
 export populations, population, populations!, population!
 export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, filter!
 
-
+# TODO make adding metata flexible to do inner joins
 """
     add_meta!(popdata::PopData, metadata::T; name::String, loci::Bool = true, categorical::Bool = true) where T <: AbstractVector
 Add an additional metadata information to a `PopData` object. Mutates `PopData` in place. Metadata 
@@ -30,7 +30,7 @@ function add_meta!(popdata::PopData, metadata::T; name::String, loci::Bool = tru
         tmp = DataFrame(:name => popdata.metadata.name, Symbol(name) => metadata)
         popdata.genodata = outerjoin(popdata.genodata, tmp, on = :name)
         if categorical == true
-            popdata.genodata[name] = PooledArray(popdata.genodata[name])
+            popdata.genodata[name] = PooledArray(popdata.genodata[name], compress = true)
         end
     end
     return
@@ -65,7 +65,7 @@ function add_meta!(popdata::PopData, samples::Vector{String}, metadata::T; name:
         @info "Adding $Symbol(name) column to .metadata and .genodata dataframes"
         popdata.genodata = outerjoin(popdata.genodata, tmp, on = :name)
         if categorical == true
-            popdata.genodata[name] = PooledArray(popdata.genodata[name])
+            popdata.genodata[name] = PooledArray(popdata.genodata[name], compress = true)
         end
     end
     return
@@ -324,7 +324,7 @@ function populations!(data::PopData, samples::Vector{String}, populations::Vecto
         loci_df[(name = sample,)].population .= new_pop
     end
     # drop old levels
-    data.genodata.population = data.genodata.population |> Array |> PooledArray
+    data.genodata.population = PooleArray(data.genodata.population, compress = true)
     return
 end
 
