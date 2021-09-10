@@ -42,7 +42,7 @@ function plink(infile::String; keepfields::Union{Symbol,Vector{Symbol}} = :all, 
     famfile = CSV.read(
         basefile * ".fam", DataFrame, 
         header = [:population, :name, :sire, :dam, :sex, :phenotype],
-        missingstrings = ["-9", "0"],
+        missingstring = ["-9", "0"],
         types = Dict(:sex => Int8)
     )
     nsamples = length(famfile.name)
@@ -57,7 +57,7 @@ function plink(infile::String; keepfields::Union{Symbol,Vector{Symbol}} = :all, 
             basefile * ".bim",
             DataFrame,
             header = [:chrom, :snp, :cM, :bp, :allele1, :allele2],
-            missingstrings = ["0"],
+            missingstring = ["0"],
             drop = [3,4],
             types = Dict(:chrom => String, :allele1 => Char, :allele2 => Char),
             pool=0.3

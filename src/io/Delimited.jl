@@ -55,7 +55,7 @@ function delimited(
     )
     isfile(infile) || throw(ArgumentError("$infile not found."))
     dlm = delim == "auto" ? nothing : delim
-    file_parse = CSV.read(infile, DataFrame, delim = dlm, missingstrings = ["-9", ""])
+    file_parse = CSV.read(infile, DataFrame, delim = dlm, missingstring = ["-9", ""])
     locinames = names(file_parse)[5:end]
     meta = select(file_parse, 1:4)
     # force strings for this field

@@ -114,7 +114,7 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
         header = false,
         datarow = data_row,
         ignorerepeated = true,
-        missingstrings = [missingval],
+        missingstring = [missingval],
         types = Dict(1=>String, 2=>String)
     )
     # ignore any extra columns

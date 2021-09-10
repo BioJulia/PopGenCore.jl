@@ -104,7 +104,7 @@ function genepop(
         header = locinames,
         datarow = pop_idx[1] + 1,
         comment = popsep,
-        missingstrings = ["-9", ""],
+        missingstring = ["-9", ""],
         normalizenames = true,
         ignorerepeated = true
     )
