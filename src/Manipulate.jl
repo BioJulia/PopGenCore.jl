@@ -119,8 +119,8 @@ function locations!(data::PopData, long::Vector{Union{Missing,T}}, lat::Vector{U
     long_len != lat_len && error("latitude ($lat_len) and longitude ($long_len) arrays not equal in length")
     long_len != length(data.metadata.name) && error("lat/long array length ($long_len) and number of samples in PopData ($long_len) are not equal")
 
-    data.metadata.longitude .= long
-    data.metadata.latitude .= lat
+    data.metadata.longitude = long
+    data.metadata.latitude = lat
     return
 end
 
@@ -166,8 +166,8 @@ function locations!(data::PopData, long::Vector{String}, lat::Vector{String})
     lat_len != length(data.metadata.name) && error("lat/long array length ($lat_len) and number of samples in PopData ($long_len) are not equal")
     println("Converting decimal minutes to decimal degrees")
     # convert coordinates to decimal degrees
-    data.metadata.longitude .= convert_coord.(long)
-    data.metadata.latitude .= convert_coord.(lat)
+    data.metadata.longitude = convert_coord.(long)
+    data.metadata.latitude = convert_coord.(lat)
     return
 end
 
