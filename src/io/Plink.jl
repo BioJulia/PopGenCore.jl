@@ -29,12 +29,6 @@ end
     Matrix{Union{Missing, NTuple{2,Int8}}}(_SNP.(genomatrix))
 end
 
-function checkplinkfiles(infile::String)
-    basefile = splitext(infile)[1]
-    isfile(basefile * ".bim")
-    isfile(basefile * ".fam")
-end
-
 function plink(infile::String; keepfields::Union{Symbol,Vector{Symbol}} = :all, silent::Bool = false)
     isfile(infile) || throw(ArgumentError("$infile not found."))
     basefile = splitext(infile)[1]
