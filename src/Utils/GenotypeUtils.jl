@@ -19,7 +19,7 @@ Return an array of all the non-missing alleles of a locus.
         int_type = eltype(typeof(locus)) |> nonmissingtype |> eltype
         return Vector{Union{Missing, int_type}}(undef, length(locus))
     end
-    alle_out = Base.Iterators.flatten(skipmissing(locus)) |> collect
+    return Base.Iterators.flatten(skipmissing(locus)) |> collect
 end
 
 

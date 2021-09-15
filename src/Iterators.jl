@@ -11,7 +11,7 @@ of the array.
 **Example**
 ```
 julia> partitionarray(rand(20,5), [10,3,4,3]) .|> size
-((10, 5), (3, 5), (4, 5), (3, 5))
+[(10, 5), (3, 5), (4, 5), (3, 5)]
 ```
 """
 function partitionarray(array::AbstractArray, steps::AbstractVector{<:Integer})
@@ -66,13 +66,13 @@ julia> sim_pairs(a)
 """
 function sim_pairs(data::Vector{String})
     n = length(data)
-    isodd(n) && error("Expected an even number of samples, but got $n")
+    isodd(n) && throw(ArgumentError("Expected an even number of samples, but got $n"))
     Tuple.(Base.Iterators.partition(sort(data), 2))
 end
 
 
 """
-    skipnan(itr)
+    skipinf(itr)
 Return an iterator over the elements in `itr` skipping `Inf` and `-Inf` values. The returned
 object can be indexed using indices of itr if the latter is indexable. Indices
 corresponding to `Inf` values are not valid: they are skipped by keys and eachindex,   
