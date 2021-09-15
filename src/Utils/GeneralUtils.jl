@@ -26,6 +26,25 @@ function Base.sort(x::NTuple{N,T}) where N where T <: Signed
 end
 
 
+"""
+    convert_coord(coordinate::String)
+Takes non-decimal-degree format as a `String` and returns it as a decimal degree
+`Float32`. Can be broadcasted over an array of coordinate strings to convert them.
+## Formatting requirements
+- Coordinates as a `String` separated by spaces (`"11 43 41"`) or colons (`"11:43:41"`)
+- Must use negative sign (`"-11 43.52"`) or single-letter cardinal direction (`"11 43.52W"`)
+- Missing data should be coded as the string `"missing"` (can be accomplished with `replace!()`)
+- Can mix colons and spaces (although it's bad practice)
+### Example
+```
+julia> convert_coord("-41 31.52")
+-41.5253f0
+julia> convert_coord.(["-41 31.52", "25 11:54S"])
+2-element Array{Float32,1}:
+-41.5253
+-25.1983
+```
+"""
 function convert_coord(coordinate::String)
     lowercase(coordinate) == "missing" && return missing
     coord_strip = replace(uppercase(coordinate), r"[NSEW]" => "")
@@ -196,7 +215,7 @@ end
 Returns an array of strings of the loci names in a `PopData` object.
 """
 function loci(data::PopData)
-    unique(data.genodata.locus)
+    copy(data.genodata.locus.pool)
 end
 
 """
