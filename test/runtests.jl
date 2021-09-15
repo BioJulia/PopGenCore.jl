@@ -8,7 +8,10 @@ using Test
 all_tests = [
     "types.jl",
      "io.jl",
-     "manipulate.jl"
+     "manipulate.jl",
+     "conditionals.jl",
+     "utils.jl",
+     "iterators.jl"
 ]
 
 println("Running tests:")
@@ -30,5 +33,5 @@ for a_test in all_tests
 end
 
 if anyerrors
-    throw("Tests failed :(")
+    throw("Oh no, some tests failed!  :(")
 end
