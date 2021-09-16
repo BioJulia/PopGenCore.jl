@@ -1,4 +1,4 @@
-module  TestUtils
+module  TestIterators
 
 using PopGenCore
 using Test
@@ -29,4 +29,6 @@ end
     @test collect(skipinf([1,2,3, Inf, -Inf, 4])) == [1,2,3,4]
     @test collect(skipnan([1,2,3, NaN,4])) == [1,2,3,4]
     @test collect(skipinfnan([1,2,3, Inf, -Inf, NaN, 4])) == [1,2,3,4]
+end
+
 end

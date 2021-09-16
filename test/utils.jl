@@ -69,8 +69,8 @@ end
 
 
 @testset "missing utils" begin
-    @test nonmissing(fill(missing, 5)) == 5
-    @test nonmissing([1,2,3,missing, missing]) == 2
+    @test nonmissing(fill(missing, 5)) == 0
+    @test nonmissing([1,2,3,missing, missing]) == 3
     @test nonmissing(x, "fca8") == 217
     @test nonmissings([1,2,missing, missing, 3], [3,missing, missing, 4, 5]) == [1,5]
 end
