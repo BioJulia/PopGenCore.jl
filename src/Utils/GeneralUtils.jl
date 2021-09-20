@@ -132,7 +132,9 @@ function drop_multiallelic(data::PopData)
         @info "Removing $(length(nonbi)) multialleic loci"
         println()
     end
-    exclude(data, locus = nonbi)
+    _out = exclude(data, locus = nonbi)
+    _out.info.biallelic = true
+    return _out
 end
 
 
