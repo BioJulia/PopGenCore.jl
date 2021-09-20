@@ -160,6 +160,16 @@ function drop_multiallelic!(data::PopData)
     return data
 end
 
+function truncatepath(text::String)
+    width = displaysize(stdout)[2]
+    if length(text) > width
+        separated = split(text, "/")    
+        newtxt = join(separated[[1,2,3]], "/") * "/…/" * join(separated[[end-1, end]],"/")
+        return newtxt
+    else
+        return text   
+    end
+end
 
 """
     generate_meta(data::DataFrame)

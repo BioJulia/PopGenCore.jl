@@ -133,7 +133,7 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
     geno_parse.population = PooledArray(geno_parse.population, compress = true)
     geno_parse.locus = PooledArray(geno_parse.locus, compress = true)
     if !silent
-        @info "\n $(abspath(infile))\n data: loci = $(length(geno_parse.locus.pool)), samples = $(length(geno_parse.name.pool)), populations = $(length(geno_parse.population.pool))"
+        @info "\n $(truncatepath(abspath(infile)))\n data: loci = $(length(geno_parse.locus.pool)), samples = $(length(geno_parse.name.pool)), populations = $(length(geno_parse.population.pool))"
         println()
     end
     grp = groupby(geno_parse, [:name, :population, :locus])

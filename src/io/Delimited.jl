@@ -79,7 +79,7 @@ function delimited(
     end
     
     if !silent
-        @info "\n $(abspath(infile))\n data: loci = $(length(locinames)), samples = $(length(meta[!, 1])), populations = $(length(unique(meta[!,2])))"
+        @info "\n $(truncatepath(abspath(infile)))\n data: loci = $(length(locinames)), samples = $(length(meta[!, 1])), populations = $(length(unique(meta[!,2])))"
         println()
     end
 

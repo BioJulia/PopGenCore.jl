@@ -49,7 +49,7 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     geno_df = DataFrame(:name => sample_ID, :population =>  "missing")
     bases = (A = Int8(1), T = Int8(2), C = Int8(3), G = Int8(4), miss = Int8(0))
     if silent == false
-        @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ⟶  population info must be added"
+        @info "\n $(truncatepath(abspath(infile)))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ⟶  population info must be added"
         println()
     end
 
@@ -128,7 +128,7 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     geno_df = DataFrame(:name => sample_ID, :population =>  "missing")
     bases = (A = Int8(1), T = Int8(2), C = Int8(3), G = Int8(4), miss = Int8(0))
     if silent == false
-        @info "\n $(abspath(infile))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ⟶  population info must be added"
+        @info "\n $(truncatepath(abspath(infile)))\n data: samples = $nsamples, populations = 0, loci = $nmarkers\n ⟶  population info must be added"
         println()
     end
 

@@ -70,9 +70,9 @@ function plink(infile::String; keepfields::Union{Symbol,Vector{Symbol}} = :all, 
         iszero(r) || throw(ArgumentError("The filesize of $bedfile is not a multiple of $nrows (and it should be)"))
         if !silent
             if !bimfound
-                @info "\n $(abspath(infile))\n data: loci = $(n), samples = $(nsamples), populations = $(npopulations)\n .fam: sire $(sirecheck), dam $(damcheck), sex $(sexcheck), phenotype $(phenotypecheck)\n $(basefile * ".bim") not found, generating new marker names"
+                @info "\n $(truncatepath(abspath(infile)))\n data: loci = $(n), samples = $(nsamples), populations = $(npopulations)\n .fam: sire $(sirecheck), dam $(damcheck), sex $(sexcheck), phenotype $(phenotypecheck)\n $(basefile * ".bim") not found, generating new marker names"
             else
-                @info "\n $(abspath(infile))\n data: loci = $(n), samples = $(nsamples), populations = $(npopulations)\n .fam: sire $(sirecheck), dam $(damcheck), sex $(sexcheck), phenotype $(phenotypecheck)"
+                @info "\n $(truncatepath(abspath(infile)))\n data: loci = $(n), samples = $(nsamples), populations = $(npopulations)\n .fam: sire $(sirecheck), dam $(damcheck), sex $(sexcheck), phenotype $(phenotypecheck)"
             end
             println()
         end

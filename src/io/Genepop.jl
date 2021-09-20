@@ -90,7 +90,7 @@ function genepop(
     end
 
     if !silent
-        @info "\n $(abspath(infile))\n formatting: delimiter = $(delim_txt), loci = $(format)\n data: loci = $(length(locinames)), samples = $(sum(popcounts)), populations = $(length(popcounts))"
+        @info "\n $(truncatepath(abspath(infile)))\n formatting: delimiter = $(delim_txt), loci = $(format)\n data: loci = $(length(locinames)), samples = $(sum(popcounts)), populations = $(length(popcounts))"
         println()
     end
 
