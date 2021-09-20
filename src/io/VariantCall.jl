@@ -33,6 +33,7 @@ Alleles are recoded according to the following schema:
 ### Mixed-ploidy data
 If importing mixed-ploidy data (such as poolseq), you will need to perform an additional
 step to convert the genotype column into the correct `GenoArray` type:
+## Example
 ```julia
 julia> mydata = bcf("path/to/file.bcf", silent = true, rename_loci = true) ;
 
@@ -111,6 +112,8 @@ Alleles are recoded according to the following schema:
 ### Mixed-ploidy data
 If importing mixed-ploidy data (such as poolseq), you will need to perform an additional
 step to convert the genotype column into the correct `GenoArray` type:
+
+## Example
 ```julia
 julia> mydata = vcf("path/to/file.vcf", silent = true, rename_loci = true) ;
 

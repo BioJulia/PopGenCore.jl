@@ -151,6 +151,7 @@ Writes a `PopData` object to a Genepop-formatted file.
     - `0` : As a genotype represented as a number of zeroes equal to `digits × ploidy` like `000000` (default) 
     - `-9` : As a single value `-9`
 
+## Example
 ```julia
 cats = @nancycats;
 fewer_cats = omit(cats, name = samples(cats)[1:10]);
