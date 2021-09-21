@@ -216,7 +216,7 @@ plink(sharks, filename = "biallelic_sharks.ped")
 ```
 """
 function plink(data::PopData; filename::String)
-    data.info.biallelic != true && throw(ArgumentError("To write to PLINK format, data must be biallelic.\nThis can be done with drop_multiallelic(::PopData)\n"))
+    data.metadata.biallelic != true && throw(ArgumentError("To write to PLINK format, data must be biallelic.\nThis can be done with drop_multiallelic(::PopData)\n"))
     basename = endswith(filename, r".bed|.ped") ? splitext(filename)[1] : filename
     # the .fam file
     tmp = data.metadata[:, r"population|name|sire|dam|sex|phenotype"]

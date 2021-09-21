@@ -10,11 +10,13 @@ General use utilities
 
 
 function Base.copy(data::PopData)
-    PopData(copy(data.metadata), copy(data.genodata))
+    PopData(deepcopy(data.metadata), copy(data.genodata))
 end
 
+
+
 function Base.size(data::PopData)
-    return (samples = size(data.metadata)[1], loci = length(loci(data)))
+    return (samples = data.metadata.samples, loci = data.metadata.loci)
 end
 
 """
@@ -75,6 +77,7 @@ function drop_monomorphic(data::PopData; silent::Bool = false)
     prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
     monomorphs = string.(all_loci[[length(unique(i))==1 for i in prt]])
     if length(monomorphs) == 0
+        println("No monomorphic loci found.\n")
         return data
     elseif !silent
         if length(monomorphs) == 1
@@ -99,6 +102,7 @@ function drop_monomorphic!(data::PopData; silent::Bool = false)
     prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
     monomorphs = string.(all_loci[[length(unique(i))==1 for i in prt]])
     if length(monomorphs) == 0
+        println("No monomorphic loci found.\n")
         return data
     elseif !silent
         if length(monomorphs) == 1
@@ -118,7 +122,7 @@ end
 Return a `PopData` object omitting loci that are not biallelic.
 """
 function drop_multiallelic(data::PopData)
-    if data.info.biallelic == true
+    if data.metadata.biallelic == true
         prinln("PopData object is already biallelic")
         return data
     end 
@@ -133,7 +137,7 @@ function drop_multiallelic(data::PopData)
         println()
     end
     _out = exclude(data, locus = nonbi)
-    _out.info.biallelic = true
+    _out.metadata.biallelic = true
     return _out
 end
 
@@ -143,8 +147,8 @@ end
 Edit a `PopData` object in place, removing loci that are not biallelic.
 """
 function drop_multiallelic!(data::PopData)
-    if data.info.biallelic == true
-        prinln("PopData object is already biallelic")
+    if data.metadata.biallelic == true
+        println("PopData object is already biallelic\n")
         return data
     end 
     all_loci = loci(data)
@@ -158,7 +162,7 @@ function drop_multiallelic!(data::PopData)
         println()
     end
     exclude!(data, locus = nonbi)
-    data.info.biallelic = true
+    data.metadata.biallelic = true
     return data
 end
 
@@ -173,6 +177,7 @@ function truncatepath(text::String)
     end
 end
 
+# possibly deprecated with new PopDataInfo
 """
     generate_meta(data::DataFrame)
 Given a genotype DataFrame formatted like `PopData.genodata`, generates a corresponding
@@ -235,6 +240,5 @@ end
 View individual/sample names in a `PopData`
 """
 function samples(data::PopData)
-    @view data.metadata[!, :name]
+    copy(data.metadata.sampleinfo.name)
 end
-

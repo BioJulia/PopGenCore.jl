@@ -81,10 +81,9 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         :name => (i -> PooledArray(i, compress = true)) => :name, 
         :population => (i -> PooledArray(i, compress = true)) => :population, 
         :locus => (i -> PooledArray(i |> Vector{String}, compress = true)) => :locus, 
-        :genotype => (j -> map(i -> all(0 .== i) ? missing : i, j)) => :genotype
+        :genotype => (j -> PooledArray(map(i -> all(0 .== i) ? missing : i, j), compress = true)) => :genotype
     )
-    meta_df = generate_meta(geno_df)
-    pd_out = PopData(meta_df, geno_df)
+    pd_out = PopData(geno_df)
     !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
     return pd_out
 end
@@ -162,10 +161,9 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         :name => (i -> PooledArray(i, compress = true)) => :name, 
         :population => (i -> PooledArray(i, compress = true)) => :population, 
         :locus => (i -> PooledArray(i |> Vector{String}, compress = true)) => :locus, 
-        :genotype => (j -> map(i -> all(0 .== i) ? missing : i, j)) => :genotype
+        :genotype => (j -> PooledArray(map(i -> all(0 .== i) ? missing : i, j), compress = true)) => :genotype
     )
-    meta_df = generate_meta(geno_df)
-    pd_out = PopData(meta_df, geno_df)
+    pd_out = PopData(geno_df)
     !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
     return pd_out
 end

@@ -4,6 +4,7 @@ export populations, population, populations!, population!
 export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, filter!
 
 # TODO make adding metata flexible to do inner joins
+# TODO split into add_sampleinfo! and add_locusinfo!
 """
     add_meta!(popdata::PopData, metadata::T; name::String, loci::Bool = true, categorical::Bool = true) where T <: AbstractVector
 Add an additional metadata information to a `PopData` object. Mutates `PopData` in place. Metadata 
@@ -93,7 +94,11 @@ derived from the PopData. Changes made to this table will not alter the source
 Use `locations!` to add spatial data to a `PopData` object.
 """
 function locations(data::PopData)
-    @view data.metadata[!, [:longitude, :latitude]]
+    if :longitude ∉ names(data.metadata.sampleinfo) && :latitude ∉ names(data.metadata.sampleinfo) 
+        throw(ArgumentError(":longitude and :latitude columns not present in metadata."))
+    else
+        @view data.metadata.sampleinfo[!, [:longitude, :latitude]]
+    end
 end
 
 
@@ -646,7 +651,7 @@ function Base.filter!(data::PopData, args...)
         3 => (i -> PooledArray(i, compress = true)) => :locus,
         4
     )
-    if intersect(data.metadata.name, geno.name.pool) != data.metadata.name
+    if intersect(data.metadata.sampleinfo.name, geno.name.pool) != data.metadata.sampleinfo.name
         filter!(:name => x -> x ∈ geno.name.pool, data.metadata)
     end
     PopDataInfo!(data)

@@ -43,7 +43,7 @@ function read(infile::String; kwargs...)
     elseif ext in [".str", ".structure"]
         return structure(infile; kwargs...)
 
-    elseif ext in [".bed", ".ped", ".fam", ".bim", ".map"]
+    elseif ext in [".bed", ".ped"]
        return plink(infile; kwargs...)
 
     else

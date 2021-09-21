@@ -103,7 +103,7 @@ struct PopData <: PopObj
         end
         sort(meta.sampleinfo.name) != sort(loci.name.pool) && throw(ArgumentError("metadata and genodata do not contain the same sample names"))
         sort(unique(meta.sampleinfo.population)) != sort(loci.population.pool) && throw(ArgumentError("metadata and genodata do not contain the same population names"))
-        new(PopDataInfo(loci), loci)
+        new(meta, loci)
     end
 end
 
@@ -113,11 +113,11 @@ function PopDataInfo!(data::PopData)
     data.metadata.samples = length(data.genodata.name.pool)
     data.metadata.loci = length(data.genodata.locus.pool)
     data.metadata.populations = length(data.genodata.population.pool)
-    filter!(:name => x -> x .== data.genodata.name.pool,  data.metadata.sampleinfo)
-    filter!(:locus => x -> x .== data.genodata.locus.pool,  data.metadata.locusinfo)
+    filter!(:name => x -> x ∈ data.genodata.name.pool,  data.metadata.sampleinfo)
+    filter!(:locus => x -> x ∈ data.genodata.locus.pool,  data.metadata.locusinfo)
     if "ploidy" ∈ names(data.metadata.sampleinfo)
         ploidy = unique(data.metadata.sampleinfo.ploidy)
-        ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
+        ploidy = length(ploidy) == 1 ? Int8(ploidy[1]) : Int8(ploidy)
     else
         ploidy = Int8(0)
     end       

@@ -144,8 +144,7 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
         catch
             DataFrames.combine(grp, 4 => _MSat => :genotype)
         end
-    meta_df = generate_meta(geno_df)
-    pd_out = PopData(meta_df, geno_df)
+    pd_out = PopData(geno_df)
     !allow_monomorphic && drop_monomorphic!(pd_out) 
     return pd_out
 end

@@ -21,7 +21,7 @@ end
     isbiallelic(data::PopData)
 Returns `true` all the loci in the `PopData` are biallelic, `false` if not.
 """
-isbiallelic(data::PopData) = data.info.biallelic
+isbiallelic(data::PopData) = data.metadata.biallelic
 
 
 """

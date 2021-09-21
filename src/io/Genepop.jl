@@ -126,12 +126,12 @@ function genepop(
 
     # try to compress the alleles into Int8 (snps) or In16 (msat)
     try
-        geno_parse.genotype = phase.(geno_parse.genotype, Int8, digits)
+        geno_parse.genotype = PooledArray(phase.(geno_parse.genotype, Int8, digits), compress = true)
     catch
         geno_parse.genotype = phase.(geno_parse.genotype, Int16, digits)
     end
-    sample_table = generate_meta(geno_parse)
-    pd_out = PopData(sample_table, geno_parse)
+    #sample_table = generate_meta(geno_parse)
+    pd_out = PopData(geno_parse)
     !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
     return pd_out
 end
