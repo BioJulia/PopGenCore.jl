@@ -36,10 +36,10 @@ end
 # constructor FORMAT just the genodata dataframe
 function PopDataInfo(genodf::DataFrame)
     sampleinfo = unique(dropmissing(genodf), :name)
-    insertcols!(sampleinfo, :ploidy => length.(sampleinfo.genotype))
+    insertcols!(sampleinfo, :ploidy => Int8.(length.(sampleinfo.genotype)))
     select!(sampleinfo, :name, :population, :ploidy)
     ploidy = unique(sampleinfo.ploidy)
-    ploidy = length(ploidy) == 1 ? Int8(ploidy[1]) : Int8.(ploidy)
+    ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
     PopDataInfo(
         length(genodf.name.pool),
         sampleinfo,
@@ -117,7 +117,7 @@ function PopDataInfo!(data::PopData)
     filter!(:locus => x -> x ∈ data.genodata.locus.pool,  data.locusinfo)
     if "ploidy" ∈ names(data.sampleinfo)
         ploidy = unique(data.sampleinfo.ploidy)
-        ploidy = length(ploidy) == 1 ? Int8(ploidy[1]) : Int8(ploidy)
+        ploidy = length(ploidy) == 1 ? Int8(ploidy[1]) : Int8.(ploidy)
     else
         ploidy = Int8(0)
     end       
@@ -182,7 +182,7 @@ function Base.show(io::IO, data::PopData)
     n_loc = data.metadata.loci
     println(io, "PopData", "{" * ploidy, n_loc, " " , marker * " loci}")
     println(io, "  Samples: $(data.metadata.samples)")
-    print(io, "  Populations: $(data.sampleinfo.populations)")
+    print(io, "  Populations: $(data.metadata.populations)")
     if "longitude" ∈ names(data.sampleinfo)
         miss_count = count(ismissing, data.sampleinfo.longitude)
         if miss_count == length(data.sampleinfo.longitude)

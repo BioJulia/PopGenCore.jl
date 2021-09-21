@@ -11,28 +11,30 @@ sharks = @gulfsharks;
 @testset "Data Types and Datasets" begin
     @testset "Dataset types" begin
         @test typeof(cats) == PopData
-        @test typeof(cats.metadata) == DataFrame
+        @test typeof(cats.metadata) == PopDataInfo
         @test typeof(cats.genodata) == DataFrame
-        @test typeof(cats.info) == PopDataInfo
+        @test typeof(cats.sampleinfo) == DataFrame
+        @test typeof(cats.locusinfo) == DataFrame
         @test typeof(sharks) == PopData
-        @test typeof(sharks.metadata) == DataFrame
+        @test typeof(sharks.metadata) == PopDataInfo
         @test typeof(sharks.genodata) == DataFrame
-        @test typeof(sharks.info) == PopDataInfo
+        @test typeof(sharks.info.sampleinfo) == DataFrame
+        @test typeof(sharks.info.locusinfo) == DataFrame
     end
 
     @testset "Dataset dimensions" begin
-        @test size(cats.metadata) == (237,5)
+        @test size(cats.sampleinfo) == (237,3)
         @test size(cats.genodata) == (2133,4)
-        @test size(sharks.metadata) == (212,5)
+        @test size(sharks.sampleinfo) == (212,5)
         @test size(sharks.genodata) == (468308,4)
     end
 
     @testset "Dataset column names" begin
         meta_names_sorted = ["latitude","longitude","name","ploidy","population"]
         loci_names_sorted = ["genotype","locus","name","population"]
-        @test sort(names(cats.metadata)) == meta_names_sorted
+        @test sort(names(cats.sampleinfo)) == meta_names_sorted[3:end]
         @test sort(names(cats.genodata)) == loci_names_sorted
-        @test sort(names(sharks.metadata)) == meta_names_sorted
+        @test sort(names(sharks.sampleinfo)) == meta_names_sorted
         @test sort(names(sharks.genodata)) == loci_names_sorted
     end
 
@@ -40,8 +42,8 @@ sharks = @gulfsharks;
         @test eltype(cats.sampleinfo.name) <: AbstractString
         @test eltype(cats.sampleinfo.population) <: AbstractString
         @test typeof(cats.sampleinfo.ploidy) == Vector{Int8}
-        @test typeof(cats.sampleinfo.latitude) ==  Vector{Union{Missing, Float32}}
-        @test typeof(cats.sampleinfo.longitude) == Vector{Union{Missing, Float32}}
+        @test_throws ArgumentError typeof(cats.sampleinfo.latitude)
+        @test_throws ArgumentError typeof(cats.sampleinfo.longitude)
         @test typeof(cats.genodata.name) <: PooledArray
         @test eltype(cats.genodata.name) <: AbstractString
         @test typeof(cats.genodata.population) <: PooledArray
@@ -65,6 +67,7 @@ sharks = @gulfsharks;
         @test typeof(sharks.genodata.locus) <: PooledArray
         @test eltype(sharks.genodata.locus) <: AbstractString
         @test typeof(sharks.genodata.genotype) <: GenoArray
+        @test typeof(sharks.genodata.genotype) <: PooledArray
         @test eltype(sharks.genodata.genotype) <: Union{Missing, Genotype}
     end
 end

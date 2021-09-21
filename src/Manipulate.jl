@@ -94,7 +94,7 @@ derived from the PopData. Changes made to this table will not alter the source
 Use `locations!` to add spatial data to a `PopData` object.
 """
 function locations(data::PopData)
-    if :longitude ∉ names(data.sampleinfo) && :latitude ∉ names(data.sampleinfo) 
+    if :longitude ∉ propertynames(data.sampleinfo) && :latitude ∉ propertynames(data.sampleinfo) 
         throw(ArgumentError(":longitude and :latitude columns not present in metadata."))
     else
         @view data.sampleinfo[!, [:longitude, :latitude]]
@@ -333,7 +333,7 @@ function populations!(data::PopData, rename::Vector{String})
 end
 
 function populations!(data::PopData, samples::Vector{String}, populations::Vector{String})
-    meta_df = groupby(data.metadata, :name)
+    meta_df = groupby(data.sampleinfo, :name)
     loci_df = groupby(data.genodata, :name)
     for (sample, new_pop) in zip(samples, populations)
         meta_df[(name = sample,)].population .= new_pop
