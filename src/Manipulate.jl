@@ -383,7 +383,7 @@ function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing
 
     if !isnothing(population)
         filter_by[:population] = typeof(population) <: AbstractArray ? string.(population) : [string(population)]
-        err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.metadata.population))]
+        err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.metadata.sampleinfo.population))]
         if length(err) > 0
             printstyled("Populations not found: ", bold = true)
             print("\"" * err[1] * "\"")
@@ -407,7 +407,7 @@ function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing
     end
     if !isnothing(name)
         filter_by[:name] = typeof(name) <: AbstractArray ? string.(name) : [string(name)]
-        err = filter_by[:name][filter_by[:name] .∉ Ref(data.metadata.name)]
+        err = filter_by[:name][filter_by[:name] .∉ Ref(data.metadata.sampleinfo.name)]
         if length(err) > 0
             printstyled("Samples not found: ", bold = true)
             print("\"" * err[1] * "\"")
@@ -507,7 +507,7 @@ function keep!(data::PopData; population::Any = nothing, locus::Any = nothing, n
 
     if !isnothing(population)
         filter_by[:population] = typeof(population) <: AbstractArray ? string.(population) : [string(population)]
-        err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.metadata.population))]
+        err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.metadata.sampleinfo.population))]
         if length(err) > 0
             printstyled("Populations not found: ", bold = true)
             print("\"" * err[1] * "\"")
@@ -531,7 +531,7 @@ function keep!(data::PopData; population::Any = nothing, locus::Any = nothing, n
     end
     if !isnothing(name)
         filter_by[:name] = typeof(name) <: AbstractArray ? string.(name) : [string(name)]
-        err = filter_by[:name][filter_by[:name] .∉ Ref(data.metadata.name)]
+        err = filter_by[:name][filter_by[:name] .∉ Ref(data.metadata.sampleinfo.name)]
         if length(err) > 0
             printstyled("Samples not found: ", bold = true)
             print("\"" * err[1] * "\"")
@@ -651,9 +651,11 @@ function Base.filter!(data::PopData, args...)
         3 => (i -> PooledArray(i, compress = true)) => :locus,
         4
     )
+    #=
     if intersect(data.metadata.sampleinfo.name, geno.name.pool) != data.metadata.sampleinfo.name
         filter!(:name => x -> x ∈ geno.name.pool, data.metadata)
     end
+    =#
     PopDataInfo!(data)
     return data
 end

@@ -258,3 +258,14 @@ function Base.getindex(data::PopData, args...)
     #newmeta = intersect(data.metadata.sampleinfo.name, geno.name.pool) != data.metadata.sampleinfo.name ? data.metadata.sampleinfo[data.metadata.sampleinfo.name .∈ Ref(geno.name.pool), :] : data.metadata.sampleinfo
     PopData(geno)
 end
+
+# shortcut methods for convenience and less verbose typing
+function Base.getproperty(data::PopData, field::Symbol)
+    if field == :sampleinfo
+        return data.metadata.sampleinfo
+    elseif field == :locusinfo
+        return data.metadata.locusinfo
+    else
+        return getfield(data, field)
+    end
+end
