@@ -69,19 +69,19 @@ The data struct used for the PopGen population genetics ecosystem. You are
 **strongly** discouraged from manually creating tables to pass into a PopData,
 and instead should use the provided file importers and utilities.
 
-- `metadata` PopDataInfo of  data information
-    - `samples` - the number of samples in the data
-    - `sampleinfo` - DataFrame of sample names,populations, ploidy, etc.
-    - `loci` - the number of loci in the data
-    - `locusinfo` - DataFrame of locus names, chromosome, physical position, etc.
-    - `populations` - the number of populations in the data
-    - `ploidy` - the ploidy (or ploidies) present in the data
-    - `biallelic` - if all the markers are biallelic
-- `genodata` DataFrame of sample genotype records
-    - `name` - the individual/sample names [`PooledArray`]
-    - `population` - population names [`PooledArray`]
-    - `locus` - locus names [`PooledArray`]
-    - `genotype` - genotype values [`NTuple{N,Signed}`]
+    - `metadata` PopDataInfo of  data information
+        - `samples` - the number of samples in the data
+        - `sampleinfo` - DataFrame of sample names,populations, ploidy, etc.
+        - `loci` - the number of loci in the data
+        - `locusinfo` - DataFrame of locus names, chromosome, physical position, etc.
+        - `populations` - the number of populations in the data
+        - `ploidy` - the ploidy (or ploidies) present in the data
+        - `biallelic` - if all the markers are biallelic
+    - `genodata` DataFrame of sample genotype records
+        - `name` - the individual/sample names [`PooledArray`]
+        - `population` - population names [`PooledArray`]
+        - `locus` - locus names [`PooledArray`]
+        - `genotype` - genotype values [`NTuple{N,Signed}`]
 
 """
 struct PopData <: PopObj
@@ -112,7 +112,7 @@ PopData(data::DataFrame) = PopData(PopDataInfo(data), data)
 function PopDataInfo!(data::PopData)
     data.metadata.samples = length(data.genodata.name.pool)
     data.metadata.loci = length(data.genodata.locus.pool)
-    data.sampleinfo.populations = length(data.genodata.population.pool)
+    data.metadata.populations = length(data.genodata.population.pool)
     filter!(:name => x -> x ∈ data.genodata.name.pool,  data.sampleinfo)
     filter!(:locus => x -> x ∈ data.genodata.locus.pool,  data.locusinfo)
     if "ploidy" ∈ names(data.sampleinfo)
@@ -260,6 +260,22 @@ function Base.getindex(data::PopData, args...)
 end
 
 # shortcut methods for convenience and less verbose typing
+"""
+    getproperty(data::PopData, field::Symbol)
+    data.field
+
+A convenience method to access certain elements in a `PopData` with fewer keystrokes. 
+Essentially a standard `getproperty` call, except `sampleinfo` accesses `metadata.sampleinfo`,
+`locusinfo` accesses `metadata.locusinfo`, and `info` is an alias for `metadata`.
+
+## Example
+```julia
+cats = @nancycats ;
+cats.metadata == cats.info
+cats.metadata.sampleinfo == cats.sampleinfo
+cats.metadata.locusinfo == cats.locusinfo
+```
+"""
 function Base.getproperty(data::PopData, field::Symbol)
     if field == :sampleinfo
         return data.metadata.sampleinfo
