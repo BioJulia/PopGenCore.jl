@@ -57,10 +57,11 @@ function delimited(
     dlm = delim == "auto" ? nothing : delim
     file_parse = CSV.read(infile, DataFrame, delim = dlm, missingstring = ["-9", ""])
     locinames = names(file_parse)[5:end]
-    meta = select(file_parse, 1:4)
+    #meta = select(file_parse, 1:4)
+    coords = select(file_parse, 3,4)
     # force strings for this field
-    meta.population = string.(meta.population)
-    rename!(meta, [:name, :population, :longitude, :latitude])
+    #meta.population = string.(meta.population)
+    #rename!(meta, [:name, :population, :longitude, :latitude])
     select!(file_parse, Not(3:4))
     geno_parse = DataFrames.stack(file_parse, DataFrames.Not(1:2))
     rename!(geno_parse, [:name, :population, :locus, :genotype])
@@ -73,7 +74,7 @@ function delimited(
     )
     
     try
-        geno_parse.genotype = phase.(geno_parse.genotype, Int8, digits)
+        geno_parse.genotype = PooledArray(phase.(geno_parse.genotype, Int8, digits), compress = true)
     catch
         geno_parse.genotype = phase.(geno_parse.genotype, Int16, digits)
     end
@@ -82,13 +83,14 @@ function delimited(
         @info "\n $(truncatepath(abspath(infile)))\n data: loci = $(length(locinames)), samples = $(length(meta[!, 1])), populations = $(length(unique(meta[!,2])))"
         println()
     end
-
-    ploidy = DataFrames.combine(
-        groupby(dropmissing(geno_parse), :name),
-        :genotype => find_ploidy => :ploidy
-    ).ploidy
-    DataFrames.insertcols!(meta, 3, :ploidy => ploidy)
-    pd_out = PopData(meta, geno_parse)
+    popinfo = PopDataInfo(geno_parse)
+    if any(.!ismissing.(coords[:,1]))
+        popinfo.sampleinfo.longitude = coords[:,1]
+    end
+    if any(.!ismissing.(coords[:,2]))
+        popinfo.sampleinfo.latitude = coords[:,2]
+    end
+    pd_out = PopData(popinfo, geno_parse)
     !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
     return pd_out
 end
