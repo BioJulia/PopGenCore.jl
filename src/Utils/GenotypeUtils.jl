@@ -163,7 +163,7 @@ julia> mtx[1]
 """
 function phased_matrix(data::PopData)
     dims = size(data)
-    ploidy = unique(data.metadata.ploidy)
+    ploidy = unique(data.sampleinfo.ploidy)
     ploidy = length(ploidy) != 1 ? error("Phasing will not work on mixed-ploidy samples") : ploidy[1]
     sort_df = issorted(data.genodata, [:name, :locus]) ? sort(data.genodata, [:name, :locus]) : data.genodata
     matrices = map(j -> map(i -> ismissing(i) ? missing : i[j] , sort_df.genotype), 1:ploidy)

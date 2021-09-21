@@ -37,11 +37,11 @@ sharks = @gulfsharks;
     end
 
     @testset "Nancycats column types" begin
-        @test eltype(cats.metadata.name) <: AbstractString
-        @test eltype(cats.metadata.population) <: AbstractString
-        @test typeof(cats.metadata.ploidy) == Vector{Int8}
-        @test typeof(cats.metadata.latitude) ==  Vector{Union{Missing, Float32}}
-        @test typeof(cats.metadata.longitude) == Vector{Union{Missing, Float32}}
+        @test eltype(cats.sampleinfo.name) <: AbstractString
+        @test eltype(cats.sampleinfo.population) <: AbstractString
+        @test typeof(cats.sampleinfo.ploidy) == Vector{Int8}
+        @test typeof(cats.sampleinfo.latitude) ==  Vector{Union{Missing, Float32}}
+        @test typeof(cats.sampleinfo.longitude) == Vector{Union{Missing, Float32}}
         @test typeof(cats.genodata.name) <: PooledArray
         @test eltype(cats.genodata.name) <: AbstractString
         @test typeof(cats.genodata.population) <: PooledArray
@@ -53,11 +53,11 @@ sharks = @gulfsharks;
     end
 
     @testset "Gulfsharks column types" begin
-        @test eltype(sharks.metadata.name) <: AbstractString
-        @test eltype(sharks.metadata.population) <: AbstractString
-        @test eltype(sharks.metadata.ploidy) == Int8
-        @test eltype(sharks.metadata.latitude) ==  Float64
-        @test eltype(sharks.metadata.longitude) == Float64
+        @test eltype(sharks.sampleinfo.name) <: AbstractString
+        @test eltype(sharks.sampleinfo.population) <: AbstractString
+        @test eltype(sharks.sampleinfo.ploidy) == Int8
+        @test eltype(sharks.sampleinfo.latitude) ==  Float64
+        @test eltype(sharks.sampleinfo.longitude) == Float64
         @test typeof(sharks.genodata.name) <: PooledArray
         @test eltype(sharks.genodata.name) <: AbstractString
         @test typeof(sharks.genodata.population) <: PooledArray

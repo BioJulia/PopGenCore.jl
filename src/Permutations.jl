@@ -9,7 +9,7 @@ the `.loci` dataframe.
 @inline function permute_loci!(data::PopData)
     @inbounds @sync for locus in groupby(data.genodata, :locus)
         Base.Threads.@spawn begin
-            shuffle!(Xoroshiro128Star(), locus.population)
+            shuffle!(locus.population)
         end
     end
     data
@@ -23,7 +23,7 @@ the default is to only edit the `.loci` table in place; use `meta = true`
 if you also require the `.meta` dataframe edited in place.
 """
 @inline function permute_samples!(data::PopData; meta::Bool = false)
-    pops = shuffle(Xoroshiro128Star(), data.metadata.population)
+    pops = shuffle(data.sampleinfo.population)
 
     if meta == true
         meta_pops = copy(pops)
@@ -41,7 +41,7 @@ end
 
 
 @inline function permute_samples!(data::AbstractDataFrame, popnames::Vector{String})
-    pops = shuffle(Xoroshiro128Star(), popnames)
+    pops = shuffle(popnames)
 
     @inbounds #=@sync=# for name in groupby(data, :name)
         #Base.Threads.@spawn begin 
@@ -80,8 +80,7 @@ it would be best to identify ploidy in advance and set it to a specific integer.
 """
 @inline function permute_alleles!(data::PopData; ploidy::Union{Nothing, Int} = nothing, by::String = "locus")
     if ploidy === nothing
-        tmp = unique(data.metadata.ploidy)
-        length(tmp) > 1 && error("This permutation method is not appropriate for mixed-ploidy data")
+        length(data.metadata.ploidy) > 1 && error("This permutation method is not appropriate for mixed-ploidy data")
         ploidy = first(tmp)
     end
 
@@ -90,7 +89,7 @@ it would be best to identify ploidy in advance and set it to a specific integer.
 
     @inbounds @sync for grp in groupby(data.genodata, groupings)
         Base.Threads.@spawn begin
-            alle = shuffle(Xoroshiro128Star(), alleles(grp.genotype))
+            alle = shuffle(alleles(grp.genotype))
             new_genos = Tuple.(Base.Iterators.partition(alle, ploidy))
             (@view grp.genotype[.!ismissing.(grp.genotype)]) .= new_genos
         end

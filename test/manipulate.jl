@@ -12,8 +12,8 @@ sharks = @gulfsharks;
     @testset "locations" begin
         x = rand(length(samples(cats))) ; y = rand(length(samples(cats)))
         locations!(cats, long = x, lat = y)    
-        @test cats.metadata.longitude == Float32.(x)
-        @test cats.metadata.latitude == Float32.(y)
+        @test cats.sampleinfo.longitude == Float32.(x)
+        @test cats.sampleinfo.latitude == Float32.(y)
         @test locations(cats).longitude == Float32.(x)
         @test locations(cats).latitude == Float32.(y)
     end
@@ -21,8 +21,8 @@ sharks = @gulfsharks;
     @testset "decimal-minutes locations" begin
         x = fill("11 22.33W", length(samples(cats))) ; y = fill("-41 31.52", length(samples(cats)))
         locations!(cats, long = x, lat = y)
-        @test all(cats.metadata.longitude .== Float32(-11.3722))
-        @test all(cats.metadata.latitude .== Float32(-41.5253))
+        @test all(cats.sampleinfo.longitude .== Float32(-11.3722))
+        @test all(cats.sampleinfo.latitude .== Float32(-41.5253))
     end
 
     @testset "loci and genotypes" begin
@@ -46,20 +46,20 @@ sharks = @gulfsharks;
 
         rn_dict = Dict("1" => "one", "2" => "two")
         populations!(cats, rn_dict)
-        @test "one" ∈ cats.metadata.population && "1" ∉ cats.metadata.population
-        @test "two" ∈ cats.metadata.population && "2" ∉ cats.metadata.population
+        @test "one" ∈ cats.sampleinfo.population && "1" ∉ cats.sampleinfo.population
+        @test "two" ∈ cats.sampleinfo.population && "2" ∉ cats.sampleinfo.population
 
         rn_vect = string.(1:17)
         populations!(cats, rn_vect)
-        @test "one" ∉ cats.metadata.population && "1" ∈ cats.metadata.population
-        @test "two" ∉ cats.metadata.population && "2" ∈ cats.metadata.population
+        @test "one" ∉ cats.sampleinfo.population && "1" ∈ cats.sampleinfo.population
+        @test "two" ∉ cats.sampleinfo.population && "2" ∈ cats.sampleinfo.population
     
         rn_vect_ii = ["N215", "N297"]
         rn_vect_iin = ["one", "seventeen"]
         populations!(cats, rn_vect_ii, rn_vect_iin)
-        @test "one" ∈ cats.metadata.population && "seventeen" ∈ cats.metadata.population
-        @test cats.metadata[cats.metadata.name .== "N215", :population] == ["one"]
-        @test cats.metadata[cats.metadata.name .== "N297", :population] == ["seventeen"]
+        @test "one" ∈ cats.sampleinfo.population && "seventeen" ∈ cats.sampleinfo.population
+        @test cats.metadata[cats.sampleinfo.name .== "N215", :population] == ["one"]
+        @test cats.metadata[cats.sampleinfo.name .== "N297", :population] == ["seventeen"]
     end
 
     @testset "exclusion" begin

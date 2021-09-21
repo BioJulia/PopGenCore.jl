@@ -20,7 +20,7 @@ x = @nancycats
         @test all(.!ismissing(tmp.ploidy))
         @test intersect(x.genodata.population.pool, unique(tmp.population)) == x.genodata.population.pool
         @test loci(x) == x.genodata.locus.pool
-        @test samples(x) == x.metadata.name
+        @test samples(x) == x.sampleinfo.name
     end
 
 

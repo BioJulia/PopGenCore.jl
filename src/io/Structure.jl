@@ -186,7 +186,7 @@ function structure(data::PopData; filename::String, faststructure::Bool = false,
     faststructure == false && println(outfile, join(loci(data), dlm))
     
     # remap populations as integers
-    pops = unique(data.metadata.population)
+    pops = unique(data.sampleinfo.population)
     pop_mappings = Dict{String,Integer}()
     [pop_mappings[j] = i for (i,j) in enumerate(pops)]
 
