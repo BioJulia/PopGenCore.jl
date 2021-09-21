@@ -113,10 +113,10 @@ function PopDataInfo!(data::PopData)
     data.metadata.samples = length(data.genodata.name.pool)
     data.metadata.loci = length(data.genodata.locus.pool)
     data.metadata.populations = length(data.genodata.population.pool)
-    filter!(:name => x -> x ∈ data.genodata.name.pool,  data.metadata.sampleinfo)
-    filter!(:locus => x -> x ∈ data.genodata.locus.pool,  data.metadata.locusinfo)
-    if "ploidy" ∈ names(data.metadata.sampleinfo)
-        ploidy = unique(data.metadata.sampleinfo.ploidy)
+    filter!(:name => x -> x ∈ data.genodata.name.pool,  data.sampleinfo)
+    filter!(:locus => x -> x ∈ data.genodata.locus.pool,  data.locusinfo)
+    if "ploidy" ∈ names(data.sampleinfo)
+        ploidy = unique(data.sampleinfo.ploidy)
         ploidy = length(ploidy) == 1 ? Int8(ploidy[1]) : Int8(ploidy)
     else
         ploidy = Int8(0)
@@ -183,15 +183,15 @@ function Base.show(io::IO, data::PopData)
     println(io, "PopData", "{" * ploidy, n_loc, " " , marker * " loci}")
     println(io, "  Samples: $(data.metadata.samples)")
     print(io, "  Populations: $(data.metadata.populations)")
-    if "longitude" ∈ names(data.metadata.sampleinfo)
-        miss_count = count(ismissing, data.metadata.sampleinfo.longitude)
-        if miss_count == length(data.metadata.sampleinfo.longitude)
+    if "longitude" ∈ names(data.sampleinfo)
+        miss_count = count(ismissing, data.sampleinfo.longitude)
+        if miss_count == length(data.sampleinfo.longitude)
             print("")
         else
             print(io, "\n  Coordinates: present")
         end
     end
-    allcols = vcat(names(data.metadata.sampleinfo), names(data.genodata)) |> unique
+    allcols = vcat(names(data.sampleinfo), names(data.genodata)) |> unique
     extracols = symdiff(allcols, ["name", "population", "ploidy", "locus", "genotype"])
     if !isempty(extracols)
         print(io, "\n  Other Info: ", extracols)
@@ -204,9 +204,9 @@ end
 Method to show the `PopData` `metadata` field. 
 """
 function sampleinfo(data::PopData)
-    s,f  = size(data.metadata.sampleinfo)
+    s,f  = size(data.sampleinfo)
     dimtext = "(" * string(s) * " samples, " * string(f) * " fields)"
-    show(data.metadata.sampleinfo, show_row_number = false, title = "Sample Information of PopData " * dimtext )
+    show(data.sampleinfo, show_row_number = false, title = "Sample Information of PopData " * dimtext )
 end
 
 """
@@ -215,32 +215,32 @@ Method to show the `PopData` `genodata` field.
 """
 function genodata(data::PopData) 
     l = length(data.genodata.locus.pool)
-    s = length(data.metadata.sampleinfo.name)
+    s = length(data.sampleinfo.name)
     dimtext = "(" * string(s) * " samples, " * string(l) * " loci)"
     show(data.genodata, show_row_number = false, title = "Genotype information of PopData " * dimtext )
 end
 
 function locusinfo(data::PopData)
-    s,f  = size(data.metadata.locusinfo)
+    s,f  = size(data.locusinfo)
     dimtext = "(" * string(s) * " loci, " * string(f) * " fields)"
-    show(data.metadata.locusinfo, show_row_number = false, title = "Locus Information of PopData " * dimtext )
+    show(data.locusinfo, show_row_number = false, title = "Locus Information of PopData " * dimtext )
 end
 
 function Base.getindex(data::PopData, idx::Symbol)
     if idx == :sampleinfo
-        return data.metadata.sampleinfo
+        return data.sampleinfo
     elseif idx == :genodata
         return data.genodata
     elseif idx == :name
         return data.metadata..sampleinfo.name
     elseif idx == :population
-        return data.metadata.sampleinfo.population
+        return data.sampleinfo.population
     elseif idx == :ploidy
-        return data.metadata.sampleinfo.ploidy
+        return data.sampleinfo.ploidy
     elseif idx == :locus
         return data.genodata.locus.pool
     elseif idx == :coordinates
-        return data.metadata.sampleinfo[:, [:longitude, :latitude]]
+        return data.sampleinfo[:, [:longitude, :latitude]]
     else
         throw(ArgumentError("Cannot directly index PopData with the \':$idx\' field"))
     end
@@ -255,7 +255,7 @@ function Base.getindex(data::PopData, args...)
         3 => (i -> PooledArray(i, compress = true)) => :locus,
         4
     )
-    #newmeta = intersect(data.metadata.sampleinfo.name, geno.name.pool) != data.metadata.sampleinfo.name ? data.metadata.sampleinfo[data.metadata.sampleinfo.name .∈ Ref(geno.name.pool), :] : data.metadata.sampleinfo
+    #newmeta = intersect(data.sampleinfo.name, geno.name.pool) != data.sampleinfo.name ? data.sampleinfo[data.sampleinfo.name .∈ Ref(geno.name.pool), :] : data.sampleinfo
     PopData(geno)
 end
 
@@ -265,6 +265,8 @@ function Base.getproperty(data::PopData, field::Symbol)
         return data.metadata.sampleinfo
     elseif field == :locusinfo
         return data.metadata.locusinfo
+    elseif field == :info
+        return data.metadata
     else
         return getfield(data, field)
     end

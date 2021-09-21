@@ -77,7 +77,7 @@ function drop_monomorphic(data::PopData; silent::Bool = false)
     prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
     monomorphs = string.(all_loci[[length(unique(i))==1 for i in prt]])
     if length(monomorphs) == 0
-        println("No monomorphic loci found.\n")
+        #!silent && println("No monomorphic loci found.\n")
         return data
     elseif !silent
         if length(monomorphs) == 1
@@ -102,7 +102,7 @@ function drop_monomorphic!(data::PopData; silent::Bool = false)
     prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
     monomorphs = string.(all_loci[[length(unique(i))==1 for i in prt]])
     if length(monomorphs) == 0
-        println("No monomorphic loci found.\n")
+        #!silent && println("No monomorphic loci found.\n")
         return data
     elseif !silent
         if length(monomorphs) == 1
@@ -240,5 +240,5 @@ end
 View individual/sample names in a `PopData`
 """
 function samples(data::PopData)
-    copy(data.metadata.sampleinfo.name)
+    copy(data.sampleinfo.name)
 end

@@ -1,6 +1,15 @@
 export phase, unphase
 export determine_marker, find_ploidy
 
+
+"""
+    isbinary(filepath::String)
+Returns `true` if the `filepath` is a binary file. 
+"""
+function isbinary(filepath::String)
+    !isvalid(String(Base.read(filepath, 1000)))
+end
+
 ## Utilities for file reading/writing ##
 
 #= Possibly deprecated
@@ -80,7 +89,8 @@ phase(loc::Missing, type::DataType, digit::Int) = missing
     out = type[]
     units = 10^digits
     d,r = divrem(loc, units)
-    @inbounds push!(out, r)
+    out = type[r]
+    #@inbounds push!(out, r)
     @inbounds while d != 0
         d,r = divrem(d, units)
         @inbounds push!(out, r)

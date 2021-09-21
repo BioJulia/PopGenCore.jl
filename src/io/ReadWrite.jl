@@ -5,17 +5,16 @@ inferred from the file extension (case insensitive): \n
 
 | File Format         | Extensions             | Docstring     |
 | :------------------ | :--------------------- | :------------ |
-| delimited           | `.csv`, `.txt`, `.tsv` | `?PopGen.delimited`  |
-| genepop             | `.gen`, `.genepop`     | `?PopGen.genepop`    |
-| structure           | `.str`, `.structure`   | `?PopGen.structure`  |
-| plink               | `.bed`, `.ped`  | `?PopGen.plink`  |
-| variant call format (vcf) | `.vcf`, `.vcf.gz`| `?PopGen.vcf`  |
-| variant call format (bcf) | `.bcf`, `.bcf.gz`| `?PopGen.bcf`  |
+| delimited           | `.csv`, `.txt`, `.tsv` | `?delimited`  |
+| genepop             | `.gen`, `.genepop`     | `?genepop`    |
+| structure           | `.str`, `.structure`   | `?structure`  |
+| plink               | `.bed`, `.ped`  | `?plink`  |
+| variant call format (vcf) | `.vcf`, `.vcf.gz`| `?vcf`  |
+| variant call format (bcf) | `.bcf`, `.bcf.gz`| `?bcf`  |
 
 This function uses the same keyword arguments (and defaults) as the file importing
 functions it wraps; please see their respective docstrings in the Julia help console.
-for specific usage details (e.g. `?PopGen.genepop`). Replace `PopGen` with `PopGenCore` if 
-using `PopGenCore.jl` directly.
+for specific usage details (e.g. `?genepop`).
 
 
 ## Examples
@@ -52,18 +51,19 @@ function read(infile::String; kwargs...)
 end
 
 """
+    PopGen.write(data::PopData, filename::String, kwargs...)
     PopGen.write(data::PopData; filename::String, kwargs...)
+
 Writes `PopData` to a specified file type inferred from the extension of `filename = ` (case insensitive). Additional keyword
 arguments `kwargs...` are specific to the intended file type, and are listed in the docstrings of the specific
 file writer with the format `?filetype`. For example, to find the appropriate keywords for a conversion
-to Genepop format, call up the `?genepop` docstring. Replace `PopGen` with `PopGenCore` if 
-using `PopGenCore.jl` directly.
+to Genepop format, call up the `?genepop` docstring.
 
 | File Format | Extensions             | Docstring          |
 | :---------- | :--------------------- | :----------------- |
-| genepop     | `.gen`, `.genepop`     | ?PopGen.genepop   |
-| delimited   | `.csv`, `.txt`, `.tsv` | ?PopGen.delimited |
-| structure   | `.str`, `.structure`   | ?PopGen.structure |
+| genepop     | `.gen`, `.genepop`     | ?genepop   |
+| delimited   | `.csv`, `.txt`, `.tsv` | ?delimited |
+| structure   | `.str`, `.structure`   | ?structure |
 
 ### Example
 ```
@@ -72,7 +72,20 @@ fewer_cats = omit(cats, name = samples(cats)[1:10]);
 PopGen.write(fewer_cats, filename = "filtered_nancycats.gen", digits = 3, format = "h")
 ```
 """
-function write_to(data::PopData; filename::String, kwargs...)
+function Base.write(data::PopData; filename::String, kwargs...)
+    ext = split(filename, ".")[end] |> lowercase
+    if ext in ["gen", "genepop"]
+        genepop(data, filename = filename; kwargs...)
+    elseif ext in ["str", "structure"]
+        structure(data, filename = filename; kwargs...)
+    elseif ext in ["csv", "txt", "tsv"]
+        delimited(data, filename = filename; kwargs...)
+    else
+        @error "File type not recognized by filename extension. Please see the docstring"
+    end
+end
+
+function Base.write(data::PopData, filename::String, kwargs...)
     ext = split(filename, ".")[end] |> lowercase
     if ext in ["gen", "genepop"]
         genepop(data, filename = filename; kwargs...)

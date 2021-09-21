@@ -24,7 +24,7 @@ include("io/Delimited.jl")
 include("io/Genepop.jl")
 include("io/Structure.jl")
 include("io/VariantCall.jl")
-include("io/Read.jl")
+include("io/ReadWrite.jl")
 ##
 include("Datasets.jl")
 

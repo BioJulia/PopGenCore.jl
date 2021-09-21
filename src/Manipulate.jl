@@ -20,7 +20,7 @@ must be in the same order as the samples in `Popdata.metadata`.
 - `categorical` : Boolean of whether the metadata being added is categorical aka "factors" (default: `true`)
 """
 function add_meta!(popdata::PopData, metadata::T; name::String, loci::Bool = true, categorical::Bool = true) where T <: AbstractVector
-    length(metadata) != length(popdata.metadata.name) && error("Provided metadata vector (n = $length(metadata)) and samples in PopData (n = $length(popdata.metadata.name)) have different lengths")
+    length(metadata) != length(popdata.sampleinfo.name) && error("Provided metadata vector (n = $length(metadata)) and samples in PopData (n = $length(popdata.sampleinfo.name)) have different lengths")
     symbolname = Symbol(name) 
     infotext = "\nAdding :$(symbolname) column to metadata" 
     if loci
@@ -32,7 +32,7 @@ function add_meta!(popdata::PopData, metadata::T; name::String, loci::Bool = tru
     insertcols!(popdata.metadata, symbolname => metadata)
     # add to loci
     if loci
-        tmp = DataFrame(:name => popdata.metadata.name, symbolname => metadata)
+        tmp = DataFrame(:name => popdata.sampleinfo.name, symbolname => metadata)
         filled = outerjoin(select(popdata.genodata, :name), tmp, on = :name)[!, symbolname]
         if categorical == true
             popdata.genodata[!, symbolname] = PooledArray(filled, compress = true)
@@ -60,9 +60,9 @@ sample names if the metadata is not in the same order as samples appear in `Popd
 - `categorical` : Boolean of whether the metadata being added is categorical aka "factors" (default: `true`)
 """
 function add_meta!(popdata::PopData, samples::Vector{String}, metadata::T; name::String, loci::Bool = true) where T <: AbstractVector
-    length(samples) != length(popdata.metadata.name) && error("Provided sample vector (n = $length(samples)) and samples in PopData (n = $length(popdata.metadata.name)) have different lengths")
+    length(samples) != length(popdata.sampleinfo.name) && error("Provided sample vector (n = $length(samples)) and samples in PopData (n = $length(popdata.sampleinfo.name)) have different lengths")
     length(samples) != length(metadata) && error("Sample names (n = $length(samples)) and metadata vectors (n = $length(metadata)) have different lengths")
-    sort(samples) != sort(popdata.metadata.name) && error("Sample names are not identical")
+    sort(samples) != sort(popdata.sampleinfo.name) && error("Sample names are not identical")
     symbolname = Symbol(name) 
     infotext = "\nAdding :$(symbolname) column to metadata" 
     if loci
@@ -94,10 +94,10 @@ derived from the PopData. Changes made to this table will not alter the source
 Use `locations!` to add spatial data to a `PopData` object.
 """
 function locations(data::PopData)
-    if :longitude ∉ names(data.metadata.sampleinfo) && :latitude ∉ names(data.metadata.sampleinfo) 
+    if :longitude ∉ names(data.sampleinfo) && :latitude ∉ names(data.sampleinfo) 
         throw(ArgumentError(":longitude and :latitude columns not present in metadata."))
     else
-        @view data.metadata.sampleinfo[!, [:longitude, :latitude]]
+        @view data.sampleinfo[!, [:longitude, :latitude]]
     end
 end
 
@@ -122,10 +122,10 @@ function locations!(data::PopData, long::Vector{Union{Missing,T}}, lat::Vector{U
     long_len = length(long)
     lat_len = length(lat)
     long_len != lat_len && error("latitude ($lat_len) and longitude ($long_len) arrays not equal in length")
-    long_len != length(data.metadata.name) && error("lat/long array length ($long_len) and number of samples in PopData ($long_len) are not equal")
+    long_len != length(data.sampleinfo.name) && error("lat/long array length ($long_len) and number of samples in PopData ($long_len) are not equal")
 
-    data.metadata.longitude = long
-    data.metadata.latitude = lat
+    data.sampleinfo.longitude = long
+    data.sampleinfo.latitude = lat
     return
 end
 
@@ -168,11 +168,11 @@ function locations!(data::PopData, long::Vector{String}, lat::Vector{String})
     long_len = length(long)
     lat_len = length(lat)
     lat_len != long_len && error("latitude ($lat_len) and longitude ($long_len) arrays not equal in length")
-    lat_len != length(data.metadata.name) && error("lat/long array length ($lat_len) and number of samples in PopData ($long_len) are not equal")
+    lat_len != length(data.sampleinfo.name) && error("lat/long array length ($lat_len) and number of samples in PopData ($long_len) are not equal")
     println("Converting decimal minutes to decimal degrees")
     # convert coordinates to decimal degrees
-    data.metadata.longitude = convert_coord.(long)
-    data.metadata.latitude = convert_coord.(lat)
+    data.sampleinfo.longitude = convert_coord.(long)
+    data.sampleinfo.latitude = convert_coord.(lat)
     return
 end
 
@@ -259,17 +259,15 @@ View unique population ID's and/or their counts in `PopData`.
 - `counts` returns a dataframe of samples per `population` instead (default = `false`)
 """
 @inline function populations(data::PopData; counts::Bool = false)
-    if all(ismissing.(data.metadata.population)) == true
-        @info "no population data present in PopData"
+    if all(ismissing.(data.sampleinfo.population)) == true
+        println("no population data present in PopData")
         return
     end
-    
-    uniq_pops = unique(data.metadata.population)
-    
+    uniq_pops = unique(data.sampleinfo.population)
     if counts == false
         return uniq_pops
     else
-        pops = countmap(data.metadata.population)
+        pops = countmap(data.sampleinfo.population)
         return DataFrame(:population => uniq_pops, :count => [pops[i] for i in uniq_pops])
     end
 end
@@ -314,19 +312,20 @@ populations!(potatoes, ["potato_1", "potato_2"], ["north_russet", "south_russet"
 function populations!(data::PopData, rename::Dict)
     msg = ""
     @inbounds for key in keys(rename)
-        if key ∉ unique(data.metadata.population)
+        if key ∉ unique(data.sampleinfo.population)
             msg *= "  Population \"$key\" not found in PopData\n"
         else
-            replace!(data.metadata.population, key => rename[key])
+            replace!(data.sampleinfo.population, key => rename[key])
             replace!(data.genodata.population.pool, key => rename[key])
         end
     end
     msg != "" && printstyled("Warnings:", color = :yellow) ; print("\n"*msg)
+    PopDataInfo!(data)
     return
 end
 
 function populations!(data::PopData, rename::Vector{String})
-    current_popnames = unique(data.metadata.population)
+    current_popnames = unique(data.sampleinfo.population)
     rn_dict = Dict{String, String}()
     [rn_dict[string(i)] = j for (i,j) in zip(current_popnames, rename)]
     populations!(data, rn_dict)
@@ -342,6 +341,8 @@ function populations!(data::PopData, samples::Vector{String}, populations::Vecto
     end
     # drop old levels
     data.genodata.population = PooledArray(data.genodata.population, compress = true)
+    data.sampleinfo.populaion = PooledArray(data.sampleinfo.population, compress = true)
+    PopDataInfo!(data)
     return
 end
 
@@ -383,7 +384,7 @@ function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing
 
     if !isnothing(population)
         filter_by[:population] = typeof(population) <: AbstractArray ? string.(population) : [string(population)]
-        err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.metadata.sampleinfo.population))]
+        err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.sampleinfo.population))]
         if length(err) > 0
             printstyled("Populations not found: ", bold = true)
             print("\"" * err[1] * "\"")
@@ -407,7 +408,7 @@ function exclude!(data::PopData; population::Any = nothing, locus::Any = nothing
     end
     if !isnothing(name)
         filter_by[:name] = typeof(name) <: AbstractArray ? string.(name) : [string(name)]
-        err = filter_by[:name][filter_by[:name] .∉ Ref(data.metadata.sampleinfo.name)]
+        err = filter_by[:name][filter_by[:name] .∉ Ref(data.sampleinfo.name)]
         if length(err) > 0
             printstyled("Samples not found: ", bold = true)
             print("\"" * err[1] * "\"")
@@ -507,7 +508,7 @@ function keep!(data::PopData; population::Any = nothing, locus::Any = nothing, n
 
     if !isnothing(population)
         filter_by[:population] = typeof(population) <: AbstractArray ? string.(population) : [string(population)]
-        err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.metadata.sampleinfo.population))]
+        err = filter_by[:population][filter_by[:population] .∉ Ref(unique(data.sampleinfo.population))]
         if length(err) > 0
             printstyled("Populations not found: ", bold = true)
             print("\"" * err[1] * "\"")
@@ -531,7 +532,7 @@ function keep!(data::PopData; population::Any = nothing, locus::Any = nothing, n
     end
     if !isnothing(name)
         filter_by[:name] = typeof(name) <: AbstractArray ? string.(name) : [string(name)]
-        err = filter_by[:name][filter_by[:name] .∉ Ref(data.metadata.sampleinfo.name)]
+        err = filter_by[:name][filter_by[:name] .∉ Ref(data.sampleinfo.name)]
         if length(err) > 0
             printstyled("Samples not found: ", bold = true)
             print("\"" * err[1] * "\"")
@@ -652,7 +653,7 @@ function Base.filter!(data::PopData, args...)
         4
     )
     #=
-    if intersect(data.metadata.sampleinfo.name, geno.name.pool) != data.metadata.sampleinfo.name
+    if intersect(data.sampleinfo.name, geno.name.pool) != data.sampleinfo.name
         filter!(:name => x -> x ∈ geno.name.pool, data.metadata)
     end
     =#

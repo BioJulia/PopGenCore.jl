@@ -160,7 +160,7 @@ genepop(fewer_cats, filename = "filtered_nancycats.gen", digits = 3, format = "h
 """
 function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3, format::String = "vertical", miss::Int = 0)
     outfile = open(filename, "w") 
-    println(outfile, "genepop generated from PopData by PopGen.jl")
+    println(outfile, "generated from PopData by PopGen.jl")
     if format in ["h", "horizontal"]
         join(outfile, loci(data), ",")
     else
@@ -175,7 +175,7 @@ function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3
                 println(outfile, "POP")
             end
             samplename = keys.name
-            sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
+            sample_ploidy = convert(Int, data.sampleinfo.ploidy[data.sampleinfo.name .== samplename][1])
             format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
             join(outfile, vcat(samplename * ",", format_geno), "\t")
             print(outfile, "\n")
@@ -183,10 +183,10 @@ function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3
     else
         for (keys, sample) in pairs(groupby(data.genodata, :name))
             samplename = keys.name
-            sample_ploidy = convert(Int, data.metadata.ploidy[data.metadata.name .== samplename][1])
+            sample_ploidy = convert(Int, data.sampleinfo.ploidy[data.sampleinfo.name .== samplename][1])
             println(outfile, "POP")
-            long = data.metadata[data.metadata.name .== keys.name, :longitude][1]
-            lat = data.metadata[data.metadata.name .== keys.name, :latitude][1]
+            long = data.sampleinfo[data.sampleinfo.name .== keys.name, :longitude][1]
+            lat = data.sampleinfo[data.sampleinfo.name .== keys.name, :latitude][1]
             coords = join(string.([long, lat]), "\t") * ","
             format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
             join(outfile, vcat(coords, format_geno), "\t")

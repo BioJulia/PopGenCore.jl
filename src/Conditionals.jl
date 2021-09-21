@@ -24,15 +24,6 @@ Returns `true` all the loci in the `PopData` are biallelic, `false` if not.
 isbiallelic(data::PopData) = data.metadata.biallelic
 
 
-"""
-    isbinary(filepath::String)
-Returns `true` if the `filepath` is a binary file. 
-"""
-function isbinary(filepath::String)
-    !isvalid(String(Base.read(filepath, 1000)))
-end
-
-
 #TODO how to treat haploids?
 """
 ```
