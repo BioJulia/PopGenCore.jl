@@ -43,7 +43,7 @@ function _plinkped(infile::String, keepfields::Union{Symbol,Vector{Symbol}} = :a
             types = Dict(:chrom => String, :allele1 => Char, :allele2 => Char),
             pool=0.3
         )
-        locinames = bimfile.chrom .* "_" .* bimfile.snp
+        locinames = bimfile.snp
     end
     pedfile = CSV.read(
         infile, 
@@ -73,7 +73,7 @@ function _plinkped(infile::String, keepfields::Union{Symbol,Vector{Symbol}} = :a
 end
 
 
-function _plinkbed(infile::String, keepfields::Union{Symbol,Vector{Symbol}} = :all, silent::Bool = false)
+function _plinkbed(infile::String, famfields::Union{Symbol,Vector{Symbol}} = :all, bimfields::Union{Symbol,Vector{Symbol}} = :all, silent::Bool = false)
     basefile = splitext(infile)[1]
     !isfile(basefile * ".fam") && throw(ArgumentError("$(basefile * ".fam") is required but wasn't found")) 
     famfile = CSV.read(
@@ -93,15 +93,15 @@ function _plinkbed(infile::String, keepfields::Union{Symbol,Vector{Symbol}} = :a
         bimfile = CSV.read(
             basefile * ".bim",
             DataFrame,
-            header = [:chrom, :snp, :cM, :bp, :allele1, :allele2],
+            header = [:chromosome, :snp, :cm, :bp, :allele1, :allele2],
             missingstring = ["0"],
             #drop = [3,4],
-            types = Dict(:chrom => String, :allele1 => Char, :allele2 => Char),
+            types = Dict(:chromosome => String, :allele1 => Char, :allele2 => Char),
             pool=0.3
         )
         locinames = bimfile.snp
-        chromcheck = !all(ismissing.(bimfile.chrom)) ?  "(✔)" : "(𐄂)"
-        cmcheck = !all(ismissing.(bimfile.cM)) ?  "(✔)" : "(𐄂)"
+        chromcheck = !all(ismissing.(bimfile.chromosome)) ?  "(✔)" : "(𐄂)"
+        cmcheck = !all(ismissing.(bimfile.cm)) ?  "(✔)" : "(𐄂)"
         bpcheck = !all(ismissing.(bimfile.bp)) ?  "(✔)" : "(𐄂)"
     end
     bedfile = basefile * ".bed"
@@ -129,25 +129,37 @@ function _plinkbed(infile::String, keepfields::Union{Symbol,Vector{Symbol}} = :a
         :locus => PooledArray(repeat(locinames, inner = nsamples) , compress = true),
         :genotype => vec(_SNP(_plinkindex(reshape(data, (nrows, n))))) 
     )
-    if bimfound
-        chromcheck == "(✔)" && insertcols!(genodf, 3, :chromosome => PooledArray(repeat(coalesce.(bimfile.chrom,0), inner = nsamples), compress = true))
-        cmcheck == "(✔)" && insertcols!(genodf, :cm => PooledArray(repeat(Float64.(coalesce.(bimfile.cM, 0)), inner = nsamples), compress = true))
-        bpcheck == "(✔)" &&  insertcols!(genodf, :bp => PooledArray(repeat(Int64.(coalesce.(bimfile.bp, 0)), inner = nsamples), compress = true))
-    end
     metadf = generate_meta(genodf)
-    if keepfields != :none
-        if keepfields == :all
-            insertcols!(metadf, :sex => famfile.sex, :dam => famfile.dam, :sire => famfile.sire, :phenotype => famfile.phenotype)
-        else (typeof(keepfields) == Symbol) | (typeof(keepfields) == Vector{Symbol})
-            _fields = typeof(keepfields) == Symbol ? [keepfields] : keepfields
+    if famfields != :none
+        if famfields == :all
+            sirecheck == "(✔)" && insertcols!(metadf, :sire => famfile.sire)
+            damcheck == "(✔)" && insertcols!(metadf, :dam => famfile.dam)
+            sexcheck == "(✔)" && insertcols!(metadf, :sex => famfile.sex)
+            phenotypecheck == "(✔)" && insertcols!(metadf, :phenotype => famfile.phenotype)
+        else (typeof(famfields) == Symbol) | (typeof(famfields) == Vector{Symbol})
+            _fields = typeof(famfields) == Symbol ? [famfields] : famfields
             checkfields = symdiff(_fields, intersect(_fields, [:sire, :dam, :sex, :phenotype]))
             length(checkfields) > 0 && throw(ArgumentError("Unknown .fam file field(s) requested: $checkfields"))
             [insertcols!(metadf, i => famfile[:, i]) for i in _fields]
         end
     end
+    if bimfound && bimfields != :none
+        if bimfields == :all
+            chromcheck == "(✔)" && insertcols!(genodf, 3, :chromosome => PooledArray(repeat(coalesce.(bimfile.chromosome,0), inner = nsamples), compress = true))
+            cmcheck == "(✔)" && insertcols!(genodf, :cm => PooledArray(repeat(Float64.(coalesce.(bimfile.cm, 0)), inner = nsamples), compress = true))
+            bpcheck == "(✔)" &&  insertcols!(genodf, :bp => PooledArray(repeat(Int64.(coalesce.(bimfile.bp, 0)), inner = nsamples), compress = true))
+        else (typeof(bimfields) == Symbol) | (typeof(bimfields) == Vector{Symbol})
+            _fields = typeof(bimfields) == Symbol ? [bimfields] : bimfields
+            checkfields = symdiff(_fields, intersect(_fields, [:chromosome, :cm, :bp]))
+            length(checkfields) > 0 && throw(ArgumentError("Unknown .bim file field(s) requested: $checkfields"))
+            :chromosome ∈ _fields && insertcols!(genodf, 3, :chromosome => PooledArray(repeat(coalesce.(bimfile.chromosome,0), inner = nsamples), compress = true))
+            :cm ∈ _fields && insertcols!(genodf, :cm => PooledArray(repeat(Float64.(coalesce.(bimfile.cm, 0)), inner = nsamples), compress = true))
+            :bp ∈ _fields &&  insertcols!(genodf, :bp => PooledArray(repeat(Int64.(coalesce.(bimfile.bp, 0)), inner = nsamples), compress = true))
+            #[insertcols!(genodf, i => PooledArray(repeat(coalesce.(bimfile[:, i], 0), inner = nsamples), compress = true)) for i in _fields]
+        end
+    end
     return PopData(metadf, genodf)
 end
-
 
 """
     plink(infile::String; keepfields::Symbol|Vector{Symbol}, silent::Bool)
@@ -156,24 +168,28 @@ Requires an accompanying `.fam` file in the same directory, but an accompanying 
 - `infile::String` : path to `.ped` or `.bed` file
 
 ### Keyword Arguments
-- `keepfields::Symbol|Vector{Symbol}` : which additional fields to import from the `.fam` file)
+- `famfields::Symbol|Vector{Symbol}` : which additional fields to import from the `.fam` file
     - `:all` [default]
     - `:none`
     - any one or combination of `[:sire, :dam, :sex, :phenotype]`
+- `bimfields::Symbol|Vector{Symbol}` : which additional fields to import from the optional `.bim` file
+    - `:all` [default]
+    - `:none`
+    - any one or combination of `[:chromosome, :cm, :bp]`
 - `silent::Bool`   : whether to print file information during import (default: `false`)
 
 ## Example
 ```julia
-para = plink("datadir/parakeet.ped", keepfields = :sex)
-parr = plink("datadir/parrot.bed", keepfields = [:sire, :dam])
+para = plink("datadir/parakeet.ped", famfields = :sex)
+parr = plink("datadir/parrot.bed", famfields = [:sire, :dam], bimfields = :chromosome)
 ```
 """
-function plink(infile::String; keepfields::Union{Symbol,Vector{Symbol}} = :all, silent::Bool = false)
+function plink(infile::String; famfields::Union{Symbol,Vector{Symbol}} = :all, bimfields::Union{Symbol,Vector{Symbol}} = :all, silent::Bool = false)
     isfile(infile) || throw(ArgumentError("$infile not found in working directory."))
     if endswith(infile, ".ped")
-        _plinkped(infile, keepfields, silent)
+        _plinkped(infile, famfields, bimfields, silent)
     elseif endswith(infile, ".bed")
-        _plinkbed(infile, keepfields, silent)
+        _plinkbed(infile, famfields, bimfields, silent)
     else
         throw(ArgumentError("Filename $infile is not recognized as having a .ped or .bed extension"))
     end
@@ -181,22 +197,9 @@ end
 
 ### writing to PLINK format ###
 
-@inline function _genoconversion(genotype::T) where T<:Genotype
-    #=
-    00	Homozygous for first allele (0x00)
-    01	Missing genotype (0x01)
-    10	Heterozygous  (0x02)
-    11	Homozygous for second allele in .bim file (0x03)
-    =#
-    #genotype == NTuple{2,Int8}((Int8(1),Int8(1))) ? 0x00 :
-    #    genotype == NTuple{2,Int8}((Int8(1),Int8(2))) ? 0x02 : 0x03
-    join(genotype, " ")
-end
+@inline _genoconversion(genotype::T) where T<:Genotype = join(genotype, " ")
+@inline _genoconversion(genotype::Missing) = "0 0"
 
-@inline function _genoconversion(genotype::Missing)
-    #return 0x01
-    "0 0"
-end
 
 """
     plink(data::PopData; filename::String)
@@ -223,7 +226,8 @@ function plink(data::PopData; filename::String)
         tmp[!, i] .= Int8(0)
     end
     select!(tmp, :population, :name, :sire, :dam, :sex, :phenotype)
-    CSV.write(basename * ".fam", tmp, delim = " ", writeheader = false, quotestrings = false)
+    tmp.sex = coalesce.(tmp.sex, 0)
+    CSV.write(basename * ".fam", tmp, delim = " ", writeheader = false, quotestrings = false, missingstring = "0")
     # the .ped file
     open(filename, "w") do outped 
         eachind = groupby(data.genodata, :name)
@@ -237,6 +241,16 @@ function plink(data::PopData; filename::String)
             println(outped, "")
         end
     end
+    # the bim file
+    tmp = unique(data.genodata, :locus)[:, r"chrom|locus|cm|bp"]
+    current_cols = propertynames(tmp)
+    fill_cols = symdiff(current_cols,[:chrom, :locus, :cm, :bp])
+    for i in fill_cols
+        tmp[!, i] .= Int8(0)
+    end
+    select!(tmp, :chrom, :locus, :cm, :bp)
+    CSV.write(basename * ".bim", tmp, delim = " ", writeheader = false, quotestrings = false)
+    return
 end
 
 
