@@ -37,7 +37,7 @@ end
 function PopDataInfo(genodf::DataFrame)
     sampleinfo = unique(dropmissing(genodf), :name)
     insertcols!(sampleinfo, :ploidy => Int8.(length.(sampleinfo.genotype)))
-    select!(sampleinfo, :name, :population, :ploidy)
+    select!(sampleinfo, :name => collect => :name, :population, :ploidy)
     ploidy = unique(sampleinfo.ploidy)
     ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
     PopDataInfo(

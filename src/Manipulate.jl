@@ -189,7 +189,7 @@ end
 
 
 """
-    get_genotype(data::PopObj; sample::String, locus::String)
+    get_genotype(data::PopData; sample::String, locus::String)
 Return the genotype of one sample at one locus in a `PopData` object.
 ### Example
 ```
@@ -211,12 +211,12 @@ cats = @nancycats
 get_genotypes(cats, "N115")
 ```
 """
-function get_genotypes(data::PopObj, sample::String)
+function get_genotypes(data::PopData, sample::String)
     data.genodata[data.genodata.name .== sample, :genotype]
 end
 
 """
-    get_genotypes(data::PopObj; name::Union{String, Vector{String}}, locus::Union{String, Vector{String}})
+    get_genotypes(::PopData; sample::Union{T, Vector{T}}, locus::Union{T, Vector{T}}) where T<:AbstractString
 Return a table of the genotype(s) of one or more `samples` for one or more
 specific `loci` (both as keywords) in a `PopData` object.
 ### Examples
@@ -228,14 +228,10 @@ get_genotypes(cats, name = "N115" , locus = ["fca8", "fca37"])
 get_genotypes(cats, name = ["N1", "N2"] , locus = ["fca8", "fca37"])
 ```
 """
-function get_genotypes(data::PopData; name::Union{String, Vector{String}}, locus::Union{String, Vector{String}})
-    if typeof(name) == String
-        name = [name]
-    end
-    if typeof(locus) == String
-        locus = [locus]
-    end
-    @view data.genodata[(data.genodata.name .∈ Ref(name)) .& (data.genodata.locus .∈ Ref(locus)), :] 
+function get_genotypes(data::PopData; sample::Union{T, Vector{T}}, locus::Union{U, Vector{U}}) where T<:AbstractString where U<:AbstractString
+    sample = typeof(sample) <: AbstractString ? [sample] : sample
+    locus = typeof(locus) <: AbstractString ? [locus] : locus
+    @view data.genodata[(data.genodata.name .∈ Ref(sample)) .& (data.genodata.locus .∈ Ref(locus)), :] 
 end
 
 
@@ -293,10 +289,17 @@ populations!(potatoes, potatopops)
 ```
 
 ## Rename using a Vector of Strings
-`Vector` of new unique population names in the order that they appear in the Popdata.metadata
+`Vector` of new unique population names. If the number of new names is equal to the number of current unique population names,
+the method will intelligently rename the existing populations. If the number of new population names is equal to the number of samples,
+the method will instead assign new population names to every sample in the order with which they appear in `PopData.metadata.sampleinfo`.
 \n**Example**
 ```
+# rename [2] existing populations
 potatopops = ["Idaho", "Russet"]
+populations!(potatoes, potatopops)
+
+# assign new names to all [44] samples
+poptatopops = repeat(["Idaho", "Russet"], inner = 22) ;
 populations!(potatoes, potatopops)
 ```
 ## Reassign using samples and new population assignments
@@ -306,7 +309,7 @@ population name. This can be useful to change population names for only some ind
 
 \n**Example**
 ```
-populations!(potatoes, ["potato_1", "potato_2"], ["north_russet", "south_russet"])
+populations!(potatoes, ["potato_1", "potato_2"], ["north", "south"])
 ```
 
 """
@@ -314,42 +317,54 @@ function populations!(data::PopData, rename::Dict)
     msg = ""
     @inbounds for key in keys(rename)
         if key ∉ unique(data.sampleinfo.population)
-            msg *= "  Population \"$key\" not found in PopData\n"
+            msg *= " population not found: \"$key\"\n"
         else
             replace!(data.sampleinfo.population, key => rename[key])
             replace!(data.genodata.population.pool, key => rename[key])
+            data.genodata.population = PooledArray(data.genodata.population, compress = true)
+            data.sampleinfo.population = PooledArray(data.sampleinfo.population, compress = true)
         end
     end
     msg != "" && printstyled("Warnings:", color = :yellow) ; print("\n"*msg)
-    PopDataInfo!(data)
+    data.metadata.populations = length(unique(data.sampleinfo.population))
     return
 end
 
 function populations!(data::PopData, rename::Vector{String})
     current_popnames = unique(data.sampleinfo.population)
-    rn_dict = Dict{String, String}()
-    [rn_dict[string(i)] = j for (i,j) in zip(current_popnames, rename)]
-    populations!(data, rn_dict)
+    if length(current_popnames) == length(rename)
+        # infer that you want to replace existing unique names
+        println(" Renaming unique populations")
+        rn_dict = Dict(zip(current_popnames, rename))
+        populations!(data, rn_dict)
+    elseif length(rename) == data.metadata.samples
+        # infer that you want to replace the population names for each sample
+        println(" Assigning new population names to all samples")
+        populations!(data, samples(data), rename)
+    else 
+        length(rename) != length(current_popnames) && throw(DimensionMismatch("Number of replacement names ($(length(rename))) do not match the number of current population names ($(length(current_popnames))) or number of samples ($(data.metadata.samples))"))
+    end
     return
 end
 
-function populations!(data::PopData, samples::Vector{String}, populations::Vector{String})
-    meta_df = groupby(data.sampleinfo, :name)
-    loci_df = groupby(data.genodata, :name)
-    for (sample, new_pop) in zip(samples, populations)
-        meta_df[(name = sample,)].population .= new_pop
-        loci_df[(name = sample,)].population .= new_pop
+function populations!(data::PopData, samples::AbstractVector{T}, populations::AbstractVector{U}) where T<:AbstractString where U<:AbstractString
+    nsample = length(samples)
+    npops = length(populations)
+    nsample != npops && throw(DimensionMismatch("Number of provided samples ($(nsample)) does not match the number of provided populations ($(npops))"))
+    namescheck = symdiff(samples,intersect(samples, data.sampleinfo.name))
+    if !isempty(namescheck)
+        throw(ArgumentError("$(length(namescheck)) samples not found: $(join(namescheck, ", "))"))
+    end
+    for (i,samp) in enumerate(samples)
+        @views data.sampleinfo[data.sampleinfo.name .== samp, :].population .= populations[i]
+        @views data.genodata[data.genodata.name .== samp, :].population .= populations[i]
     end
     # drop old levels
     data.genodata.population = PooledArray(data.genodata.population, compress = true)
     data.sampleinfo.population = PooledArray(data.sampleinfo.population, compress = true)
-    PopDataInfo!(data)
+    data.metadata.populations = length(unique(data.sampleinfo.population))
     return
 end
-
-const population = populations
-const population! = populations!
-const popnames! = populations!
 
 ##### Exclusion #####
 """
