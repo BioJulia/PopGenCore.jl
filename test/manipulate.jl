@@ -57,7 +57,7 @@ sharks = @gulfsharks;
         populations!(cats, rn_vect)
         @test cats.metadata.populations == 237
         @test cats.sampleinfo.population == rn_vect
-        @testthrow DimensionMismatch populations!(cats, string.(1:22)) 
+        @test_throws DimensionMismatch populations!(cats, string.(1:22)) 
 
         rn_vect_ii = ["N215", "N297"]
         rn_vect_iin = ["one", "seventeen"]
