@@ -4,84 +4,85 @@ export populations, population, populations!, population!
 export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, filter!
 
 # TODO make adding metata flexible to do inner joins
-# TODO split into add_sampleinfo! and add_locusinfo!
+
+
 """
-    add_meta!(popdata::PopData, metadata::T; name::String, loci::Bool = true, categorical::Bool = true) where T <: AbstractVector
-Add an additional metadata information to a `PopData` object. Mutates `PopData` in place. Metadata 
-must be in the same order as the samples in `Popdata.metadata`.
+    sampleinfo!(::PopData, metadata::Pair{Symbol, Vector}; categorical::Bool = false)
+    sampleinfo!(::PopData, metadata::Pair{String, Vector}; categorical::Bool = false)
+Add an additional sample information to `PopData` metadata. Mutates `PopData` in place. Metadata 
+must be in the same order as the samples in `PopData.sampleinfo`.
 
 #### Arguments
-- `popdata` : The `PopData` object to add information to
-- `metadata` : A `Vector` with the metadata you wish to add to the `PopData`, in the same order as the names appear in `Popdata.metadata`
+- `metadata` : A Pair of :ColumnName => [Values]
 
 #### Keyword Arguments
-- `name` : String of the name of this new column
-- `loci` : Boolean of whether to also add this information to `PopData.genodata` (default: `true`)
-- `categorical` : Boolean of whether the metadata being added is categorical aka "factors" (default: `true`)
-"""
-function add_meta!(popdata::PopData, metadata::T; name::String, loci::Bool = true, categorical::Bool = true) where T <: AbstractVector
-    length(metadata) != length(popdata.sampleinfo.name) && error("Provided metadata vector (n = $length(metadata)) and samples in PopData (n = $length(popdata.sampleinfo.name)) have different lengths")
-    symbolname = Symbol(name) 
-    infotext = "\nAdding :$(symbolname) column to metadata" 
-    if loci
-        infotext *= " and genodata"
-    end
-    @info infotext
+- `categorical` : Boolean of whether the metadata being added is categorical aka "factors" (default: `false`)
 
-    # add to meta
-    insertcols!(popdata.metadata, symbolname => metadata)
-    # add to loci
-    if loci
-        tmp = DataFrame(:name => popdata.sampleinfo.name, symbolname => metadata)
-        filled = outerjoin(select(popdata.genodata, :name), tmp, on = :name)[!, symbolname]
-        if categorical == true
-            popdata.genodata[!, symbolname] = PooledArray(filled, compress = true)
-        else
-            popdata.genodata[!, symbolname] = filled
-        end
+## Example
+```julia
+cats = @nancycats
+sampleinfo!(cats, :whiskerlength => rand(cats.metadata.samples))
+sampleinfo!(cats, "tailcolor" => rand(["orange", "brown"], cats.metadata.samples), categorical = true)
+cats
+PopData{Diploid, 9 Microsatellite loci}
+  Samples: 237
+  Populations: 17
+  Other Info: ["whiskerlength", "tailcolor"]
+```
+"""
+function sampleinfo!(data::PopData, metadata::Pair{Symbol, T}; categorical::Bool = false) where T <: AbstractVector
+    length(metadata[2]) != data.metadata.samples && error("Provided metadata vector (n = $(length(metadata[2]))) and samples in PopData (n = $(data.metadata.samples)) have different lengths")
+    infotext = "\nAdding :$(metadata[1]) column to metadata.sampleinfo" 
+    @info infotext
+    if categorical == true
+        insertcols!(data.metadata.sampleinfo, metadata[1] => PooledArray(metadata[2], compress = true))
+    else
+        insertcols!(data.metadata.sampleinfo, metadata[1] => metadata[2])
     end
     return
 end
 
+function sampleinfo!(data::PopData, metadata::Pair{String, T}; categorical::Bool = false) where T <: AbstractVector 
+    sampleinfo!(data, Symbol(metadata[1]) => metadata[2], categorical = categorical)
+end
 
 """
-    add_meta!(popdata::PopData, samples::Vector{String}, metadata::T; name::String, loci::Bool = true, categorical::Bool = true) where T <: AbstractVector
-Add an additional metadata information to a `PopData` object. Mutates `PopData` in place. Takes a vector of
-sample names if the metadata is not in the same order as samples appear in `Popdata.metadata`.
+    locusinfo!(::PopData, metadata::Pair{Symbol, Vector}; categorical::Bool = false)
+    locusinfo!(::PopData, metadata::Pair{String, Vector}; categorical::Bool = false)
+Add an additional locus information to `PopData` metadata. Mutates `PopData` in place. Metadata 
+must be in the same order as the samples in `PopData.locusinfo`.
 
 #### Arguments
-- `popdata` : The `PopData` object to add information to
-- `sample` : A `Vector{String}` of sample names corresponding to the order of the `metadata` 
-- `metadata` : A `Vector` with the metadata you wish to add to the `PopData`, in the same order as the names appear in `Popdata.metadata`
+- `metadata` : A Pair of :ColumnName => [Values]
 
 #### Keyword Arguments
-- `name` : String of the name of this new column
-- `loci` : Boolean of whether to also add this information to `PopData.genodata` (default: `true`)
-- `categorical` : Boolean of whether the metadata being added is categorical aka "factors" (default: `true`)
+- `categorical` : Boolean of whether the metadata being added is categorical aka "factors" (default: `false`)
+
+## Example
+```julia
+cats = @nancycats
+locusinfo!(cats, :quality => rand(cats.metadata.loci))
+cats
+PopData{Diploid, 9 Microsatellite loci}
+  Samples: 237
+  Populations: 17
+  Other Info: ["quality"]
+```
 """
-function add_meta!(popdata::PopData, samples::Vector{String}, metadata::T; name::String, loci::Bool = true) where T <: AbstractVector
-    length(samples) != length(popdata.sampleinfo.name) && error("Provided sample vector (n = $length(samples)) and samples in PopData (n = $length(popdata.sampleinfo.name)) have different lengths")
-    length(samples) != length(metadata) && error("Sample names (n = $length(samples)) and metadata vectors (n = $length(metadata)) have different lengths")
-    sort(samples) != sort(popdata.sampleinfo.name) && error("Sample names are not identical")
-    symbolname = Symbol(name) 
-    infotext = "\nAdding :$(symbolname) column to metadata" 
-    if loci
-        infotext *= " and genodata"
-    end
+function locusinfo!(data::PopData, metadata::Pair{Symbol, T}; categorical::Bool = false) where T <: AbstractVector
+    length(metadata[2]) != data.metadata.loci && error("Provided metadata vector (n = $(length(metadata[2]))) and samples in PopData (n = $(data.metadata.loci)) have different lengths")
+    infotext = "\nAdding :$(metadata[1]) column to metadata.locusinfo" 
     @info infotext
-
-    tmp = DataFrame(:name => samples, symbolname => metadata)
-    popdata.metadata[!, symbolname] = outerjoin(select(popdata.metadata, :name), tmp, on = :name)[!, symbolname]
-
-    if loci
-        filled = outerjoin(select(popdata.genodata, :name), tmp, on = :name)[!, symbolname]
-        if categorical == true
-            popdata.genodata[!, symbolname] = PooledArray(filled, compress = true)
-        else
-            popdata.genodata[!, symbolname] = filled
-        end
+    if categorical == true
+        insertcols!(data.metadata.locusinfo, metadata[1] => PooledArray(metadata[2], compress = true))
+    else
+        insertcols!(data.metadata.locusinfo, metadata[1] => metadata[2])
     end
     return
+end
+
+function locusinfo!(data::PopData, metadata::Pair{String, T}; categorical::Bool = false) where T <: AbstractVector 
+    locusinfo!(data, Symbol(metadata[1]) => metadata[2], categorical = categorical)
 end
 
 
@@ -341,7 +342,7 @@ function populations!(data::PopData, samples::Vector{String}, populations::Vecto
     end
     # drop old levels
     data.genodata.population = PooledArray(data.genodata.population, compress = true)
-    data.sampleinfo.populaion = PooledArray(data.sampleinfo.population, compress = true)
+    data.sampleinfo.population = PooledArray(data.sampleinfo.population, compress = true)
     PopDataInfo!(data)
     return
 end
