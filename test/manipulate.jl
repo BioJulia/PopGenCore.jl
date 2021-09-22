@@ -58,8 +58,8 @@ sharks = @gulfsharks;
         rn_vect_iin = ["one", "seventeen"]
         populations!(cats, rn_vect_ii, rn_vect_iin)
         @test "one" ∈ cats.sampleinfo.population && "seventeen" ∈ cats.sampleinfo.population
-        @test cats.metadata[cats.sampleinfo.name .== "N215", :population] == ["one"]
-        @test cats.metadata[cats.sampleinfo.name .== "N297", :population] == ["seventeen"]
+        @test cats.sampleinfo[cats.sampleinfo.name .== "N215", :population] == ["one"]
+        @test cats.sampleinfo[cats.sampleinfo.name .== "N297", :population] == ["seventeen"]
     end
 
     @testset "exclusion" begin
