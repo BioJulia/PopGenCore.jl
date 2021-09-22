@@ -31,11 +31,11 @@ sharks = @gulfsharks;
         N115 = get_genotypes(cats, "N115")
         @test length(N115) == 9
         @test typeof(N115) == Vector{Union{Missing, Tuple{Int16,Int16}}}
-        @test typeof(get_genotypes(cats, name = "N115" , locus = "fca8")) <: SubDataFrame
-        @test names(get_genotypes(cats, name = "N115" , locus = "fca8")) == ["name", "population", "locus", "genotype"]
-        @test size(get_genotypes(cats, name = ["N115", "N7"] , locus = "fca8")) == (2,4)
-        @test size(get_genotypes(cats, name = "N115" , locus = ["fca8", "fca37"])) == (2,4)
-        @test size(get_genotypes(cats, name = ["N115", "N7"] , locus = ["fca8", "fca37"])) == (4,4)
+        @test typeof(get_genotypes(cats, sample = "N115" , locus = "fca8")) <: SubDataFrame
+        @test names(get_genotypes(cats, sample = "N115" , locus = "fca8")) == ["name", "population", "locus", "genotype"]
+        @test size(get_genotypes(cats, sample = ["N115", "N7"] , locus = "fca8")) == (2,4)
+        @test size(get_genotypes(cats, sample = "N115" , locus = ["fca8", "fca37"])) == (2,4)
+        @test size(get_genotypes(cats, sample = ["N115", "N7"] , locus = ["fca8", "fca37"])) == (4,4)
         @test length(genotypes(sharks, "contig_475")) == 212
     end
 
@@ -53,7 +53,12 @@ sharks = @gulfsharks;
         populations!(cats, rn_vect)
         @test "one" ∉ cats.sampleinfo.population && "1" ∈ cats.sampleinfo.population
         @test "two" ∉ cats.sampleinfo.population && "2" ∈ cats.sampleinfo.population
-    
+        rn_vect = string.(1:237)
+        populations!(cats, rn_vect)
+        @test cats.metadata.populations == 237
+        @test cats.sampleinfo.population == rn_vect
+        @testthrow DimensionMismatch populations!(cats, string.(1:22)) 
+
         rn_vect_ii = ["N215", "N297"]
         rn_vect_iin = ["one", "seventeen"]
         populations!(cats, rn_vect_ii, rn_vect_iin)
