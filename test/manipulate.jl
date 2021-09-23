@@ -87,9 +87,9 @@ sharks = @gulfsharks;
         tmp = keep(cats, locus = ["fca8","fca37"])
         @test length(loci(tmp)) == 2
         tmp = keep(cats, population = "1")
-        @test length(population(tmp)) == 1
+        @test length(populations(tmp)) == 1
         tmp = keep(cats, population = 1:2)
-        @test length(population(tmp)) == 2
+        @test length(populations(tmp)) == 2
     end
 end
 
