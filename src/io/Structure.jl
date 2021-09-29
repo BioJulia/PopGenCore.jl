@@ -168,7 +168,7 @@ structure(fewer_cats, filename = "filtered_nancycats.str", faststructure = true)
 function structure(data::PopData; filename::String, faststructure::Bool = false, delim::String = "tab")
     # index both dataframes
     genos_gdf = groupby(data.genodata, :name)
-    meta_gdf = groupby(data.metadata, :name)
+    meta_gdf = groupby(data.metadata.sampleinfo, :name)
     # get the sample names to iterate keys over
     idx = collect(samples(data))
     
