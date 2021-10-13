@@ -1,5 +1,5 @@
 export PopObj, PopData, PopDataInfo, show, Genotype, GenoArray, SNP, MSat
-export metadata, genodata, getindex
+export metadata, genodata, sampelinfo, locusinfo, getindex
 
 """
     AbstractType PopObj
@@ -35,8 +35,8 @@ end
 
 # constructor FORMAT just the genodata dataframe
 function PopDataInfo(genodf::DataFrame)
-    sampleinfo = unique(dropmissing(genodf), :name)
-    insertcols!(sampleinfo, :ploidy => Int8.(length.(sampleinfo.genotype)))
+    sampleinfo = unique(genodf, :name)
+    sampleinfo.ploidy = [ismissing(geno) ? Int8(0) : Int8(length(geno)) for geno in sampleinfo.genotype]
     select!(sampleinfo, :name => collect => :name, :population, :ploidy)
     ploidy = unique(sampleinfo.ploidy)
     ploidy = length(ploidy) == 1 ? ploidy[1] : ploidy
@@ -52,7 +52,7 @@ function PopDataInfo(genodf::DataFrame)
 end
 
 function Base.show(io::IO, data::PopDataInfo)
-    println(io, " ploidy:        ", data.ploidy...)
+    println(io, " ploidy:        ", join(data.ploidy, ","))
     println(io, " # loci:        ", data.loci)
     println(io, " # samples:     ", data.samples)
     println(io, " # populations: ", data.populations)
@@ -255,8 +255,9 @@ function Base.getindex(data::PopData, args...)
         3 => (i -> PooledArray(i, compress = true)) => :locus,
         4
     )
-    #newmeta = intersect(data.sampleinfo.name, geno.name.pool) != data.sampleinfo.name ? data.sampleinfo[data.sampleinfo.name .∈ Ref(geno.name.pool), :] : data.sampleinfo
-    PopData(geno)
+    out = PopData(data.metadata, geno)
+    PopDataInfo!(out)
+    return out
 end
 
 # shortcut methods for convenience and less verbose typing

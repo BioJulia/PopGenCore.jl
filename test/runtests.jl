@@ -6,6 +6,7 @@ using PopGenCore
 using Test
 
 all_tests = [
+    "popdata.jl",
     "types.jl",
      "io.jl",
      "manipulate.jl",

@@ -9,19 +9,6 @@ cats = @nancycats;
 sharks = @gulfsharks;
 
 @testset "Data Types and Datasets" begin
-    @testset "Dataset types" begin
-        @test typeof(cats) == PopData
-        @test typeof(cats.metadata) == PopDataInfo
-        @test typeof(cats.genodata) == DataFrame
-        @test typeof(cats.sampleinfo) == DataFrame
-        @test typeof(cats.locusinfo) == DataFrame
-        @test typeof(sharks) == PopData
-        @test typeof(sharks.metadata) == PopDataInfo
-        @test typeof(sharks.genodata) == DataFrame
-        @test typeof(sharks.info.sampleinfo) == DataFrame
-        @test typeof(sharks.info.locusinfo) == DataFrame
-    end
-
     @testset "Dataset dimensions" begin
         @test size(cats.sampleinfo) == (237,3)
         @test size(cats.genodata) == (2133,4)
