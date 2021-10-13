@@ -1,10 +1,10 @@
 module  TestPopData
 
 using PopGenCore
+using DataFrames
 using Test
 
 x = @nancycats
-
 
 @testset "PopData" begin
     @testset "Struct types" begin
@@ -30,7 +30,8 @@ x = @nancycats
     @testset "Indexing" begin
         @test x[x.genodata.locus .== "fca8", :] isa PopData
         @test x[x.genodata.name .== "N100", :] isa PopData
-        @test x[x.genodata.locus .∈ ["fca8", "fca37"], :] isa PopData
+        @test x[x.genodata.name .∈ Ref(["N100", "N217"]), :] isa PopData
+        @test x[x.genodata.locus .∈ Ref(["fca8", "fca37"]), :] isa PopData
     end
 end
 

@@ -35,7 +35,7 @@ end
 
 # constructor FORMAT just the genodata dataframe
 function PopDataInfo(genodf::DataFrame)
-    sampleinfo = unique(genodf, :name)
+    sampleinfo = unique(dropmissing(genodf), :name)
     sampleinfo.ploidy = [ismissing(geno) ? Int8(0) : Int8(length(geno)) for geno in sampleinfo.genotype]
     select!(sampleinfo, :name => collect => :name, :population, :ploidy)
     ploidy = unique(sampleinfo.ploidy)
@@ -109,6 +109,7 @@ end
 
 PopData(data::DataFrame) = PopData(PopDataInfo(data), data)
 
+# method to update PopDataInfo from PopData, all in one swoop
 function PopDataInfo!(data::PopData)
     data.metadata.samples = length(data.genodata.name.pool)
     data.metadata.loci = length(data.genodata.locus.pool)
@@ -124,6 +125,25 @@ function PopDataInfo!(data::PopData)
     data.metadata.ploidy = ploidy
     data.metadata.biallelic = data.metadata.biallelic ? true : isbiallelic(data)
     return
+end
+
+# method to update preexisting PopDataInfo with new genodata
+# useful for getindex and creating new PopData from that
+function PopDataInfo!(popdatainfo::PopDataInfo, genodata::DataFrame)
+    popdatainfo.samples = length(genodata.name.pool)
+    popdatainfo.loci = length(genodata.locus.pool)
+    popdatainfo.populations = length(genodata.population.pool)
+    filter!(:name => x -> x ∈ genodata.name.pool,  popdatainfo.sampleinfo)
+    filter!(:locus => x -> x ∈ genodata.locus.pool,  popdatainfo.locusinfo)
+    if "ploidy" ∈ names(popdatainfo.sampleinfo)
+        ploidy = unique(popdatainfo.sampleinfo.ploidy)
+        ploidy = length(ploidy) == 1 ? Int8(ploidy[1]) : Int8.(ploidy)
+    else
+        ploidy = Int8(0)
+    end       
+    popdatainfo.ploidy = ploidy
+    popdatainfo.biallelic = popdatainfo.biallelic ? true : isbiallelic(genodata)
+    return popdatainfo
 end
 
 
@@ -255,9 +275,9 @@ function Base.getindex(data::PopData, args...)
         3 => (i -> PooledArray(i, compress = true)) => :locus,
         4
     )
-    out = PopData(data.metadata, geno)
-    PopDataInfo!(out)
-    return out
+    pdinfo = deepcopy(data.info)
+    out = PopDataInfo!(pdinfo, geno)
+    PopData(out, geno)
 end
 
 # shortcut methods for convenience and less verbose typing
