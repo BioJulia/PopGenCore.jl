@@ -356,8 +356,8 @@ function populations!(data::PopData, samples::AbstractVector{T}, populations::Ab
         throw(ArgumentError("$(length(namescheck)) samples not found: $(join(namescheck, ", "))"))
     end
     for (i,samp) in enumerate(samples)
-        @views data.sampleinfo[data.sampleinfo.name .== samp, :].population .= populations[i]
-        @views data.genodata[data.genodata.name .== samp, :].population .= populations[i]
+        @views data.sampleinfo[data.sampleinfo.name .== samp, :population] .= populations[i]
+        @views data.genodata[data.genodata.name .== samp, :population] .= populations[i]
     end
     # drop old levels
     data.genodata.population = PooledArray(data.genodata.population, compress = true)
