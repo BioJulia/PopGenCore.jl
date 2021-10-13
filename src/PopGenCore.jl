@@ -29,6 +29,6 @@ include("io/ReadWrite.jl")
 include("Datasets.jl")
 
 # precompile some file IO
-include("precompile/precompile.jl") ;
+#include("precompile/precompile.jl") ;
 
 end
