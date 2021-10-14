@@ -40,7 +40,7 @@ x = @nancycats
         @test ishet((1,1), 1) == false
         @test ishet((1,2), 1) == true
         @test ishet((1,1), 2) == false
-        @test ishet(missing, 2) == .
+        @test ishet(missing, 2) == false
         @test PopGenCore._ishet(missing, 2) === missing
     end
 end
