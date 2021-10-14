@@ -32,7 +32,8 @@ ishom(locus::Genotype)
 ishom(locus::Missing)
 ```
 A series of methods to test if a locus or loci are homozygous and return `true` if
-it is, `false` if it isn't, and `missing` if it's `missing`. The vector version
+it is, `false` if it isn't (or missing). For calculations, we recommend using `_ishom()`,
+which returns `missing` if the genotype is `missing`. The vector version
 simply maps the function over the elements.
 """
 @inline function ishom(locus::Genotype)
@@ -40,7 +41,11 @@ simply maps the function over the elements.
     return all(@inbounds first(locus) .== locus)
 end
 
-ishom(locus::Missing) = missing
+# public facing method
+ishom(locus::Missing) = false
+# API computational method
+_ishom(locus::Missing) = missing
+
 
 @inline function ishom(locus::T) where T<:GenoArray
     return @inbounds map(ishom, locus)
@@ -62,7 +67,10 @@ end
 
 ishom(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> ishom(i, allele), geno)
 
-ishom(geno::Missing, allele::U) where U<:Integer = missing
+# public facing method
+ishom(geno::Missing, allele::U) where U<:Integer = false
+# API computational method
+_ishom(geno::Missing, allele::U) where U<:Integer = missing
 
 """
 ```
@@ -78,7 +86,10 @@ elements. Under the hood, this function is simply `!ishom`.
     return !ishom(locus)
 end
 
-ishet(locus::Missing) = missing
+# public facing method
+ishet(locus::Missing) = false
+# API computational method
+_ishet(locus::Missing) = missing
 
 
 @inline function ishet(locus::T) where T<:GenoArray
@@ -101,5 +112,8 @@ function ishet(geno::T, allele::U) where T<:Genotype where U<:Integer
 end
 
 ishet(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> ishet(i, allele), geno)
+# public facing method
+ishet(geno::Missing, allele::U) where U<:Integer = false
+# API computational method
+_ishet(geno::Missing, allele::U) where U<:Integer = missing
 
-ishet(geno::Missing, allele::U) where U<:Integer = missing
