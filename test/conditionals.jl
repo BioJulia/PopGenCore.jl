@@ -14,7 +14,7 @@ x = @nancycats
 
     @testset "homozygous" begin
         @test ishom(missing) == false
-        @test _ishom(missing) === missing
+        @test PopGenCore._ishom(missing) === missing
         @test ishom((1,2)) == false
         @test ishom((1,1)) == true
         @test ishom((1,1,2)) == false
@@ -25,12 +25,12 @@ x = @nancycats
         @test ishom((1,2), 1) == false
         @test ishom((1,1), 2) == false
         @test ishom(missing, 2) == false
-        @test _ishom(missing, 2) === missing
+        @test PopGenCore._ishom(missing, 2) === missing
     end
 
     @testset "heterozygous" begin
         @test ishet(missing) == false
-        @test _ishet(missing) === missing
+        @test PopGenCore._ishet(missing) === missing
         @test ishet((1,2)) == true
         @test ishet((1,1)) == false
         @test ishet((1,1,2)) == true
@@ -40,8 +40,8 @@ x = @nancycats
         @test ishet((1,1), 1) == false
         @test ishet((1,2), 1) == true
         @test ishet((1,1), 2) == false
-        @test ishet(missing, 2) == false
-        @test _ishet(missing, 2) === missing
+        @test ishet(missing, 2) == .
+        @test PopGenCore._ishet(missing, 2) === missing
     end
 end
 
