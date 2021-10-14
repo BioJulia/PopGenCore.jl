@@ -203,14 +203,6 @@ function Base.show(io::IO, data::PopData)
     println(io, "PopData", "{" * ploidy, n_loc, " " , marker * " loci}")
     println(io, "  Samples: $(data.metadata.samples)")
     print(io, "  Populations: $(data.metadata.populations)")
-    if "longitude" ∈ names(data.sampleinfo)
-        miss_count = count(ismissing, data.sampleinfo.longitude)
-        if miss_count == length(data.sampleinfo.longitude)
-            print("")
-        else
-            print(io, "\n  Coordinates: present")
-        end
-    end
     allcols = vcat(names(data.sampleinfo), names(data.genodata)) |> unique
     extracols = symdiff(allcols, ["name", "population", "ploidy", "locus", "genotype"])
     if !isempty(extracols)
@@ -266,8 +258,8 @@ function Base.getindex(data::PopData, idx::Symbol)
     end
 end
 
-function Base.getindex(data::PopData, args...)
-    geno = getindex(data.genodata, args...)
+function Base.getindex(data::PopData, args)
+    geno = getindex(data.genodata, args, :)
     transform!(
         geno,
         1 => (i -> PooledArray(i, compress = true)) => :name,
@@ -278,6 +270,11 @@ function Base.getindex(data::PopData, args...)
     pdinfo = deepcopy(data.info)
     out = PopDataInfo!(pdinfo, geno)
     PopData(out, geno)
+end
+
+
+function Base.getindex(data::PopData, expression, cols)
+    getindex(data.genodata, expression, cols)
 end
 
 # shortcut methods for convenience and less verbose typing
