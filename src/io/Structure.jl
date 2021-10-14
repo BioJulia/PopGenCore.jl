@@ -170,7 +170,6 @@ function structure(data::PopData; filename::String, faststructure::Bool = false,
     genos_gdf = groupby(data.genodata, :name)
     meta_gdf = groupby(data.metadata.sampleinfo, :name)
     # get the sample names to iterate keys over
-    idx = collect(samples(data))
     
     outfile = open(filename, "w")
     
@@ -190,7 +189,7 @@ function structure(data::PopData; filename::String, faststructure::Bool = false,
     pop_mappings = Dict{String,Integer}()
     [pop_mappings[j] = i for (i,j) in enumerate(pops)]
 
-    for sampl in idx
+    for sampl in data.sampleinfo.name
         ploid = meta_gdf[(name = sampl,)].ploidy |> first
         pop_id = meta_gdf[(name = sampl,)].population |> first
     
