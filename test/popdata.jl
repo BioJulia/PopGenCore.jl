@@ -27,11 +27,21 @@ x = @nancycats
         @test x.metadata.biallelic == false
     end
 
-    @testset "Indexing" begin
-        @test x[x.genodata.locus .== "fca8", :] isa PopData
-        @test x[x.genodata.name .== "N100", :] isa PopData
-        @test x[x.genodata.name .∈ Ref(["N100", "N217"]), :] isa PopData
-        @test x[x.genodata.locus .∈ Ref(["fca8", "fca37"]), :] isa PopData
+    @testset "Indexing DataFrame" begin
+        @test x[x.genodata.locus .== "fca8", :] isa DataFrame
+        @test x[x.genodata.name .== "N100", :] isa DataFrame
+        @test x[x.genodata.name .∈ Ref(["N100", "N217"]), :] isa DataFrame
+        @test x[x.genodata.locus .∈ Ref(["fca8", "fca37"]), :] isa DataFrame
+        @test x[x.genodata.locus .== "fca8", :name] isa AbstractArray
+        @test x[(x.genodata.locus .== "fca8") .& (ishom(x.genodata.genotype, 139)), :name] isa AbstractArray
+        
+    end
+    @testset "Indexing PopData" begin
+        @test x[x.genodata.locus .== "fca8"] isa PopData
+        @test x[x.genodata.name .== "N100"] isa PopData
+        @test x[x.genodata.name .∈ Ref(["N100", "N217"])] isa PopData
+        @test x[x.genodata.locus .∈ Ref(["fca8", "fca37"])] isa PopData
+        @test x[(x.genodata.locus .== "fca8") .& (ishom(x.genodata.genotype, 139))] isa PopData
     end
 end
 

@@ -13,32 +13,35 @@ x = @nancycats
     end
 
     @testset "homozygous" begin
-        @test ishom(missing) === missing
+        @test ishom(missing) == false
+        @test _ishom(missing) === missing
         @test ishom((1,2)) == false
         @test ishom((1,1)) == true
         @test ishom((1,1,2)) == false
         @test ishom((2,2,2)) == true
-        @test all(ishom(x.genodata.genotype[1:5]) .=== [missing, missing, false, false, false])
+        @test all(ishom(x.genodata.genotype[1:5]) .== [false, false, false, false, false])
         @test all(ishom(skipmissing(x.genodata.genotype[1:5])) .== [false, false, false])
         @test ishom((1,1), 1) == true
         @test ishom((1,2), 1) == false
         @test ishom((1,1), 2) == false
-        @test ishom(missing, 2) === missing
-
+        @test ishom(missing, 2) == false
+        @test _ishom(missing, 2) === missing
     end
 
     @testset "heterozygous" begin
-        @test ishet(missing) === missing
+        @test ishet(missing) == false
+        @test _ishet(missing) === missing
         @test ishet((1,2)) == true
         @test ishet((1,1)) == false
         @test ishet((1,1,2)) == true
         @test ishet((2,2,2)) == false
-        @test all(ishet(x.genodata.genotype[1:5]) .=== [missing, missing, true, true, true])
+        @test all(ishet(x.genodata.genotype[1:5]) .=== [false, false, true, true, true])
         @test all(ishet(skipmissing(x.genodata.genotype[1:5])) .== [true, true, true])
         @test ishet((1,1), 1) == false
         @test ishet((1,2), 1) == true
         @test ishet((1,1), 2) == false
-        @test ishet(missing, 2) === missing
+        @test ishet(missing, 2) == false
+        @test _ishet(missing, 2) === missing
     end
 end
 
