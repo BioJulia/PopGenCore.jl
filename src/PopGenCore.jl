@@ -4,7 +4,7 @@ module PopGenCore
 
 using CSV, DataFrames, PooledArrays, StaticArrays
 using CodecZlib, VariantCallFormat
-using StatsBase: countmap
+using StatsBase: countmap, proportionmap
 using Random: shuffle, shuffle!
 
 include("PopData.jl")
@@ -15,6 +15,8 @@ include("Utils/ioUtils.jl")
 include("Utils/MathUtils.jl")
 include("Utils/MissingUtils.jl")
 ##
+include("AlleleFreq.jl")
+include("GenoFreq.jl")
 include("Conditionals.jl")
 include("Permutations.jl")
 include("Iterators.jl")

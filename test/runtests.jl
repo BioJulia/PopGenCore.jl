@@ -8,6 +8,7 @@ using Test
 all_tests = [
     "popdata.jl",
     "types.jl",
+    "allelegenofreq.jl",
      "io.jl",
      "manipulate.jl",
      "conditionals.jl",
