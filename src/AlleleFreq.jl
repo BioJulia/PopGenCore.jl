@@ -67,7 +67,7 @@ This is typically done to calculate average allele frequencies across population
 ```
 cats = @nancycats;
 alleles_df = DataFrames.combine(
-    groupby(cats.loci, [:locus, :population]),
+    groupby(cats.genodata, [:locus, :population]),
     :genotype => allele_freq => :alleles
 );
 DataFrames.combine(
@@ -160,7 +160,7 @@ Return the frequency of a specific `allele` from a vector of `genotypes`.
 ```
 using DataFramesMeta
 ncats = @nancycats;
-ncats_sub @where(ncats.loci, :locus .== "fca8", :genotype .!== missing)
+ncats_sub @where(ncats.genodata, :locus .== "fca8", :genotype .!== missing)
 pop_grp = groupby(ncats_sub, :population)
 DataFrames.combine(pop_grp, :genotype => (geno -> allele_freq(137, geno)) => :freq_137)
 ```

@@ -4,7 +4,7 @@ export strict_shuffle, strict_shuffle!
 """
     permute_loci!(data::PopData)
 Edits `PopData` in place with loci permuted across populations within
-the `.loci` dataframe.
+the `.genodata` dataframe.
 """
 @inline function permute_loci!(data::PopData)
     @inbounds @sync for locus in groupby(data.genodata, :locus)
@@ -18,8 +18,8 @@ end
 """
     permute_samples!(data::PopData; meta::Bool = false)
 Edits `PopData` in place with samples permuted across populations within
-the `.loci` dataframe. Since performance is important for many permutations,
-the default is to only edit the `.loci` table in place; use `meta = true`
+the `.genodata` dataframe. Since performance is important for many permutations,
+the default is to only edit the `.genodata` table in place; use `meta = true`
 if you also require the `.meta` dataframe edited in place.
 """
 @inline function permute_samples!(data::PopData; meta::Bool = false)
@@ -55,7 +55,7 @@ end
 """
     permute_genotypes!(data::PopData; by::String = "locus")
 Edits `PopData` in place with genotypes permuted across individuals within
-the `.loci` dataframe. Use `by = "population"` to permute genotypes
+the `.genodata` dataframe. Use `by = "population"` to permute genotypes
 within populations.
 """
 @inline function permute_genotypes!(data::PopData; by::String = "locus")
@@ -73,7 +73,7 @@ end
 """
     permute_alleles!(data::PopData; ploidy::Union{Nothing, Int} = nothing, by::String = "locus")
 Edits `PopData` in place with alleles permuted and reconstructed into genotypes
-for each locus within the `.loci` dataframe. Use `by = "population"`
+for each locus within the `.genodata` dataframe. Use `by = "population"`
 to permute alleles within populations. If `ploidy` is not provided (default `ploidy = nothing`),
 then ploidy will be identified from the PopData. If performance is important,
 it would be best to identify ploidy in advance and set it to a specific integer.
