@@ -52,11 +52,11 @@ function PopDataInfo(genodf::DataFrame)
 end
 
 function Base.show(io::IO, data::PopDataInfo)
-    println(io, " ploidy:        ", join(data.ploidy, ","))
-    println(io, " # loci:        ", data.loci)
-    println(io, " # samples:     ", data.samples)
-    println(io, " # populations: ", data.populations)
-    println(io, " biallelic:     ", data.biallelic)
+    println(io, " ploidy:      ", join(data.ploidy, ","))
+    println(io, " loci:        ", data.loci)
+    println(io, " samples:     ", data.samples)
+    println(io, " populations: ", data.populations)
+    println(io, " biallelic:   ", data.biallelic)
 end
 
 """
