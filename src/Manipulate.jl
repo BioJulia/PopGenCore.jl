@@ -1,7 +1,7 @@
 export add_meta!, locations, locations!
 export genotypes, get_genotypes, get_genotype
 export populations, population, populations!, population!
-export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, filter!
+export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, Base.filter, Base.filter!
 
 # TODO make adding metata flexible to do inner joins
 
