@@ -57,6 +57,7 @@ function Base.show(io::IO, data::PopDataInfo)
     println(io, " samples:     ", data.samples)
     println(io, " populations: ", data.populations)
     println(io, " biallelic:   ", data.biallelic)
+    println(io, " other fields: locusinfo, sampleinfo")
 end
 
 """
