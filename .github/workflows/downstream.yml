@@ -1,9 +1,8 @@
 name: Downstream
 on:
   push:
-    branches: [master]
+    branches: [dev]
     tags: [v*]
-  pull_request:
 
 jobs:
   test:
