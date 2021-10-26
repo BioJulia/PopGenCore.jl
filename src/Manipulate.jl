@@ -184,17 +184,18 @@ populations!(potatoes, potatopops)
 ```
 
 ## Rename using a Vector of Strings
-`Vector` of new unique population names. If the number of new names is equal to the number of current unique population names,
-the method will intelligently rename the existing populations. If the number of new population names is equal to the number of samples,
-the method will instead assign new population names to every sample in the order with which they appear in `PopData.metadata.sampleinfo`.
+If the number of new names is equal to the number of current unique population names,
+the method will rename the existing populations in the order with which they appear 
+via `unique()`. If the number of new population names is equal to the number of samples,
+the method will instead assign new population names to every sample in the order with which they appear in `sampleinfo(popdata)`.
 \n**Example**
 ```
-# rename [2] existing populations
+# rename (2) existing populations
 potatopops = ["Idaho", "Russet"]
 populations!(potatoes, potatopops)
 
 # assign new names to all [44] samples
-poptatopops = repeat(["Idaho", "Russet"], inner = 22) ;
+potatopops = repeat(["Idaho", "Russet"], inner = 22) ;
 populations!(potatoes, potatopops)
 ```
 ## Reassign using samples and new population assignments

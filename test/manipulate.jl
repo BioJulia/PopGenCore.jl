@@ -30,7 +30,7 @@ sharks = @gulfsharks;
         @test genotype(cats, "N115" => "fca8") == (135,135)
         N115 = genotypes(cats, "N115")
         @test length(N115) == 9
-        @test typeof(N115) == Vector{Union{Missing, Tuple{Int16,Int16}}}
+        @test N115 isa GenoArray
         @test typeof(genotypes(cats, sample = "N115" , locus = "fca8")) <: SubDataFrame
         @test names(genotypes(cats, sample = "N115" , locus = "fca8")) == ["name", "population", "locus", "genotype"]
         @test size(genotypes(cats, sample = ["N115", "N7"] , locus = "fca8")) == (2,4)
@@ -41,8 +41,8 @@ sharks = @gulfsharks;
 
     @testset "populations" begin
         @test length(populations(cats)) == 17
-        @test typeof(populations(cats, counts = true).population) == Vector{String}
-        @test typeof(populations(cats, counts = true).count) == Vector{Int}
+        @test populations(cats, counts = true).population isa Vector{String}
+        @test populations(cats, counts = true).count isa Vector{Int}
 
         rn_dict = Dict("1" => "one", "2" => "two")
         populations!(cats, rn_dict)

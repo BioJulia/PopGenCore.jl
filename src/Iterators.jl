@@ -64,7 +64,7 @@ julia> _simpairs(a)
 ("sim2_off1", "sim2_off2")
 ```
 """
-function _simpairs(data::Vector{String})
+function simpairs(data::Vector{String})
     n = length(data)
     isodd(n) && throw(ArgumentError("Expected an even number of samples, but got $n"))
     Tuple.(Base.Iterators.partition(sort(data), 2))
