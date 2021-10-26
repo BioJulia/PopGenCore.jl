@@ -1,6 +1,6 @@
 export skipinf, skipnan, skipinfnan, nonmissings
 export partitionarray
-export pairwise_pairs, sim_pairs
+export pairwisepairs, simpairs
 
 """
     partitionarray(array::AbstractArray, steps::AbstractVector{<:Integer})
@@ -34,7 +34,7 @@ all combinations of element pairs, excluding self-comparisons.
 ```
 julia> colors = ["red_1", "red_2", "blue_1", "blue_2"] ;
 
-julia> pairwise_pairs(colors) |> collect
+julia> pairwisepairs(colors) |> collect
 6-element Array{Tuple{String,String},1}:
  ("red_1", "red_2")
  ("red_1", "blue_1")

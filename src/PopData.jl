@@ -20,7 +20,7 @@ mutable struct PopDataInfo
     biallelic::Bool
 end
 ```
-The data struct used internally as `PopData.info` fields to store basic information
+The data struct used internally as `PopData.metadata` fields to store basic information
 about the `PopData` for easy access.
 """
 mutable struct PopDataInfo

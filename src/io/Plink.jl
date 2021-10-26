@@ -129,6 +129,7 @@ function _plinkbed(infile::String, famfields::Union{Symbol,Vector{Symbol}} = :al
         :locus => PooledArray(repeat(locinames, inner = nsamples) , compress = true),
         :genotype => vec(_SNP(_plinkindex(reshape(data, (nrows, n))))) 
     )
+    #TODO generate_meta is deprecated
     metadf = generate_meta(genodf)
     if famfields != :none
         if famfields == :all

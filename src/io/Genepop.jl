@@ -130,7 +130,6 @@ function genepop(
     catch
         geno_parse.genotype = phase.(geno_parse.genotype, Int16, digits)
     end
-    #sample_table = generate_meta(geno_parse)
     pd_out = PopData(geno_parse)
     !allow_monomorphic && dropmonomorphic!(pd_out, silent = silent)
     return pd_out

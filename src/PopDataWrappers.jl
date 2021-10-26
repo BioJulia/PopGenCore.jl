@@ -1,4 +1,4 @@
-export info, sampleinfo, genodata, locusinfo
+export info, sampleinfo, genodata, locusinfo, samplenames
 export locations, loci, samples, populations
 export genotype, genotypes
 
@@ -90,9 +90,9 @@ genotypes(cats, "fca8")
 """
 function genotypes(data::PopData, samplelocus::AbstractString)
     if samplelocus ∈ samplenames(data)
-        @view data.genodata[data.genodata.name .== sample, :genotype]
+        @view data.genodata[data.genodata.name .== samplelocus, :genotype]
     elseif samplelocus ∈ loci(data)
-        @view data.genodata[data.genodata.locus .== locus, :genotype]
+        @view data.genodata[data.genodata.locus .== samplelocus, :genotype]
     else
         throw(ArgumentError("$samplelocus is not found in either samples or loci."))
     end

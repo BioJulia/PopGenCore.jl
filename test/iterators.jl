@@ -12,18 +12,18 @@ x = @nancycats
     end
 
     @testset "pairiwse pairs" begin
-        @test length(collect(pairwise_pairs(1:3))) == 3
-        @test collect(pairwise_pairs(1:3)) == [(1, 2), (1, 3), (2, 3)]
-        @test length(collect(pairwise_pairs(1:10))) == 45
-        @test length(collect(pairwise_pairs(string.(1:3)))) == 3
-        @test collect(pairwise_pairs(string.(1:3))) == [("1", "2"), ("1", "3"), ("2", "3")]
-        @test length(collect(pairwise_pairs(string.(1:10)))) == 45
+        @test length(collect(pairwisepairs(1:3))) == 3
+        @test collect(pairwisepairs(1:3)) == [(1, 2), (1, 3), (2, 3)]
+        @test length(collect(pairwisepairs(1:10))) == 45
+        @test length(collect(pairwisepairs(string.(1:3)))) == 3
+        @test collect(pairwisepairs(string.(1:3))) == [("1", "2"), ("1", "3"), ("2", "3")]
+        @test length(collect(pairwisepairs(string.(1:10)))) == 45
     end
 
     #TODO moved to PopGenSims.jl
     @testset "simulated pairs" begin
-        @test sim_pairs(string.(1:4)) == [("1","2"), ("3","4")]
-        @test_throws ArgumentError sim_pairs(string.(1:3))
+        @test simpairs(string.(1:4)) == [("1","2"), ("3","4")]
+        @test_throws ArgumentError simpairs(string.(1:3))
     end
 
     @testset "skip iterators" begin

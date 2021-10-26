@@ -14,13 +14,6 @@ x = @nancycats
         @test convertcoord.(["-41:31.52", "25 11:54S"]) == Float32[-41.5253, -25.1983]
         @test length(loci(dropmonomorphic(x))) == 9
         @test length(loci(dropmultiallelic(x))) == 0
-        tmp = generate_meta(x.genodata)
-        @test names(tmp) == ["name", "population", "ploidy", "longitude", "latitude"]
-        @test tmp.name == x.genodata.name.pool
-        @test all(.!ismissing(tmp.ploidy))
-        @test intersect(x.genodata.population.pool, unique(tmp.population)) == x.genodata.population.pool
-        @test loci(x) == x.genodata.locus.pool
-        @test samplenames(x) == x.sampleinfo.name
     end
 
 
