@@ -8,6 +8,7 @@ using StatsBase: countmap, proportionmap
 using Random: shuffle, shuffle!
 
 include("PopData.jl")
+include("PopDataWrappers.jl")
 ## Utilities
 include("Utils/GeneralUtils.jl")
 include("Utils/GenotypeUtils.jl")
