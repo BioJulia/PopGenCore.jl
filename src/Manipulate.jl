@@ -1,10 +1,5 @@
-export add_meta!, locations, locations!
-export genotypes, get_genotypes, get_genotype
-export populations, population, populations!, population!
+export locations!, populations!
 export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, filter!
-
-# TODO make adding metata flexible to do inner joins
-
 
 """
     sampleinfo!(::PopData, metadata::Pair{Symbol, Vector}; categorical::Bool = false)
@@ -85,24 +80,6 @@ function locusinfo!(data::PopData, metadata::Pair{String, T}; categorical::Bool 
     locusinfo!(data, Symbol(metadata[1]) => metadata[2], categorical = categorical)
 end
 
-
-"""
-    locations(data::PopData)
-View the longitude and latitude data in a `PopData` object. Returns a table
-derived from the PopData. Changes made to this table will not alter the source
-`PopData` object.
-
-Use `locations!` to add spatial data to a `PopData` object.
-"""
-function locations(data::PopData)
-    if :longitude ∉ propertynames(data.sampleinfo) && :latitude ∉ propertynames(data.sampleinfo) 
-        throw(ArgumentError(":longitude and :latitude columns not present in metadata."))
-    else
-        @view data.sampleinfo[!, [:longitude, :latitude]]
-    end
-end
-
-
 """
     locations!(data::PopData; long::Vector{Float64}, lat::Vector{Float64})
 Replaces existing `PopData` location data (longitude `long`, latitude `lat`).
@@ -172,8 +149,8 @@ function locations!(data::PopData, long::Vector{String}, lat::Vector{String})
     lat_len != length(data.sampleinfo.name) && error("lat/long array length ($lat_len) and number of samples in PopData ($long_len) are not equal")
     println("Converting decimal minutes to decimal degrees")
     # convert coordinates to decimal degrees
-    data.sampleinfo.longitude = convert_coord.(long)
-    data.sampleinfo.latitude = convert_coord.(lat)
+    data.sampleinfo.longitude = convertcoord.(long)
+    data.sampleinfo.latitude = convertcoord.(lat)
     return
 end
 
@@ -184,88 +161,6 @@ function locations!(data::PopData; kwargs...)
         locations!(data, kwargs[:long], kwargs[:lat])
     else
         error("keyword arguments \"lat\" and \"long\" must be supplied together")
-    end
-end
-
-
-"""
-    get_genotype(data::PopData; sample::String, locus::String)
-Return the genotype of one sample at one locus in a `PopData` object.
-### Example
-```
-cats = @nancycats;
-get_genotype(cats, sample = "N115", locus = "fca8")
-```
-"""
-function get_genotype(data::PopData; sample::String, locus::String)
-    @views data.genodata[(data.genodata.name .== sample) .& (data.genodata.locus .== locus), :genotype][1]
-end
-
-
-"""
-    get_genotypes(data::PopData, sample::String)
-Return a vector of all the genotypes of a sample in a `PopData` object. To return a
-single genotype at a locus, see `get_genotype`.
-```
-cats = @nancycats
-get_genotypes(cats, "N115")
-```
-"""
-function get_genotypes(data::PopData, sample::String)
-    data.genodata[data.genodata.name .== sample, :genotype]
-end
-
-"""
-    get_genotypes(::PopData; sample::Union{T, Vector{T}}, locus::Union{T, Vector{T}}) where T<:AbstractString
-Return a table of the genotype(s) of one or more `samples` for one or more
-specific `loci` (both as keywords) in a `PopData` object.
-### Examples
-```
-cats = @nancycats;
-get_genotypes(cats, name = "N115" , locus = "fca8")
-get_genotypes(cats, name = ["N115", "N7"] , locus = "fca8")
-get_genotypes(cats, name = "N115" , locus = ["fca8", "fca37"])
-get_genotypes(cats, name = ["N1", "N2"] , locus = ["fca8", "fca37"])
-```
-"""
-function get_genotypes(data::PopData; sample::Union{T, Vector{T}}, locus::Union{U, Vector{U}}) where T<:AbstractString where U<:AbstractString
-    sample = typeof(sample) <: AbstractString ? [sample] : sample
-    locus = typeof(locus) <: AbstractString ? [locus] : locus
-    @view data.genodata[(data.genodata.name .∈ Ref(sample)) .& (data.genodata.locus .∈ Ref(locus)), :] 
-end
-
-
-"""
-    genotypes(data::PopData, locus::Union{String, Symbol})
-Convenience wrapper to return a vector of all the genotypes of a single locus
-
-### Example
-```
-genotypes(@gulfsharks, "contig_475")
-```
-"""
-function genotypes(data::PopData, locus::String)
-    @view data.genodata[data.genodata.locus .== locus, :genotype]
-end
-
-
-"""
-    populations(data::PopData; counts::Bool = false)
-View unique population ID's and/or their counts in `PopData`.
-
-- `counts` returns a dataframe of samples per `population` instead (default = `false`)
-"""
-@inline function populations(data::PopData; counts::Bool = false)
-    if all(ismissing.(data.sampleinfo.population)) == true
-        println("no population data present in PopData")
-        return
-    end
-    uniq_pops = unique(data.sampleinfo.population)
-    if counts == false
-        return uniq_pops
-    else
-        pops = countmap(data.sampleinfo.population)
-        return DataFrame(:population => uniq_pops, :count => [pops[i] for i in uniq_pops])
     end
 end
 
@@ -340,7 +235,7 @@ function populations!(data::PopData, rename::Vector{String})
     elseif length(rename) == data.metadata.samples
         # infer that you want to replace the population names for each sample
         println(" Assigning new population names to all samples")
-        populations!(data, samples(data), rename)
+        populations!(data, samplenames(data), rename)
     else 
         length(rename) != length(current_popnames) && throw(DimensionMismatch("Number of replacement names ($(length(rename))) do not match the number of current population names ($(length(current_popnames))) or number of samples ($(data.metadata.samples))"))
     end
@@ -516,7 +411,7 @@ keep!(cats, population = 1:5)
 keep!(cats, name = ["N100", "N102", "N211"])
 
 # keep 2 loci, 2 populations, and 10 specific individuals
-keep!(cats, locus = [:fca8, "fca37"], population = [7,8], name = samples(cats)[1:10])
+keep!(cats, locus = [:fca8, "fca37"], population = [7,8], name = samplenames(cats)[1:10])
 ```
 """
 function keep!(data::PopData; population::Any = nothing, locus::Any = nothing, name::Any = nothing)
@@ -622,7 +517,7 @@ new `PopData`. **Note** the argument order is opposite of that from DataFrames.j
 ```
 x = @nancycats ;
 
-y = filter(x, :name => i -> i ∈ samples(x)[1:10]) ;
+y = filter(x, :name => i -> i ∈ samplenames(x)[1:10]) ;
 
 show(x)
 PopData{Diploid, 9 Microsatellite loci}
@@ -651,7 +546,7 @@ argument and the filtering conditions are the second argument. Mutates the
 ```
 x = @nancycats ;
 
-filter!(x, :name => i -> i ∈ samples(x)[1:10]) ;
+filter!(x, :name => i -> i ∈ samplenames(x)[1:10]) ;
 
 show(x)
 PopData{Diploid, 9 Microsatellite loci}

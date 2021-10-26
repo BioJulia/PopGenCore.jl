@@ -1,5 +1,4 @@
-export phase, unphase
-export determine_marker, find_ploidy
+export phase, unphase, findploidy
 
 
 """
@@ -12,52 +11,13 @@ end
 
 ## Utilities for file reading/writing ##
 
-#= Possibly deprecated
-"""
-    determine_marker(geno_parse::T, digits::Int) where T<:AbstractDataFrame
-Return either `Int8` or `Int16` depending on largest allelic value in all genotypes
-in the first 10 samples of an input DataFrame (or all the samples if less than 10 samples).
-If the largest allele is 20 or greater, the marker will be considered a Microsatellite
-and coded in `PopData` as `Int16`, and the opposite is true for SNPs. There's no
-specific reason 100 was chosen other than it being a reasonable buffer for edge
-cases since SNP data <= 4, and haplotyped data could be a bit higher. Even if the
-microsatellite markers are coded incorrectly, there will be zero impact to performance,
-and considering how few microsatellite markers are used in typical studies, the
-effect on in-memory size should be negligible (as compared to SNPs).
-"""
-function determine_marker(geno_parse::T, digits::Int) where T<:AbstractDataFrame
-    # get the total # columns
-    total_col = size(geno_parse,2)
-    # find the 25% cutoff
-    if total_col > 11
-        num_test_loc = (total_col - 2) ÷ 8
-    else
-        num_test_loc = total_col - 2
-    end
-    # remove everything else
-    test_df = @view geno_parse[:, 3:(2 + num_test_loc)]
-
-    # isolate the largest allele value
-    max_allele = map(eachcol(test_df)) do i
-        phase.(i, Int16, digits)  |>
-        skipmissing |> Base.Iterators.flatten |> maximum
-    end |> maximum
-
-    if max_allele <= 100
-        return Int8
-    else
-        return Int16
-    end
-end
-=#
-
 #TODO change in docs
 """
-    find_ploidy(genotypes::T where T<:AbstractVector)
+    findploidy(genotypes::T where T<:AbstractVector)
 Used internally in the `genepop` and `delimited` file parsers to scan the genotypes
 of a sample and return the ploidy of the first non-missing locus.
 """
-@inline function find_ploidy(genotypes::T) where T<:AbstractVector
+@inline function findploidy(genotypes::T) where T<:AbstractVector
     @inbounds Int8(length(first(skipmissing(genotypes))))
 end
 

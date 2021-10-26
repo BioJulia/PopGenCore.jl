@@ -132,7 +132,7 @@ function genepop(
     end
     #sample_table = generate_meta(geno_parse)
     pd_out = PopData(geno_parse)
-    !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
+    !allow_monomorphic && dropmonomorphic!(pd_out, silent = silent)
     return pd_out
 end
 
@@ -154,7 +154,7 @@ Writes a `PopData` object to a Genepop-formatted file.
 ## Example
 ```julia
 cats = @nancycats;
-fewer_cats = omit(cats, name = samples(cats)[1:10]);
+fewer_cats = omit(cats, name = samplenames(cats)[1:10]);
 genepop(fewer_cats, filename = "filtered_nancycats.gen", digits = 3, format = "h")
 ```
 """

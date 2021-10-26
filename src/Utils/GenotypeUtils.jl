@@ -1,12 +1,12 @@
-export allele_count, alleles, unique_alleles
-export loci_dataframe, loci_matrix, phased_matrix
+export allelecount, alleles, unique_alleles
+export locidataframe, locimatrix, phasedmatrix
 
 
 """
-    allele_count(locus::T) where T<:GenoArray
+    allelecount(locus::T) where T<:GenoArray
 Return the number of unique alleles present at a locus.
 """
-@inline function allele_count(locus::T) where T<:GenoArray
+@inline function allelecount(locus::T) where T<:GenoArray
     unique(locus) |> skipmissing |> Base.Iterators.flatten |> unique |> length
 end
 
@@ -51,12 +51,12 @@ end
 
 
 """
-    loci_dataframe(data::PopData)
+    locidataframe(data::PopData)
 Return a wide `DataFrame` of samples as columns, ommitting population information.
 
 **Example**
 ```
-julia> loci_dataframe(@nancycats)
+julia> locidataframe(@nancycats)
 9×237 DataFrame. Omitted printing of 232 columns
 │ Row │ N215       │ N216       │ N217       │ N218       │ N219       │
 │     │ Tuple…?    │ Tuple…?    │ Tuple…?    │ Tuple…?    │ Tuple…?    │
@@ -72,19 +72,19 @@ julia> loci_dataframe(@nancycats)
 │ 9   │ (208, 208) │ (208, 208) │ (210, 210) │ (208, 208) │ (208, 208) │
 ```
 """
-function loci_dataframe(data::PopData)
+function locidataframe(data::PopData)
     unstack(select(data.genodata, Not(:population)), :name, :genotype)[:, Not(:locus)]
 end
 
 #TODO make a SMatrix instead?
 """
-    loci_matrix(data::PopData)
+    locimatrix(data::PopData)
 Return a matrix of genotypes with dimensions `samples × loci`.
 Rows are samples and columns are loci. Will return an error if ploidy varies between samples. 
 
 **Example**
 ```
-julia> loci_matrix(@nancycats)
+julia> locimatrix(@nancycats)
 237×9 Array{Union{Missing, Tuple{Int16,Int16}},2}:
  missing     (136, 146)  (139, 139)  …  (199, 199)  (113, 113)  (208, 208)
  missing     (146, 146)  (139, 145)     (185, 199)  (113, 113)  (208, 208)
@@ -113,7 +113,7 @@ julia> loci_matrix(@nancycats)
  (135, 141)  (130, 146)  (135, 139)     (197, 197)  missing     (208, 208)
  ```
 """
-function loci_matrix(data::PopData)
+function locimatrix(data::PopData)
     dims = size(data)
     sort_df = issorted(data.genodata, [:name, :locus]) ? sort(data.genodata, [:name, :locus]) : data.genodata
     reshape(sort_df.genotype, (dims.samples, dims.loci)) |> collect
@@ -121,13 +121,13 @@ end
 
 
 """
-    phased_matrix(data::PopData)
+    phasedmatrix(data::PopData)
 Return a `Vector` of length `ploidy` composed of allele matrices with dimensions `samples × loci`.
 Rows are samples and columns are loci. Will return an error if ploidy varies between samples. 
 
 **Example**
 ```
-julia> mtx = phased_matrix(@nancycats)
+julia> mtx = phasedmatrix(@nancycats)
 2-element Array{Array{Union{Missing, Int16},2},1}:
  [missing 136 … 113 208; missing 146 … 113 208; … ; 137 130 … 113 208; 135 130 … missing 208]
  [missing 146 … 113 208; missing 146 … 113 208; … ; 143 136 … 117 208; 141 146 … missing 208]
@@ -161,7 +161,7 @@ julia> mtx[1]
  135         130  135     missing  150  142  197     missing  208
 ```
 """
-function phased_matrix(data::PopData)
+function phasedmatrix(data::PopData)
     dims = size(data)
     ploidy = unique(data.sampleinfo.ploidy)
     ploidy = length(ploidy) != 1 ? error("Phasing will not work on mixed-ploidy samples") : ploidy[1]

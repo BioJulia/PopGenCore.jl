@@ -1,4 +1,4 @@
-export geno_freq, geno_freq_expected, geno_count_observed, geno_count_expected
+export genofreq, genofreq_expected, geno_count_observed, geno_count_expected
 
 """
     geno_count_observed(locus::GenoArray)
@@ -23,7 +23,7 @@ function geno_count_expected(locus::T) where T<:GenoArray
 
     # Get expected number of genotypes in a locus
     ## get the observed allele frequencies
-    allele_dict = allele_freq(locus)
+    allele_dict = allelefreq(locus)
 
     ## split the appropriate pairs into their own vectors
     alle, freq = collect(keys(allele_dict)), collect(values(allele_dict))
@@ -42,11 +42,11 @@ end
 
 
 """
-    geno_freq(locus::GenoArray)
+    genofreq(locus::GenoArray)
 Return a `Dict` of genotype frequencies of a single locus in a
 `PopData` object.
 """
-@inline function geno_freq(locus::T) where T<:GenoArray
+@inline function genofreq(locus::T) where T<:GenoArray
     # conditional testing if all genos are missing
     all(ismissing.(locus)) && return missing
     proportionmap(locus |> skipmissing |> collect)
@@ -54,37 +54,37 @@ end
 
 
 """
-    geno_freq(data::PopData, locus::String; population::Bool = false)
+    genofreq(data::PopData, locus::String; population::Bool = false)
 Return a `Dict` of genotype frequencies of a single locus in a `PopData`
 object. Use `population = true` to return a table of genotype frequencies
 of that locus per population.
 ### Example
 ```
 cats = @nancycats;
-geno_freq(cats, "fca8")
-geno_freq(cats, "fca8", population = true)
+genofreq(cats, "fca8")
+genofreq(cats, "fca8", population = true)
 ```
 """
-function geno_freq(data::PopData, locus::String; population::Bool=false)
+function genofreq(data::PopData, locus::String; population::Bool=false)
     if !population
         tmp = data.genodata[data.genodata.locus .== locus, :genotype]
-        geno_freq(tmp)
+        genofreq(tmp)
     else
         tmp = data.genodata[data.genodata.locus .== locus, :]
-        DataFrames.combine(groupby(tmp, :population), :genotype => geno_freq => :freq)
+        DataFrames.combine(groupby(tmp, :population), :genotype => genofreq => :freq)
     end
 end
 
 """
-    geno_freq_expected(locus::GenoArray)
+    genofreq_expected(locus::GenoArray)
 Return a `Dict` of the expected genotype frequencies of a single locus in a
 `PopData` object. Expected frequencies are calculated as the product of
 observed allele frequencies.
 """
-function geno_freq_expected(locus::T) where T<:GenoArray
+function genofreq_expected(locus::T) where T<:GenoArray
     # Get expected number of genotypes in a locus
     ## get the observed allele frequencies
-    allele_dict = allele_freq(locus)
+    allele_dict = allelefreq(locus)
 
     ## split the appropriate pairs into their own vectors
     alle, freq = collect(keys(allele_dict)), collect(values(allele_dict))
@@ -105,23 +105,23 @@ function geno_freq_expected(locus::T) where T<:GenoArray
 end
 
 """
-    geno_freq_expected(data::PopData, locus::String; population::Bool = false)
+    genofreq_expected(data::PopData, locus::String; population::Bool = false)
 Return a `Dict` of expected genotype frequencies of a single locus in a
 `PopData` object. Use `population = true` to return a table of expected genotype
 frequencies of that locus per population.
 ### Example
 ```
 cats = @nancycats;
-geno_freq_expected(cats, "fca8")
-geno_freq_expected(cats, "fca8", population = true)
+genofreq_expected(cats, "fca8")
+genofreq_expected(cats, "fca8", population = true)
 ```
 """
-function geno_freq_expected(data::PopData, locus::String; population::Bool=false)
+function genofreq_expected(data::PopData, locus::String; population::Bool=false)
     if !population
         tmp = data.genodata[data.genodata.locus .== locus, :genotype]
-        geno_freq_expected(tmp)
+        genofreq_expected(tmp)
     else
         tmp = data.genodata[data.genodata.locus .== locus, :]
-        DataFrames.combine(groupby(tmp, :population), :genotype => geno_freq_expected => :freq)
+        DataFrames.combine(groupby(tmp, :population), :genotype => genofreq_expected => :freq)
     end
 end

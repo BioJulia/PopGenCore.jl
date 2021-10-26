@@ -145,7 +145,7 @@ function structure(infile::String; silent::Bool = false, extracols::Int = 0, ext
             DataFrames.combine(grp, 4 => _MSat => :genotype)
         end
     pd_out = PopData(geno_df)
-    !allow_monomorphic && drop_monomorphic!(pd_out) 
+    !allow_monomorphic && dropmonomorphic!(pd_out) 
     return pd_out
 end
 
@@ -161,7 +161,7 @@ Write a `PopData` object to a Stucture format file
 
 ```
 cats = @nancycats;
-fewer_cats = omit(cats, name = samples(cats)[1:10]);
+fewer_cats = omit(cats, name = samplenames(cats)[1:10]);
 structure(fewer_cats, filename = "filtered_nancycats.str", faststructure = true)
 ```
 """

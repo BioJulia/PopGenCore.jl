@@ -26,7 +26,7 @@ end
 
 
 """
-    pairwise_pairs(smp_names::Vector{T}) where T
+    pairwisepairs(smp_names::Vector{T}) where T
 Given a vector, returns a lazy iterator of tuples of unique all x 
 all combinations of element pairs, excluding self-comparisons.
 
@@ -44,13 +44,13 @@ julia> pairwise_pairs(colors) |> collect
  ("blue_1", "blue_2")
 ```
 """
-@inline function pairwise_pairs(smp_names::AbstractVector{T}) where T
+@inline function pairwisepairs(smp_names::AbstractVector{T}) where T
     len = length(smp_names)
     (tuple(smp_names[i], smp_names[j]) for i in 1:len-1 for j in i+1:len)
 end
 
 """
-    sim_pairs(data::Vector{String})
+    _simpairs(data::Vector{String})
 Takes a Vector of sample names and returns a Tuple of sample pairs, grouped by simulation
 number. This is an internal function used for isolating sibship pairs from simulated shipship
 pairs (via `PopGenSims.jl`) to perform `relatedness` estimates only on those pairs.
@@ -59,12 +59,12 @@ pairs (via `PopGenSims.jl`) to perform `relatedness` estimates only on those pai
 ```julia
 julia> a = ["sim1_off1", "sim1_off2", "sim2_off1", "sim2_off2"] ;
 
-julia> sim_pairs(a)
+julia> _simpairs(a)
 ("sim1_off1", "sim1_off2")
 ("sim2_off1", "sim2_off2")
 ```
 """
-function sim_pairs(data::Vector{String})
+function _simpairs(data::Vector{String})
     n = length(data)
     isodd(n) && throw(ArgumentError("Expected an even number of samples, but got $n"))
     Tuple.(Base.Iterators.partition(sort(data), 2))

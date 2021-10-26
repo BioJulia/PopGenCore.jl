@@ -1,8 +1,7 @@
 export copy, size, sort 
-export generate_meta
-export drop_monomorphic, drop_monomorphic!
-export drop_multiallelic, drop_multiallelic!
-export loci, samples, convert_coord
+export dropmonomorphic, dropmonomorphic!
+export dropmultiallelic, dropmultiallelic!
+export convertcoord
 
 #=
 General use utilities
@@ -29,7 +28,7 @@ end
 
 
 """
-    convert_coord(coordinate::String)
+    convertcoord(coordinate::String)
 Takes non-decimal-degree format as a `String` and returns it as a decimal degree
 `Float32`. Can be broadcasted over an array of coordinate strings to convert them.
 ## Formatting requirements
@@ -39,15 +38,15 @@ Takes non-decimal-degree format as a `String` and returns it as a decimal degree
 - Can mix colons and spaces (although it's bad practice)
 ### Example
 ```
-julia> convert_coord("-41 31.52")
+julia> convertcoord("-41 31.52")
 -41.5253f0
-julia> convert_coord.(["-41 31.52", "25 11:54S"])
+julia> convertcoord.(["-41 31.52", "25 11:54S"])
 2-element Array{Float32,1}:
 -41.5253
 -25.1983
 ```
 """
-function convert_coord(coordinate::String)
+function convertcoord(coordinate::String)
     lowercase(coordinate) == "missing" && return missing
     coord_strip = replace(uppercase(coordinate), r"[NSEW]" => "")
     split_coord = parse.(Float32, split(coord_strip, r"\s|:"))
@@ -68,13 +67,13 @@ end
 
 
 """
-    drop_monomorphic(data::PopData; silent::Bool = false)
+    dropmonomorphic(data::PopData; silent::Bool = false)
 Return a `PopData` object omitting any monomorphic loci. Will inform you which
 loci were removed.
 """
-function drop_monomorphic(data::PopData; silent::Bool = false)
+function dropmonomorphic(data::PopData; silent::Bool = false)
     all_loci = loci(data)
-    prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
+    prt = Base.Iterators.partition(data.genodata.genotype, length(samplenames(data)))
     monomorphs = string.(all_loci[[length(unique(i))==1 for i in prt]])
     if length(monomorphs) == 0
         #!silent && println("No monomorphic loci found.\n")
@@ -93,13 +92,13 @@ end
 
 
 """
-    drop_monomorphic!(data::PopData; silent::Bool = false)
+    dropmonomorphic!(data::PopData; silent::Bool = false)
 Edit a `PopData` object in place by omitting any monomorphic loci. Will inform you which
 loci were removed.
 """
-function drop_monomorphic!(data::PopData; silent::Bool = false)
+function dropmonomorphic!(data::PopData; silent::Bool = false)
     all_loci = loci(data)
-    prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
+    prt = Base.Iterators.partition(data.genodata.genotype, length(samplenames(data)))
     monomorphs = string.(all_loci[[length(unique(i))==1 for i in prt]])
     if length(monomorphs) == 0
         #!silent && println("No monomorphic loci found.\n")
@@ -118,16 +117,16 @@ end
 
 
 """
-    drop_multiallelic(data::PopData)
+    dropmultiallelic(data::PopData)
 Return a `PopData` object omitting loci that are not biallelic.
 """
-function drop_multiallelic(data::PopData)
+function dropmultiallelic(data::PopData)
     if data.metadata.biallelic == true
         prinln("PopData object is already biallelic")
         return data
     end 
     all_loci = loci(data)
-    prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
+    prt = Base.Iterators.partition(data.genodata.genotype, length(samplenames(data)))
     nonbi = string.(all_loci[[!isbiallelic(i) for i in prt]])
     if length(nonbi) == 1
         @info "Removing 1 multiallelic locus"
@@ -143,16 +142,16 @@ end
 
 
 """
-    drop_multiallelic!(data::PopData)
+    dropmultiallelic!(data::PopData)
 Edit a `PopData` object in place, removing loci that are not biallelic.
 """
-function drop_multiallelic!(data::PopData)
+function dropmultiallelic!(data::PopData)
     if data.metadata.biallelic == true
         println("PopData object is already biallelic\n")
         return data
     end 
     all_loci = loci(data)
-    prt = Base.Iterators.partition(data.genodata.genotype, length(samples(data)))
+    prt = Base.Iterators.partition(data.genodata.genotype, length(samplenames(data)))
     nonbi = string.(all_loci[[!isbiallelic(i) for i in prt]])
     if length(nonbi) == 1
         @info "Removing 1 multiallelic locus"
@@ -175,70 +174,4 @@ function truncatepath(text::String)
     else
         return text   
     end
-end
-
-# possibly deprecated with new PopDataInfo
-"""
-    generate_meta(data::DataFrame)
-Given a genotype DataFrame formatted like `PopData.genodata`, generates a corresponding
-`meta` DataFrame. In other words, it creates the `.metadata` part of `PopData` from the `.genodata` part.
-
-**Example**
-```
-julia> cats = @nancycats ;
-
-julia> cats_nometa = cats.genodata ;
-
-julia> cats_meta = generate_meta(cats_nometa)
-237×5 DataFrame
- Row │ name    population  ploidy  longitude  latitude 
-     │ String  String      Int8    Float32?   Float32? 
-─────┼─────────────────────────────────────────────────
-   1 │ N215    1                2   missing   missing  
-   2 │ N216    1                2   missing   missing  
-   3 │ N217    1                2   missing   missing  
-   4 │ N218    1                2   missing   missing  
-   5 │ N219    1                2   missing   missing  
-   6 │ N220    1                2   missing   missing  
-   7 │ N221    1                2   missing   missing  
-  ⋮  │   ⋮         ⋮         ⋮         ⋮         ⋮
- 232 │ N295    17               2   missing   missing  
- 233 │ N296    17               2   missing   missing  
- 234 │ N297    17               2   missing   missing  
- 235 │ N281    17               2   missing   missing  
- 236 │ N289    17               2   missing   missing  
- 237 │ N290    17               2   missing   missing  
-                                       224 rows omitted
-```
-"""
-function generate_meta(data::DataFrame)
-    grp = groupby(data, :name)
-    nms = map(z -> z.name, keys(grp))
-    pops = [first(z.population) for z in grp]
-    ploids = [find_ploidy(z.genotype) for z in grp]
-    DataFrame(
-        :name => nms,
-        :population => pops,
-        :ploidy => ploids,
-        :longitude => Vector{Union{Missing, Float32}}(undef, (length(nms))),
-        :latitude => Vector{Union{Missing, Float32}}(undef, (length(nms))),
-        copycols = true
-    )
-end
-
-
-"""
-    loci(data::PopData)
-Returns an array of strings of the loci names in a `PopData` object.
-"""
-function loci(data::PopData)
-    copy(data.genodata.locus.pool)
-end
-
-"""
-    samples(data::PopData)
-View individual/sample names in a `PopData`
-"""
-function samples(data::PopData)
-    copy(data.sampleinfo.name)
 end

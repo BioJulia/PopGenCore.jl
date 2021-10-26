@@ -84,7 +84,7 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         :genotype => (j -> PooledArray(map(i -> all(0 .== i) ? missing : i, j), compress = true)) => :genotype
     )
     pd_out = PopData(geno_df)
-    !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
+    !allow_monomorphic && dropmonomorphic!(pd_out, silent = silent)
     return pd_out
 end
 
@@ -164,6 +164,6 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
         :genotype => (j -> PooledArray(map(i -> all(0 .== i) ? missing : i, j), compress = true)) => :genotype
     )
     pd_out = PopData(geno_df)
-    !allow_monomorphic && drop_monomorphic!(pd_out, silent = silent)
+    !allow_monomorphic && dropmonomorphic!(pd_out, silent = silent)
     return pd_out
 end

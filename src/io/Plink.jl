@@ -211,12 +211,12 @@ Write a biallelic `PopData` object to PLINK `.ped` format with an accompanying
 - After column 6, every two numbers indicate a diploid genotype.
 ## Example
 ```julia
-sharks = drop_multiallelic(@gulfsharks) ;
+sharks = dropmultiallelic(@gulfsharks) ;
 plink(sharks, filename = "biallelic_sharks.ped")
 ```
 """
 function plink(data::PopData; filename::String)
-    data.metadata.biallelic != true && throw(ArgumentError("To write to PLINK format, data must be biallelic.\nThis can be done with drop_multiallelic(::PopData)\n"))
+    data.metadata.biallelic != true && throw(ArgumentError("To write to PLINK format, data must be biallelic.\nThis can be done with dropmultiallelic(::PopData)\n"))
     basename = endswith(filename, r".bed|.ped") ? splitext(filename)[1] : filename
     # the .fam file
     tmp = data.metadata[:, r"population|name|sire|dam|sex|phenotype"]
@@ -267,7 +267,7 @@ Write a biallelic `PopData` object to PLINK `.bed` format with an accompanying
 
 ## Example
 ```julia
-sharks = drop_multiallelic(@gulfsharks) ;
+sharks = dropmultiallelic(@gulfsharks) ;
 plink(sharks, filename = "biallelic_sharks.ped")
 ```
 """

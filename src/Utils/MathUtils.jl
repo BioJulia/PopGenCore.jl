@@ -1,12 +1,12 @@
-export reciprocal, reciprocal_sum
-export count_nonzeros
+export reciprocal, reciprocalsum
+export countnonzeros
 ## Utilities relevant for math ##
 
 """
-    count_nonzeros(x::AbstractVector{T}) where T<:Real
+    countnonzeros(x::AbstractVector{T}) where T<:Real
 Return the number of non-zero values in a vector
 """
-function count_nonzeros(x::AbstractVector{T}) where T<:Real
+function countnonzeros(x::AbstractVector{T}) where T<:Real
     mapreduce(!iszero, +, x)
 end
 
@@ -21,10 +21,10 @@ end
 
 
 """
-reciprocal_sum(x::AbstractVector{T}) where T<:Real
+reciprocalsum(x::AbstractVector{T}) where T<:Real
 Return the sum of the reciprocal values of `x`, skipping the `Inf` values
 resulting from divide-by-zero errors.
 """
-function reciprocal_sum(x::AbstractVector{T}) where T<:Real
+function reciprocalsum(x::AbstractVector{T}) where T<:Real
     mapreduce(reciprocal, +, x)
 end

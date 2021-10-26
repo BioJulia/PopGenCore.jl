@@ -10,7 +10,7 @@ sharks = @gulfsharks;
 
 @testset "Manipulate.jl" begin
     @testset "locations" begin
-        x = rand(length(samples(cats))) ; y = rand(length(samples(cats)))
+        x = rand(length(samplenames(cats))) ; y = rand(length(samplenames(cats)))
         locations!(cats, long = x, lat = y)    
         @test cats.sampleinfo.longitude == Float32.(x)
         @test cats.sampleinfo.latitude == Float32.(y)
@@ -19,7 +19,7 @@ sharks = @gulfsharks;
     end
 
     @testset "decimal-minutes locations" begin
-        x = fill("11 22.33W", length(samples(cats))) ; y = fill("-41 31.52", length(samples(cats)))
+        x = fill("11 22.33W", length(samplenames(cats))) ; y = fill("-41 31.52", length(samplenames(cats)))
         locations!(cats, long = x, lat = y)
         @test all(cats.sampleinfo.longitude .== Float32(-11.3722))
         @test all(cats.sampleinfo.latitude .== Float32(-41.5253))
@@ -70,18 +70,18 @@ sharks = @gulfsharks;
     @testset "exclusion" begin
         cats = @nancycats ;
         tmp = exclude(cats, name = "N100", population = ["1", "15"])
-        @test length(samples(tmp)) == 215
+        @test length(samplenames(tmp)) == 215
         @test length(populations(tmp)) == 15
 
         tmp = exclude(cats, name = "N7", locus= "fca8", population = "3")
         @test length(loci(tmp)) == 8
         @test length(populations(tmp)) == 16
-        @test length(samples(tmp)) == 224
+        @test length(samplenames(tmp)) == 224
 
         tmp = keep(cats, name = "N104")
-        @test length(samples(tmp)) == 1
+        @test length(samplenames(tmp)) == 1
         tmp = keep(cats, name = ["N104", "N105"])
-        @test length(samples(tmp)) == 2
+        @test length(samplenames(tmp)) == 2
         tmp = keep(cats, locus = "fca8")
         @test length(loci(tmp)) == 1
         tmp = keep(cats, locus = ["fca8","fca37"])

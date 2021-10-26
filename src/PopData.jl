@@ -44,7 +44,7 @@ function PopDataInfo(genodf::DataFrame)
         length(genodf.name.pool),
         sampleinfo,
         length(genodf.locus.pool),
-        DataFrame(:chromosome => Int8(0), :locus => genodf.locus.pool, :cm => Int8(0), :bp => Int8(0)),
+        DataFrame(:chromosome => PooledArray(fill("0",length(genodf.locus.pool)) , compress = true), :locus => genodf.locus.pool, :cm => Int8(0), :bp => Int8(0)),
         length(genodf.population.pool),
         ploidy,
         isbiallelic(genodf)
@@ -52,11 +52,11 @@ function PopDataInfo(genodf::DataFrame)
 end
 
 function Base.show(io::IO, data::PopDataInfo)
-    println(io, " ploidy:      ", join(data.ploidy, ","))
-    println(io, " loci:        ", data.loci)
-    println(io, " samples:     ", data.samples)
-    println(io, " populations: ", data.populations)
-    println(io, " biallelic:   ", data.biallelic)
+    println(io, " ploidy:       ", join(data.ploidy, ","))
+    println(io, " loci:         ", data.loci)
+    println(io, " samples:      ", data.samples)
+    println(io, " populations:  ", data.populations)
+    println(io, " biallelic:    ", data.biallelic)
     println(io, " other fields: locusinfo, sampleinfo")
 end
 
@@ -209,34 +209,6 @@ function Base.show(io::IO, data::PopData)
     if !isempty(extracols)
         print(io, "\n  Other Info: ", extracols)
     end
-end
-
-
-"""
-    sampleinfo(::PopData)
-Method to show the `PopData` `metadata` field. 
-"""
-function sampleinfo(data::PopData)
-    s,f  = size(data.sampleinfo)
-    dimtext = "(" * string(s) * " samples, " * string(f) * " fields)"
-    show(data.sampleinfo, show_row_number = false, title = "Sample Information of PopData " * dimtext )
-end
-
-"""
-    genodata(::PopData)
-Method to show the `PopData` `genodata` field. 
-"""
-function genodata(data::PopData) 
-    l = length(data.genodata.locus.pool)
-    s = length(data.sampleinfo.name)
-    dimtext = "(" * string(s) * " samples, " * string(l) * " loci)"
-    show(data.genodata, show_row_number = false, title = "Genotype information of PopData " * dimtext )
-end
-
-function locusinfo(data::PopData)
-    s,f  = size(data.locusinfo)
-    dimtext = "(" * string(s) * " loci, " * string(f) * " fields)"
-    show(data.locusinfo, show_row_number = false, title = "Locus Information of PopData " * dimtext )
 end
 
 function Base.getindex(data::PopData, idx::Symbol)
