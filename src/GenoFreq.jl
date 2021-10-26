@@ -1,23 +1,23 @@
-export genofreq, genofreq_expected, geno_count_observed, geno_count_expected
+export genofreq, genofreq_expected, genocount_observed, genocount_expected
 
 """
-    geno_count_observed(locus::GenoArray)
+    genocount_observed(locus::GenoArray)
 Return a `Dict` of genotype counts of a single locus in a
 `PopData` object.
 """
-@inline function geno_count_observed(locus::T) where T<:GenoArray
+@inline function genocount_observed(locus::T) where T<:GenoArray
     # conditional testing if all genos are missing
     all(ismissing.(locus)) && return missing
     countmap(skipmissing(locus))
 end
 
 """
-    geno_count_expected(locus::GenoArray)
+    genocount_expected(locus::GenoArray)
 Return a `Dict` of the expected genotype counts of a single locus in a
 `PopData` object. Expected counts are calculated as the product of observed
 allele frequencies multiplied by the number of non-missing genotypes.
 """
-function geno_count_expected(locus::T) where T<:GenoArray
+function genocount_expected(locus::T) where T<:GenoArray
     #count number of non-missing genotypes in the locus
     n = nonmissing(locus)
 

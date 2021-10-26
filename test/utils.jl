@@ -24,7 +24,7 @@ x = @nancycats
         @test alleles([(1,2), (1,4)], false) == [1,2,1,4] 
         @test alleles([(1,2), (1,4), missing], false) == [1,2,1,4] 
         @test all(alleles([(1,2), (1,4), missing], true) .=== [1,2,1,4,missing])
-        @test unique_alleles([(1,2), (1,4), missing]) == [1,2,4]
+        @test uniquealleles([(1,2), (1,4), missing]) == [1,2,4]
         @test size(locidataframe(x)) == (9,237)
         @test size(locimatrix(x)) == (237,9)
         @test length(phasedmatrix(x)) == 2

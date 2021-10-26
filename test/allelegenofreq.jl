@@ -91,21 +91,21 @@ end
 
 @testset "Genotype Counts" begin
     @testset "Basic" begin
-        @test geno_count_observed(g) isa Dict
-        @test geno_count_observed([missing, missing]) === missing
-        @test geno_count_expected(g) isa Dict
+        @test genocount_observed(g) isa Dict
+        @test genocount_observed([missing, missing]) === missing
+        @test genocount_expected(g) isa Dict
     end
 
     @testset "Nuanced" begin
-        @test length(geno_count_observed(cats.genodata.genotype)) == 295
-        @test typeof(geno_count_observed(cats.genodata.genotype)) <: Dict{<:Tuple,Int64}
-        @test length(geno_count_expected(cats.genodata.genotype)) == 6241
-        @test typeof(geno_count_expected(cats.genodata.genotype)) <: Dict{<:Tuple,Float64}
+        @test length(genocount_observed(cats.genodata.genotype)) == 295
+        @test typeof(genocount_observed(cats.genodata.genotype)) <: Dict{<:Tuple,Int64}
+        @test length(genocount_expected(cats.genodata.genotype)) == 6241
+        @test typeof(genocount_expected(cats.genodata.genotype)) <: Dict{<:Tuple,Float64}
 
-        @test length(geno_count_observed(sharks.genodata.genotype)) == 12
-        @test typeof(geno_count_observed(sharks.genodata.genotype)) <: Dict{<:Tuple,Int64}
-        @test length(geno_count_expected(sharks.genodata.genotype)) == 25
-        @test typeof(geno_count_expected(sharks.genodata.genotype)) <: Dict{<:Tuple,Float64}
+        @test length(genocount_observed(sharks.genodata.genotype)) == 12
+        @test typeof(genocount_observed(sharks.genodata.genotype)) <: Dict{<:Tuple,Int64}
+        @test length(genocount_expected(sharks.genodata.genotype)) == 25
+        @test typeof(genocount_expected(sharks.genodata.genotype)) <: Dict{<:Tuple,Float64}
     end
 end
 

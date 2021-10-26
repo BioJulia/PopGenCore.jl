@@ -1,4 +1,4 @@
-export allelecount, alleles, unique_alleles
+export allelecount, alleles, uniquealleles
 export locidataframe, locimatrix, phasedmatrix
 
 
@@ -42,10 +42,10 @@ end
 
 
 """
-    unique_alleles(locus::T) where T<:GenoArray
+    uniquealleles(locus::T) where T<:GenoArray
 Return an array of all the unique non-missing alleles of a locus.
 """
-@inline function unique_alleles(locus::GenoArray)
+@inline function uniquealleles(locus::GenoArray)
     unique(alleles(locus))
 end
 
