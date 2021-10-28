@@ -81,7 +81,7 @@ function locusinfo!(data::PopData, metadata::Pair{String, T}; categorical::Bool 
 end
 
 """
-    locationdata!(data::PopData; longitude::Vector{Float64}, lattitude::Vector{Float64})
+    locationdata!(data::PopData; longitude::Vector{Float64}, latitude::Vector{Float64})
 Replaces existing `PopData` geographic coordinate data.
 Takes **decimal degrees** as a `Vector` of any `AbstractFloat`.
 ## Formatting requirements
@@ -93,30 +93,30 @@ Takes **decimal degrees** as a `Vector` of any `AbstractFloat`.
 ```
 ncats = @nancycats ;
 x = rand(237) ; y = rand(237)
-locationdata!(ncats, longitude = x, lattitude = y)
+locationdata!(ncats, longitude = x, latitude = y)
 ```
 """
-function locationdata!(data::PopData, longitude::Vector{Union{Missing,T}}, lattitude::Vector{Union{Missing,T}}) where T <: AbstractFloat
+function locationdata!(data::PopData, longitude::Vector{Union{Missing,T}}, latitude::Vector{Union{Missing,T}}) where T <: AbstractFloat
     long_len = length(longitude)
-    lat_len = length(lattitude)
-    long_len != lat_len && throw(DimensionMismatch("lattitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
+    lat_len = length(latitude)
+    long_len != lat_len && throw(DimensionMismatch("latitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
     long_len != length(data.sampleinfo.name) && throw(DimensionMismatch("lat/long array length ($long_len) and number of samples in PopData ($long_len) are not equal"))
 
     data.sampleinfo.longitude = longitude
-    data.sampleinfo.lattitude = lattitude
+    data.sampleinfo.latitude = latitude
     return
 end
 
-function locationdata!(data::PopData, longitude::Vector{T}, lattitude::Vector{T}) where T <: AbstractFloat
+function locationdata!(data::PopData, longitude::Vector{T}, latitude::Vector{T}) where T <: AbstractFloat
     # convert to the right type and use locationdata!()
-    lat_adjust = lattitude |> Vector{Union{Missing, Float32}}
+    lat_adjust = latitude |> Vector{Union{Missing, Float32}}
     long_adjust = longitude |> Vector{Union{Missing, Float32}}
-    locationdata!(data, longitude = long_adjust, lattitude = lat_adjust)
+    locationdata!(data, longitude = long_adjust, latitude = lat_adjust)
 end
 
 
 """
-    locationdata!(data::PopData; longitude::Vector{String}, lattitude::Vector{String})
+    locationdata!(data::PopData; longitude::Vector{String}, latitude::Vector{String})
 Replaces existing `PopData` geographic coordinate data. Takes
 **decimal minutes** or **degrees minutes seconds** format as a `Vector` of `String`. Recommended to use `CSV.read`
 from `CSV.jl` to import your spatial coordinates from a text file.
@@ -126,9 +126,9 @@ from `CSV.jl` to import your spatial coordinates from a text file.
 - Missing data should be coded as the string `"missing"` (can be accomplished with `replace!()`)
 - Can mix colons and spaces (although it's bad practice)
 ### NOTE
-If you read in the coordinate data as 4 vectors (longitude degrees, longitude minutes, lattitude degrees, lattitude minutes),
+If you read in the coordinate data as 4 vectors (longitude degrees, longitude minutes, latitude degrees, latitude minutes),
 then the easiest course of action would be to merge them into two vectors of strings
-(one for longitude, one for lattitude):
+(one for longitude, one for latitude):
 ```
 long_string = string.(lat_deg, " ", lat_min)
 lat_string = string.(long_deg, " ", long_min)
@@ -139,27 +139,27 @@ and use these as inputs into `locations!`
 ```
 ncats = @nancycats;
 x = fill("11 22.33W", 237) ; y = fill("-41 31.52", 237)
-locationdata!(ncats, longitude = x, lattitude = y)
+locationdata!(ncats, longitude = x, latitude = y)
 ```
 """
-function locationdata!(data::PopData, longitude::Vector{String}, lattitude::Vector{String})
+function locationdata!(data::PopData, longitude::Vector{String}, latitude::Vector{String})
     long_len = length(longitude)
-    lat_len = length(lattitude)
-    lat_len != long_len && throw(DimensionMismatch("lattitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
+    lat_len = length(latitude)
+    lat_len != long_len && throw(DimensionMismatch("latitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
     lat_len != length(data.sampleinfo.name) && throw(DimensionMismatch("lat/long array length ($lat_len) and number of samples in PopData ($long_len) are not equal"))
     # convert coordinates to decimal degrees
     data.sampleinfo.longitude = convertcoord.(longitude)
-    data.sampleinfo.lattitude = convertcoord.(lattitude)
+    data.sampleinfo.latitude = convertcoord.(latitude)
     return
 end
 
 function locationdata!(data::PopData; kwargs...)
     kwargs = Dict(kwargs)
     # check for matching lat and long keywords
-    if all([haskey(kwargs, :lattitude), haskey(kwargs, :longitude)])
-        locationdata!(data, kwargs[:longitude], kwargs[:lattitude])
+    if all([haskey(kwargs, :latitude), haskey(kwargs, :longitude)])
+        locationdata!(data, kwargs[:longitude], kwargs[:latitude])
     else
-        error("keyword arguments \"lattitude\" and \"longitude\" must be supplied together")
+        error("keyword arguments \"latitude\" and \"longitude\" must be supplied together")
     end
 end
 

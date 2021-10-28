@@ -11,18 +11,18 @@ sharks = @gulfsharks;
 @testset "Manipulate.jl" begin
     @testset "locations" begin
         x = rand(length(samplenames(cats))) ; y = rand(length(samplenames(cats)))
-        locationdata!(cats, longitude = x, lattitude = y)    
+        locationdata!(cats, longitude = x, latitude = y)    
         @test cats.sampleinfo.longitude == Float32.(x)
-        @test cats.sampleinfo.lattitude == Float32.(y)
+        @test cats.sampleinfo.latitude == Float32.(y)
         @test locationdata(cats).longitude == Float32.(x)
-        @test locationdata(cats).lattitude == Float32.(y)
+        @test locationdata(cats).latitude == Float32.(y)
     end
 
     @testset "decimal-minutes locations" begin
         x = fill("11 22.33W", length(samplenames(cats))) ; y = fill("-41 31.52", length(samplenames(cats)))
-        locationdata!(cats, longitude = x, lattitude = y)
+        locationdata!(cats, longitude = x, latitude = y)
         @test all(cats.sampleinfo.longitude .== Float32(-11.3722))
-        @test all(cats.sampleinfo.lattitude .== Float32(-41.5253))
+        @test all(cats.sampleinfo.latitude .== Float32(-41.5253))
     end
 
     @testset "loci and genotypes" begin

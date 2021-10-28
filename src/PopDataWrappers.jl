@@ -31,17 +31,17 @@ locusinfo(data::PopData) = data.locusinfo
 
 """
     locationdata(data::PopData)
-View the longitude and lattitude data in a `PopData` object. Returns a table
+View the longitude and latitude data in a `PopData` object. Returns a table
 derived from the PopData. Changes made to this table will not alter the source
 `PopData` object.
 
 Use `locations!` to add spatial data to a `PopData` object.
 """
 function locationdata(data::PopData)
-    if :longitude ∉ propertynames(data.sampleinfo) && :lattitude ∉ propertynames(data.sampleinfo) 
-        throw(ArgumentError(":longitude and :lattitude columns not present in metadata."))
+    if :longitude ∉ propertynames(data.sampleinfo) && :latitude ∉ propertynames(data.sampleinfo) 
+        throw(ArgumentError(":longitude and :latitude columns not present in metadata."))
     else
-        @view data.sampleinfo[!, [:longitude, :lattitude]]
+        @view data.sampleinfo[!, [:longitude, :latitude]]
     end
 end
 

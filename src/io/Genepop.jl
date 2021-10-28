@@ -185,7 +185,7 @@ function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3
             sample_ploidy = convert(Int, data.sampleinfo.ploidy[data.sampleinfo.name .== samplename][1])
             println(outfile, "POP")
             long = data.sampleinfo[data.sampleinfo.name .== keys.name, :longitude][1]
-            lat = data.sampleinfo[data.sampleinfo.name .== keys.name, :lattitude][1]
+            lat = data.sampleinfo[data.sampleinfo.name .== keys.name, :latitude][1]
             coords = join(string.([long, lat]), "\t") * ","
             format_geno = unphase.(sample.genotype, digits = digits, ploidy = sample_ploidy, miss = miss)
             join(outfile, vcat(coords, format_geno), "\t")

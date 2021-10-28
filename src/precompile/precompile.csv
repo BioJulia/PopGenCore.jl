@@ -1,4 +1,4 @@
-name,population,longitude,lattitude,loc1,loc2,loc3
+name,population,longitude,latitude,loc1,loc2,loc3
 Sample001,1,,,000000,146146,001002
 Sample002,2,,,135143,136146,001003
 Sample003,3,,,123125,146166,003003

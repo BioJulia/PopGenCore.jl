@@ -18,7 +18,7 @@ Load a delimited-type file into memory as a PopData object.
     1. sample name
     2. population name
     3. longitude
-    4. lattitude
+    4. latitude
     5. locus_1 genotypes
     6. locus_2 genotypes
     7. etc...
@@ -61,7 +61,7 @@ function delimited(
     coords = select(file_parse, 3,4)
     # force strings for this field
     #meta.population = string.(meta.population)
-    #rename!(meta, [:name, :population, :longitude, :lattitude])
+    #rename!(meta, [:name, :population, :longitude, :latitude])
     select!(file_parse, Not(3:4))
     geno_parse = DataFrames.stack(file_parse, DataFrames.Not(1:2))
     rename!(geno_parse, [:name, :population, :locus, :genotype])
@@ -88,7 +88,7 @@ function delimited(
         popinfo.sampleinfo.longitude = coords[:,1]
     end
     if any(.!ismissing.(coords[:,2]))
-        popinfo.sampleinfo.lattitude = coords[:,2]
+        popinfo.sampleinfo.latitude = coords[:,2]
     end
     pd_out = PopData(popinfo, geno_parse)
     !allow_monomorphic && dropmonomorphic!(pd_out, silent = silent)
@@ -104,7 +104,7 @@ Write PopData to a text-delimited file.
 - `digits` : an `Integer` indicating how many digits to format each allele as (e.g. `(1, 2)` => `001002` for `digits = 3`)
 - `format` : a `String` indicating whether to output in`"wide"` or `"long"` (aka `"tidy"`) format
   - `wide` : the standard format CSV for importing into PopGen.jl
-  - `long` : the `loci` table with `longitude` and `lattitude` columns added
+  - `long` : the `loci` table with `longitude` and `latitude` columns added
 - `delim` : the `String` delimiter to use for writing the file
 - `miss` : an `Integer` for how you would like missing values written 
     - `0` : As a genotype represented as a number of zeroes equal to `digits × ploidy` like `000000` (default) 
@@ -131,7 +131,7 @@ function delimited(data::PopData; filename::String, delim::String = ",", digits:
     select!(unphased_df, 1, 2, 3, 5)
     if format == "wide"
         wide_df = DataFrames.unstack(unphased_df, :locus, :string_geno)
-        insertcols!(wide_df, 3, :longitude => data.metadata.longitude, :lattitude => data.metadata.lattitude)
+        insertcols!(wide_df, 3, :longitude => data.metadata.longitude, :latitude => data.metadata.latitude)
         CSV.write(filename, wide_df, delim = delim) ;
         return
     else
@@ -139,12 +139,12 @@ function delimited(data::PopData; filename::String, delim::String = ",", digits:
             transform(
                 unphased_df, 1:2,
                 3 => (i -> Vector{Union{Float32, Missing}}(undef, length(i))) => :longitude,
-                4 => (i -> Vector{Union{Float32, Missing}}(undef, length(i))) => :lattitude, 3:4
+                4 => (i -> Vector{Union{Float32, Missing}}(undef, length(i))) => :latitude, 3:4
                 )
                     )
         for i in 1:length(data.sampleinfo.name)
             out_df[out_df.name .== data.sampleinfo.name[i], :longitude] .= data.metadata.longitude[i]
-            out_df[out_df.name .== data.sampleinfo.name[i], :lattitude] .= data.metadata.lattitude[i]
+            out_df[out_df.name .== data.sampleinfo.name[i], :latitude] .= data.metadata.latitude[i]
         end
         CSV.write(filename, out_df, delim = delim) ;
         return

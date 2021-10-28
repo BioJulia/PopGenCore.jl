@@ -17,7 +17,7 @@ sharks = @gulfsharks;
     end
 
     @testset "Dataset column names" begin
-        meta_names_sorted = ["lattitude","longitude","name","ploidy","population"]
+        meta_names_sorted = ["latitude","longitude","name","ploidy","population"]
         loci_names_sorted = ["genotype","locus","name","population"]
         @test sort(names(cats.sampleinfo)) == meta_names_sorted[3:end]
         @test sort(names(cats.genodata)) == loci_names_sorted
@@ -29,7 +29,7 @@ sharks = @gulfsharks;
         @test eltype(cats.sampleinfo.name) <: AbstractString
         @test eltype(cats.sampleinfo.population) <: AbstractString
         @test typeof(cats.sampleinfo.ploidy) == Vector{Int8}
-        @test_throws ArgumentError typeof(cats.sampleinfo.lattitude)
+        @test_throws ArgumentError typeof(cats.sampleinfo.latitude)
         @test_throws ArgumentError typeof(cats.sampleinfo.longitude)
         @test typeof(cats.genodata.name) <: PooledArray
         @test eltype(cats.genodata.name) <: AbstractString
@@ -45,7 +45,7 @@ sharks = @gulfsharks;
         @test eltype(sharks.sampleinfo.name) <: AbstractString
         @test eltype(sharks.sampleinfo.population) <: AbstractString
         @test eltype(sharks.sampleinfo.ploidy) == Int8
-        @test eltype(sharks.sampleinfo.lattitude) ==  Float64
+        @test eltype(sharks.sampleinfo.latitude) ==  Float64
         @test eltype(sharks.sampleinfo.longitude) == Float64
         @test typeof(sharks.genodata.name) <: PooledArray
         @test eltype(sharks.genodata.name) <: AbstractString
