@@ -63,21 +63,6 @@ end
 
 
 """
-    genotype(data::PopData, sample::String => locus::String)
-Return the genotype of one sample at one locus in a `PopData` object.
-### Example
-```
-cats = @nancycats;
-genotype(cats, "N115"=> "fca8")
-```
-"""
-function genotype(data::PopData, samplocus::Pair)
-    sample, locus = samplocus
-    @views data.genodata[(data.genodata.name .== sample) .& (data.genodata.locus .== locus), :genotype][1]
-end
-
-
-"""
     genotypes(data::PopData, samplelocus::String)
 Return a vector of all the genotypes of a sample (or locus) in a `PopData` object. To return a
 single genotype at a locus, see `genotype`.
@@ -99,24 +84,40 @@ function genotypes(data::PopData, samplelocus::AbstractString)
 end
 
 """
-    genotypes(::PopData; sample::Union{T, Vector{T}}, locus::Union{T, Vector{T}}) where T<:AbstractString
-Return a table of the genotype(s) of one or more samples for one or more
-specific loci in a `PopData` object.
+    genotypes(data::PopData, samplelocus::Pair{String, String}) ::DataFrame
+    genotypes(data::PopData, samplelocus::Pair{Vector{String}, String}) ::DataFrame
+    genotypes(data::PopData, samplelocus::Pair{String, Vector{String}}) ::DataFrame
+    
+Return a genotype or dataframe of genotypes for one or more samples/loci 
+in a `PopData` object. Uses the `Pair` notation of `samples => loci`.
 ### Examples
 ```
 cats = @nancycats;
-genotypes(cats, sample = "N115" , locus = "fca8")
-genotypes(cats, sample = ["N115", "N7"] , locus = "fca8")
-genotypes(cats, sample = "N115" , locus = ["fca8", "fca37"])
-genotypes(cats, sample = ["N1", "N2"] , locus = ["fca8", "fca37"])
+genotypes(cats, "N115" => "fca8")
+genotypes(cats, ["N115", "N7"] => "fca8")
+genotypes(cats, "N115" => ["fca8", "fca37"])
+genotypes(cats, ["N1", "N2"] => ["fca8", "fca37"])
 ```
 """
-function genotypes(data::PopData; sample::Union{T, Vector{T}}, locus::Union{U, Vector{U}}) where T<:AbstractString where U<:AbstractString
-    sample = sample isa AbstractString ? [sample] : sample
-    locus = locus isa AbstractString ? [locus] : locus
+function genotypes(data::PopData, samplocus::Pair{T,U})  where T<:AbstractString where U<:AbstractString
+    sample, locus = samplocus
+    @views data.genodata[(data.genodata.name .== sample) .& (data.genodata.locus .== locus), :genotype][1]
+end
+
+function genotypes(data::PopData, samplelocus::Pair{U, Vector{T}}) where T<:AbstractString where U<:AbstractString
+    sample,locus = samplelocus
+    @view data.genodata[(data.genodata.name .== sample) .& (data.genodata.locus .∈ Ref(locus)), :] 
+end
+
+function genotypes(data::PopData, samplelocus::Pair{Vector{U}, Vector{T}}) where T<:AbstractString where U<:AbstractString
+    sample,locus = samplelocus
     @view data.genodata[(data.genodata.name .∈ Ref(sample)) .& (data.genodata.locus .∈ Ref(locus)), :] 
 end
 
+function genotypes(data::PopData, samplelocus::Pair{Vector{U}, T}) where T<:AbstractString where U<:AbstractString
+    sample,locus = samplelocus
+    @view data.genodata[(data.genodata.name .∈ Ref(sample)) .& (data.genodata.locus .== locus), :] 
+end
 
 """
     populations(data::PopData; counts::Bool = false)

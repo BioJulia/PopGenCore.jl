@@ -247,9 +247,10 @@ function populations!(data::PopData, samples::AbstractVector{T}, populations::Ab
     nsample = length(samples)
     npops = length(populations)
     nsample != npops && throw(DimensionMismatch("Number of provided samples ($(nsample)) does not match the number of provided populations ($(npops))"))
-    namescheck = symdiff(samples,intersect(samples, data.sampleinfo.name))
-    if !isempty(namescheck)
-        throw(ArgumentError("$(length(namescheck)) samples not found: $(join(namescheck, ", "))"))
+    namescheck = intersect(samples, data.sampleinfo.name)
+    notfound = samples[samples .∉ Ref(namescheck)]
+    if !isempty(notfound)
+        throw(ArgumentError("$(length(notfound)) samples not found: $(join(notfound, ", "))"))
     end
     for (i,samp) in enumerate(samples)
         @views data.sampleinfo[data.sampleinfo.name .== samp, :population] .= populations[i]
