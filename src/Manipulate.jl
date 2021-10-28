@@ -1,4 +1,4 @@
-export locations!, populations!
+export locationdata!, populations!
 export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, filter!
 
 """

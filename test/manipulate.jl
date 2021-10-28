@@ -27,15 +27,13 @@ sharks = @gulfsharks;
 
     @testset "loci and genotypes" begin
         @test length(loci(cats)) == 9
-        @test genotype(cats, "N115" => "fca8") == (135,135)
+        @test genotypes(cats, "N115" => "fca8") == (135,135)
         N115 = genotypes(cats, "N115")
         @test length(N115) == 9
         @test N115 isa GenoArray
-        @test typeof(genotypes(cats, sample = "N115" , locus = "fca8")) <: SubDataFrame
-        @test names(genotypes(cats, sample = "N115" , locus = "fca8")) == ["name", "population", "locus", "genotype"]
-        @test size(genotypes(cats, sample = ["N115", "N7"] , locus = "fca8")) == (2,4)
-        @test size(genotypes(cats, sample = "N115" , locus = ["fca8", "fca37"])) == (2,4)
-        @test size(genotypes(cats, sample = ["N115", "N7"] , locus = ["fca8", "fca37"])) == (4,4)
+        @test size(genotypes(cats, ["N115", "N7"] => "fca8")) == (2,4)
+        @test size(genotypes(cats, "N115" => ["fca8", "fca37"])) == (2,4)
+        @test size(genotypes(cats, ["N115", "N7"] => ["fca8", "fca37"])) == (4,4)
         @test length(genotypes(sharks, "contig_475")) == 212
     end
 
