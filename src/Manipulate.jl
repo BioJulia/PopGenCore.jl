@@ -17,7 +17,7 @@ must be in the same order as the samples in `PopData.sampleinfo`.
 ```julia
 cats = @nancycats
 sampleinfo!(cats, :whiskerlength => rand(cats.metadata.samples))
-sampleinfo!(cats, "tailcolor" => rand(["orange", "brown"], cats.metadata.samples), categorical = true)
+sampleinfo!(cats, "tailcolor" => rand(["orange", "brown"], metadata(cats).samples), categorical = true)
 cats
 PopData{Diploid, 9 Microsatellite loci}
   Samples: 237
@@ -27,7 +27,7 @@ PopData{Diploid, 9 Microsatellite loci}
 """
 function sampleinfo!(data::PopData, metadata::Pair{Symbol, T}; categorical::Bool = false) where T <: AbstractVector
     length(metadata[2]) != data.metadata.samples && throw(DimensionMismatch("Provided metadata vector (n = $(length(metadata[2]))) and samples in PopData (n = $(data.metadata.samples)) have different lengths"))
-    infotext = "\nAdding :$(metadata[1]) column to metadata.sampleinfo" 
+    infotext = "\nAdding :$(metadata[1]) column to sampleinfo(metadata)" 
     @info infotext
     if categorical == true
         insertcols!(data.metadata.sampleinfo, metadata[1] => PooledArray(metadata[2], compress = true))
@@ -45,7 +45,7 @@ end
     locusinfo!(::PopData, metadata::Pair{Symbol, Vector}; categorical::Bool = false)
     locusinfo!(::PopData, metadata::Pair{String, Vector}; categorical::Bool = false)
 Add an additional locus information to `PopData` metadata. Mutates `PopData` in place. Metadata 
-must be in the same order as the samples in `PopData.locusinfo`.
+must be in the same order as the samples in `locusinfo(PopData)`.
 
 #### Arguments
 - `metadata` : A Pair of :ColumnName => [Values]
@@ -56,7 +56,7 @@ must be in the same order as the samples in `PopData.locusinfo`.
 ## Example
 ```julia
 cats = @nancycats
-locusinfo!(cats, :quality => rand(cats.metadata.loci))
+locusinfo!(cats, :quality => rand(metadata(cats).loci))
 cats
 PopData{Diploid, 9 Microsatellite loci}
   Samples: 237
