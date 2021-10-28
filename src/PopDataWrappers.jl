@@ -1,13 +1,13 @@
-export info, sampleinfo, genodata, locusinfo, samplenames
+export metadata, info, sampleinfo, genodata, locusinfo, samplenames
 export locations, loci, samples, populations
 export genotype, genotypes
 
 """
     info(::PopData)
-Display the PopDataInfo of a PopData object.
+Display the metadata (PopDataInfo) of a PopData object.
 """
-info(data::PopData) = data.info
-
+metadata(data::PopData) = data.metadata
+info(data::PopData) = data.metadata
 
 """
     sampleinfo(::PopData)

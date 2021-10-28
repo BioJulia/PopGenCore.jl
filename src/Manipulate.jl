@@ -97,13 +97,13 @@ locationdata!(ncats, longitude = x, lattitude = y)
 ```
 """
 function locationdata!(data::PopData, longitude::Vector{Union{Missing,T}}, lattitude::Vector{Union{Missing,T}}) where T <: AbstractFloat
-    long_len = length(long)
-    lat_len = length(lat)
+    long_len = length(longitude)
+    lat_len = length(lattitude)
     long_len != lat_len && throw(DimensionMismatch("latitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
     long_len != length(data.sampleinfo.name) && throw(DimensionMismatch("lat/long array length ($long_len) and number of samples in PopData ($long_len) are not equal"))
 
-    data.sampleinfo.longitude = long
-    data.sampleinfo.latitude = lat
+    data.sampleinfo.longitude = longitude
+    data.sampleinfo.latitude = lattitude
     return
 end
 
@@ -143,21 +143,21 @@ locationdata!(ncats, longitude = x, lattitude = y)
 ```
 """
 function locationdata!(data::PopData, longitude::Vector{String}, lattitude::Vector{String})
-    long_len = length(long)
-    lat_len = length(lat)
+    long_len = length(longitude)
+    lat_len = length(lattitude)
     lat_len != long_len && throw(DimensionMismatch("latitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
     lat_len != length(data.sampleinfo.name) && throw(DimensionMismatch("lat/long array length ($lat_len) and number of samples in PopData ($long_len) are not equal"))
     # convert coordinates to decimal degrees
-    data.sampleinfo.longitude = convertcoord.(long)
-    data.sampleinfo.latitude = convertcoord.(lat)
+    data.sampleinfo.longitude = convertcoord.(longitude)
+    data.sampleinfo.latitude = convertcoord.(lattitude)
     return
 end
 
 function locationdata!(data::PopData; kwargs...)
     kwargs = Dict(kwargs)
     # check for matching lat and long keywords
-    if all([haskey(kwargs, :latitude), haskey(kwargs, :longitude)])
-        locationdata!(data, kwargs[:longitude], kwargs[:latitude])
+    if all([haskey(kwargs, :lattitude), haskey(kwargs, :longitude)])
+        locationdata!(data, kwargs[:longitude], kwargs[:lattitude])
     else
         error("keyword arguments \"lattitude\" and \"longitude\" must be supplied together")
     end

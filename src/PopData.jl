@@ -1,5 +1,5 @@
 export PopObj, PopData, PopDataInfo, show, Genotype, GenoArray, SNP, MSat
-export metadata, genodata, sampelinfo, locusinfo, getindex
+export getindex, getproperty
 
 """
     AbstractType PopObj
