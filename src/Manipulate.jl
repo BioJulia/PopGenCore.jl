@@ -99,11 +99,11 @@ locationdata!(ncats, longitude = x, lattitude = y)
 function locationdata!(data::PopData, longitude::Vector{Union{Missing,T}}, lattitude::Vector{Union{Missing,T}}) where T <: AbstractFloat
     long_len = length(longitude)
     lat_len = length(lattitude)
-    long_len != lat_len && throw(DimensionMismatch("latitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
+    long_len != lat_len && throw(DimensionMismatch("lattitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
     long_len != length(data.sampleinfo.name) && throw(DimensionMismatch("lat/long array length ($long_len) and number of samples in PopData ($long_len) are not equal"))
 
     data.sampleinfo.longitude = longitude
-    data.sampleinfo.latitude = lattitude
+    data.sampleinfo.lattitude = lattitude
     return
 end
 
@@ -126,9 +126,9 @@ from `CSV.jl` to import your spatial coordinates from a text file.
 - Missing data should be coded as the string `"missing"` (can be accomplished with `replace!()`)
 - Can mix colons and spaces (although it's bad practice)
 ### NOTE
-If you read in the coordinate data as 4 vectors (longitude degrees, longitude minutes, latitude degrees, latitude minutes),
+If you read in the coordinate data as 4 vectors (longitude degrees, longitude minutes, lattitude degrees, lattitude minutes),
 then the easiest course of action would be to merge them into two vectors of strings
-(one for longitude, one for latitude):
+(one for longitude, one for lattitude):
 ```
 long_string = string.(lat_deg, " ", lat_min)
 lat_string = string.(long_deg, " ", long_min)
@@ -145,11 +145,11 @@ locationdata!(ncats, longitude = x, lattitude = y)
 function locationdata!(data::PopData, longitude::Vector{String}, lattitude::Vector{String})
     long_len = length(longitude)
     lat_len = length(lattitude)
-    lat_len != long_len && throw(DimensionMismatch("latitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
+    lat_len != long_len && throw(DimensionMismatch("lattitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
     lat_len != length(data.sampleinfo.name) && throw(DimensionMismatch("lat/long array length ($lat_len) and number of samples in PopData ($long_len) are not equal"))
     # convert coordinates to decimal degrees
     data.sampleinfo.longitude = convertcoord.(longitude)
-    data.sampleinfo.latitude = convertcoord.(lattitude)
+    data.sampleinfo.lattitude = convertcoord.(lattitude)
     return
 end
 

@@ -225,7 +225,7 @@ function Base.getindex(data::PopData, idx::Symbol)
     elseif idx == :locus
         return data.genodata.locus.pool
     elseif idx == :coordinates
-        return data.sampleinfo[:, [:longitude, :latitude]]
+        return data.sampleinfo[:, [:longitude, :lattitude]]
     else
         throw(ArgumentError("Cannot directly index PopData with the \':$idx\' field"))
     end
