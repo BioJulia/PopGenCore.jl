@@ -1,4 +1,4 @@
-export locationdata!, populations!
+export locationdata!, populations!, sampleinfo!, locusinfo!
 export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, filter!
 
 """
@@ -26,7 +26,7 @@ PopData{Diploid, 9 Microsatellite loci}
 ```
 """
 function sampleinfo!(data::PopData, metadata::Pair{Symbol, T}; categorical::Bool = false) where T <: AbstractVector
-    length(metadata[2]) != data.metadata.samples && error("Provided metadata vector (n = $(length(metadata[2]))) and samples in PopData (n = $(data.metadata.samples)) have different lengths")
+    length(metadata[2]) != data.metadata.samples && throw(DimensionMismatch("Provided metadata vector (n = $(length(metadata[2]))) and samples in PopData (n = $(data.metadata.samples)) have different lengths"))
     infotext = "\nAdding :$(metadata[1]) column to metadata.sampleinfo" 
     @info infotext
     if categorical == true
