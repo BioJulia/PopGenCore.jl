@@ -28,6 +28,7 @@ isbiallelic(data::PopData) = data.metadata.biallelic
 """
 ```
 ishom(locus::T) where T <: GenoArray
+ishom(locus::T) where T<:Base.SkipMissing
 ishom(locus::Genotype)
 ishom(locus::Missing)
 ```
@@ -36,26 +37,30 @@ it is, `false` if it isn't (or missing). For calculations, we recommend using `_
 which returns `missing` if the genotype is `missing`. The vector version
 simply maps the function over the elements.
 """
-@inline function ishom(locus::Genotype)
-    # if the first equals all others, return true
-    return all(@inbounds first(locus) .== locus)
-end
+ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
 
 # public facing method
 ishom(locus::Missing) = false
-# API computational method
+ishom(locus::T) where T<:GenoArray = @inbounds map(ishom, locus)
+ishom(locus::T) where T<:Base.SkipMissing = @inbounds map(ishom, locus)
+
+# API computational methods
+_ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
+_ishom(locus::T) where T<:GenoArray = @inbounds map(_ishom, locus)
+_ishom(locus::T) where T<:Base.SkipMissing = @inbounds map(_ishom, locus)
 _ishom(locus::Missing) = missing
 
-
-@inline function ishom(locus::T) where T<:GenoArray
-    return @inbounds map(ishom, locus)
+#= scales for size, which isn't super necessary yet
+function ishom(geno::Genotype)
+    x = true
+    y = 2
+    while x
+        x = geno[1] == geno[y]
+        y += 1
+    end
+    x
 end
-
-@inline function ishom(locus::T) where T<:Base.SkipMissing
-    return @inbounds map(ishom, locus)
-end
-
-
+=#2
 """
     ishom(locus::Genotype, allele::Signed)
     ishom(loci::GenoArray, allele::Signed)
@@ -69,9 +74,13 @@ ishom(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> ishom(i
 
 # public facing method
 ishom(geno::Missing, allele::U) where U<:Integer = false
+
 # API computational method
+_ishom(geno::T, allele::U) where T<:Genotype where U<:Integer = ∈(allele, geno) & _ishom(geno) ? true : false
+_ishom(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> _ishom(i, allele), geno)
 _ishom(geno::Missing, allele::U) where U<:Integer = missing
 
+# public facing method
 """
 ```
 ishet(locus::T) where T <: GenoArray
@@ -79,29 +88,22 @@ ishet(locus::Genotype)
 ishet(locus::Missing)
 ```
 A series of methods to test if a locus or loci are heterozygous and return `true` if
-it is, `false` if it isn't. The vector version simply broadcasts the function over the
-elements. Under the hood, this function is simply `!ishom`.
+it is, `false` if it isn't (or missing). For calculations, we recommend using `_ishet()`,
+which returns `missing` if the genotype is `missing`. The vector version
+simply maps the function over the elements.
 """
-@inline function ishet(locus::Genotype)
-    return !ishom(locus)
-end
-
-# public facing method
+ishet(locus::Genotype) = !ishom(locus)
 ishet(locus::Missing) = false
-# API computational method
+ishet(locus::T) where T<:GenoArray = @inbounds map(ishet, locus)
+ishet(locus::T) where T<:Base.SkipMissing = @inbounds map(ishet, locus)
+
+_ishet(locus::Genotype) = !_ishom(locus)
 _ishet(locus::Missing) = missing
+_ishet(locus::T) where T<:GenoArray = @inbounds map(_ishet, locus)
+_ishet(locus::T) where T<:Base.SkipMissing = @inbounds map(_ishet, locus)
 
 
-@inline function ishet(locus::T) where T<:GenoArray
-    return @inbounds map(ishet, locus)
-end
-
-
-@inline function ishet(locus::T) where T<:Base.SkipMissing
-    return @inbounds map(ishet, locus)
-end
-
-
+# public facing methods
 """
     ishet(locus::Genotype, allele::Signed)
     ishet(loci::GenoArray, allele::Signed)
@@ -112,8 +114,10 @@ function ishet(geno::T, allele::U) where T<:Genotype where U<:Integer
 end
 
 ishet(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> ishet(i, allele), geno)
-# public facing method
 ishet(geno::Missing, allele::U) where U<:Integer = false
-# API computational method
+
+_ishet(geno::T, allele::U) where T<:Genotype where U<:Integer = ∈(allele, geno) & !ishom(geno) ? true : false
+_ishet(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> ishet(i, allele), geno)
 _ishet(geno::Missing, allele::U) where U<:Integer = missing
+
 
