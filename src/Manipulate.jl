@@ -5,7 +5,7 @@ export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, fil
     sampleinfo!(::PopData, metadata::Pair{Symbol, Vector}; categorical::Bool = false)
     sampleinfo!(::PopData, metadata::Pair{String, Vector}; categorical::Bool = false)
 Add an additional sample information to `PopData` metadata. Mutates `PopData` in place. Metadata 
-must be in the same order as the samples in `PopData.sampleinfo`.
+must be in the same order as the samples in `sampleinfo(popdata)`.
 
 #### Arguments
 - `metadata` : A Pair of :ColumnName => [Values]
@@ -27,7 +27,7 @@ PopData{Diploid, 9 Microsatellite loci}
 """
 function sampleinfo!(data::PopData, metadata::Pair{Symbol, T}; categorical::Bool = false) where T <: AbstractVector
     length(metadata[2]) != data.metadata.samples && throw(DimensionMismatch("Provided metadata vector (n = $(length(metadata[2]))) and samples in PopData (n = $(data.metadata.samples)) have different lengths"))
-    infotext = "\nAdding :$(metadata[1]) column to sampleinfo(metadata)" 
+    infotext = "\nAdding :$(metadata[1]) column to sampleinfo" 
     @info infotext
     if categorical == true
         insertcols!(data.metadata.sampleinfo, metadata[1] => PooledArray(metadata[2], compress = true))
@@ -66,7 +66,7 @@ PopData{Diploid, 9 Microsatellite loci}
 """
 function locusinfo!(data::PopData, metadata::Pair{Symbol, T}; categorical::Bool = false) where T <: AbstractVector
     length(metadata[2]) != data.metadata.loci && error("Provided metadata vector (n = $(length(metadata[2]))) and samples in PopData (n = $(data.metadata.loci)) have different lengths")
-    infotext = "\nAdding :$(metadata[1]) column to metadata.locusinfo" 
+    infotext = "\nAdding :$(metadata[1]) column to locusinfo" 
     @info infotext
     if categorical == true
         insertcols!(data.metadata.locusinfo, metadata[1] => PooledArray(metadata[2], compress = true))
