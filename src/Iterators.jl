@@ -1,4 +1,4 @@
-export skipinf, skipnan, skipinfnan, nonmissings
+export skipinf, skipnan, skipinfnan
 export partitionarray
 export pairwisepairs, simpairs
 
