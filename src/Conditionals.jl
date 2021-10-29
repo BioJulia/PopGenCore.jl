@@ -1,4 +1,4 @@
-export ishom, ishet, isbiallelic, isbinary
+export ishom, ishet, _ishom, _ishet, isbiallelic, isbinary
 
 
 """
