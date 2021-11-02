@@ -34,7 +34,7 @@ Takes non-decimal-degree format as a `String` and returns it as a decimal degree
 ## Formatting requirements
 - Coordinates as a `String` separated by spaces (`"11 43 41"`) or colons (`"11:43:41"`)
 - Must use negative sign (`"-11 43.52"`) or single-letter cardinal direction (`"11 43.52W"`)
-- Missing data should be coded as the string `"missing"` (can be accomplished with `replace!()`)
+- Missing data should be coded as `missing` or the string `"missing"`
 - Can mix colons and spaces (although it's bad practice)
 ### Example
 ```
@@ -64,6 +64,8 @@ function convertcoord(coordinate::String)
         return round(conv, digits = 4)
     end
 end
+
+convertcoord(coordinate::Missing) = missing
 
 
 """

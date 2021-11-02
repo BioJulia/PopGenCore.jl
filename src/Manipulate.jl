@@ -116,7 +116,7 @@ end
 
 
 """
-    locationdata!(data::PopData; longitude::Vector{String}, latitude::Vector{String})
+    locationdata!(data::PopData; longitude::Vector{Union{Missing,String}}, latitude::Vector{Union{Missing,String}})
 Replaces existing `PopData` geographic coordinate data. Takes
 **decimal minutes** or **degrees minutes seconds** format as a `Vector` of `String`. Recommended to use `CSV.read`
 from `CSV.jl` to import your spatial coordinates from a text file.
@@ -142,7 +142,7 @@ x = fill("11 22.33W", 237) ; y = fill("-41 31.52", 237)
 locationdata!(ncats, longitude = x, latitude = y)
 ```
 """
-function locationdata!(data::PopData, longitude::Vector{String}, latitude::Vector{String})
+function locationdata!(data::PopData, longitude::Vector{Union{Missing,String}}, latitude::Vector{Union{Missing,String}})
     long_len = length(longitude)
     lat_len = length(latitude)
     lat_len != long_len && throw(DimensionMismatch("latitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
