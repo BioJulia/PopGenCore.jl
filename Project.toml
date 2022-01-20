@@ -14,7 +14,7 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 VariantCallFormat = "28eba6e3-a997-4ad9-87c6-d933b8bca6c1"
 
 [compat]
-CSV = "0.9"
+CSV = "0.9, 0.10"
 CodecZlib = "0.7"
 DataFrames = "1.0, 1.1"
 PooledArrays = "1.1"
