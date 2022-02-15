@@ -1,7 +1,3 @@
-export reciprocal, reciprocalsum
-export countnonzeros
-## Utilities relevant for math ##
-
 """
     countnonzeros(x::AbstractVector{T}) where T<:Real
 Return the number of non-zero values in a vector

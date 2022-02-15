@@ -1,4 +1,3 @@
-export delimited
 """
     delimited(infile::String; delim::Union{Char,String,Regex} = "auto", digits::Int64 = 3, silent::Bool = false)
 Load a delimited-type file into memory as a PopData object.

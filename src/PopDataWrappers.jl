@@ -1,7 +1,3 @@
-export metadata, info, sampleinfo, genodata, locusinfo, samplenames
-export locationdata, loci, samples, populations
-export genotype, genotypes
-
 """
     info(::PopData)
 Display the metadata (PopDataInfo) of a PopData object.

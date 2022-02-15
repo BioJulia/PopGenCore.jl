@@ -1,6 +1,3 @@
-export PopObj, PopData, PopDataInfo, show, Genotype, GenoArray, SNP, MSat
-export getindex, getproperty
-
 """
     AbstractType PopObj
 Generic AbstractType for use in PopGen.jl

@@ -1,5 +1,3 @@
-export genofreq, genofreq_expected, genocount_observed, genocount_expected
-
 """
     genocount_observed(locus::GenoArray)
 Return a `Dict` of genotype counts of a single locus in a

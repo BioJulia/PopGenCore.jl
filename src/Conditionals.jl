@@ -1,6 +1,3 @@
-export ishom, ishet, _ishom, _ishet, isbiallelic, isbinary
-
-
 """
     isbiallelic(data::GenoArray)
 Returns `true` if the `GenoArray` is biallelic, `false` if not.

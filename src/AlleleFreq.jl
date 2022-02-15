@@ -1,5 +1,3 @@
-export allelefreq, allelefreq_vec, avg_allelefreq
-
 """
     allelefreq(data::PopData)
 Return a NamedTuple of `Dicts` of allele frequencies of all

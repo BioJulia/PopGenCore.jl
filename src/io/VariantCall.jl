@@ -1,5 +1,3 @@
-export bcf, vcf
-
 """
     openvcf(::String)
 Open Variant Call Format file `.vcf[.gz]`, or `.bcf[.gz]` and return an `IO` stream in reading mode `"r"`.

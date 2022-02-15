@@ -1,5 +1,3 @@
-export structure
-
 """
 	phase_structure(datatype::DataType, args...)
 Takes a DataType (such as `Int8`) and a series of integers to return

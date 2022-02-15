@@ -1,7 +1,3 @@
-export nonmissing, nonmissings
-
-## Utilities for Missing values ##
-
 """
     nonmissing(vec::T) where T<:AbstractArray
 Convenience function to count the number of non-`missing` values

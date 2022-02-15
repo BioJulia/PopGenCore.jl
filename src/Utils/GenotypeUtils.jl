@@ -1,7 +1,3 @@
-export allelecount, alleles, uniquealleles
-export locidataframe, locimatrix, phasedmatrix
-
-
 """
     allelecount(locus::T) where T<:GenoArray
 Return the number of unique alleles present at a locus.

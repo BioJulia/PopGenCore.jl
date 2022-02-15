@@ -1,7 +1,3 @@
-export skipinf, skipnan, skipinfnan
-export partitionarray
-export pairwisepairs, simpairs
-
 """
     partitionarray(array::AbstractArray, steps::AbstractVector{<:Integer})
 Like Base.Iterators.Partition, except you can apply arbitrary sizes to
