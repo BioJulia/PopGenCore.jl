@@ -1,6 +1,3 @@
-export locationdata!, populations!, sampleinfo!, locusinfo!
-export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, filter!
-
 """
     sampleinfo!(::PopData, metadata::Pair{Symbol, Vector}; categorical::Bool = false)
     sampleinfo!(::PopData, metadata::Pair{String, Vector}; categorical::Bool = false)
@@ -151,6 +148,12 @@ function locationdata!(data::PopData, longitude::Vector{Union{Missing,String}}, 
     data.sampleinfo.longitude = convertcoord.(longitude)
     data.sampleinfo.latitude = convertcoord.(latitude)
     return
+end
+
+function locationdata!(data::PopData, longitude::Vector{String}, latitude::Vector{String})
+     # convert to the right type and use locationdata!()
+     lat_adjust = latitude |> Vector{Union{Missing, String}}
+     long_adjust = longitude |> Vector{Union{Missing, String}}
 end
 
 function locationdata!(data::PopData; kwargs...)
