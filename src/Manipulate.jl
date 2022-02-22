@@ -93,7 +93,7 @@ x = rand(237) ; y = rand(237)
 locationdata!(ncats, longitude = x, latitude = y)
 ```
 """
-function locationdata!(data::PopData, longitude::Vector{Union{Missing,T}}, latitude::Vector{Union{Missing,T}}) where T <: AbstractFloat
+function locationdata!(data::PopData, longitude::Vector{Union{Missing,Float64}}, latitude::Vector{Union{Missing,Float64}})
     long_len = length(longitude)
     lat_len = length(latitude)
     long_len != lat_len && throw(DimensionMismatch("latitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
@@ -110,7 +110,8 @@ function locationdata!(data::PopData, longitude::Vector{T}, latitude::Vector{T})
     long_adjust = longitude |> Vector{Union{Missing, Float32}}
     locationdata!(data, longitude = long_adjust, latitude = lat_adjust)
 end
-
+precompile(locationdata!, (PopData, Vector{Union{Missing,Float64}}, Vector{Union{Missing,Float64}}))
+precompile(locationdata!, (PopData, Vector{Float64}, Vector{Float64}))
 
 """
     locationdata!(data::PopData; longitude::Vector{Union{Missing,String}}, latitude::Vector{Union{Missing,String}})
@@ -166,6 +167,8 @@ function locationdata!(data::PopData; kwargs...)
         error("keyword arguments \"latitude\" and \"longitude\" must be supplied together")
     end
 end
+precompile(locationdata!, (PopData, Vector{Union{Missing,String}}, Vector{Union{Missing,String}}))
+precompile(locationdata!, (PopData, Vector{String}, Vector{String}))
 
 
 """
@@ -228,6 +231,7 @@ function populations!(data::PopData, rename::Dict)
     data.metadata.populations = length(unique(data.sampleinfo.population))
     return
 end
+precompile(populations!, (PopData, Dict{String, String}))
 
 function populations!(data::PopData, rename::Vector{String})
     current_popnames = unique(data.sampleinfo.population)
@@ -245,6 +249,7 @@ function populations!(data::PopData, rename::Vector{String})
     end
     return
 end
+precompile(populations!, (PopData, Vector{String}))
 
 function populations!(data::PopData, samples::AbstractVector{T}, populations::AbstractVector{U}) where T<:AbstractString where U<:AbstractString
     nsample = length(samples)
@@ -265,6 +270,7 @@ function populations!(data::PopData, samples::AbstractVector{T}, populations::Ab
     data.metadata.populations = length(unique(data.sampleinfo.population))
     return
 end
+precompile(populations!, (PopData, Vector{String}, Vector{String}))
 
 ##### Exclusion #####
 """

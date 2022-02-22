@@ -5,6 +5,8 @@ Returns `true` if the `GenoArray` is biallelic, `false` if not.
 @inline function isbiallelic(data::T) where T<:GenoArray
     length(unique(Base.Iterators.flatten(skipmissing(data)))) == 2
 end
+#precompile(isbiallelic, (Vector{SNP}))
+#precompile(isbiallelic, (Vector{MSat}))
 
 # method for using just a genodata input
 function isbiallelic(data::DataFrame)
@@ -40,12 +42,21 @@ ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
 ishom(locus::Missing) = false
 ishom(locus::T) where T<:GenoArray = @inbounds map(ishom, locus)
 ishom(locus::T) where T<:Base.SkipMissing = @inbounds map(ishom, locus)
+precompile(ishom, (NTuple{2,Int8},))
+precompile(ishom, (NTuple{2,Int16},))
+precompile(ishom, (Vector{Union{Missing,SNP}},))
+precompile(ishom, (Vector{Union{Missing,MSat}},))
+
 
 # API computational methods
 _ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
 _ishom(locus::T) where T<:GenoArray = @inbounds map(_ishom, locus)
 _ishom(locus::T) where T<:Base.SkipMissing = @inbounds map(_ishom, locus)
 _ishom(locus::Missing) = missing
+precompile(_ishom, (NTuple{2,Int8},))
+precompile(_ishom, (NTuple{2,Int16},))
+precompile(_ishom, (Vector{Union{Missing,SNP}},))
+precompile(_ishom, (Vector{Union{Missing,MSat}},))
 
 #= scales for size, which isn't super necessary yet
 function ishom(geno::Genotype)
@@ -59,13 +70,17 @@ function ishom(geno::Genotype)
 end
 =#2
 """
-    ishom(locus::Genotype, allele::Signed)
-    ishom(loci::GenoArray, allele::Signed)
+    ishom(locus::Genotype, allele::Integer)
+    ishom(loci::GenoArray, allele::Integer)
 Returns `true` if the `locus`/`loci` is/are homozygous for the specified `allele`.
 """
 function ishom(geno::T, allele::U) where T<:Genotype where U<:Integer
     ∈(allele, geno) & ishom(geno) ? true : false
 end
+precompile(ishom, (NTuple{2,Int8},Int64))
+precompile(ishom, (NTuple{2,Int8},Int8))
+precompile(ishom, (NTuple{2,Int16},Int64))
+precompile(ishom, (NTuple{2,Int16},Int16))
 
 ishom(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> ishom(i, allele), geno)
 
@@ -76,6 +91,10 @@ ishom(geno::Missing, allele::U) where U<:Integer = false
 _ishom(geno::T, allele::U) where T<:Genotype where U<:Integer = ∈(allele, geno) & _ishom(geno) ? true : false
 _ishom(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> _ishom(i, allele), geno)
 _ishom(geno::Missing, allele::U) where U<:Integer = missing
+precompile(_ishom, (NTuple{2,Int8},Int8))
+precompile(_ishom, (NTuple{2,Int8},Int64))
+precompile(_ishom, (NTuple{2,Int16},Int64))
+precompile(_ishom, (NTuple{2,Int16},Int16))
 
 # public facing method
 """

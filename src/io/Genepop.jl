@@ -192,3 +192,6 @@ function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3
     end
     close(outfile)
 end
+
+precompile(genepop, (String,))
+precompile(genepop, (PopData,))

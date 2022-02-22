@@ -149,3 +149,5 @@ function delimited(data::PopData; filename::String, delim::String = ",", digits:
         return
     end
 end
+precompile(delimited, (String,))
+precompile(delimited, (PopData,))

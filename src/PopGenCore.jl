@@ -71,7 +71,4 @@ include("io/ReadWrite.jl")
 include("Datasets.jl")
 export @nancycats, @gulfsharks, dataset
 
-# precompile some file IO
-#include("precompile/precompile.jl") ;
-
 end

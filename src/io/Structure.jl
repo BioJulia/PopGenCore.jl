@@ -208,3 +208,5 @@ function structure(data::PopData; filename::String, faststructure::Bool = false,
     end
     close(outfile)
 end
+precompile(structure, (String,))
+precompile(structure, (PopData,))

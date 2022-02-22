@@ -55,6 +55,8 @@ function convertcoord(coordinate::String)
 end
 
 convertcoord(coordinate::Missing) = missing
+precompile(convertcoord, (String,))
+precompile(convertcoord, (Missing,))
 
 
 """
@@ -80,7 +82,7 @@ function dropmonomorphic(data::PopData; silent::Bool = false)
     end
     exclude(data, locus = loci_to_rm)
 end
-
+precompile(dropmonomorphic, (PopData,))
 
 """
     dropmonomorphic!(data::PopData; silent::Bool = false)
@@ -105,6 +107,7 @@ function dropmonomorphic!(data::PopData; silent::Bool = false)
     end
     exclude!(data, locus = monomorphs)
 end
+precompile(dropmonomorphic!, (PopData,))
 
 
 """
@@ -130,6 +133,7 @@ function dropmultiallelic(data::PopData)
     _out.metadata.biallelic = true
     return _out
 end
+precompile(dropmultiallelic, (PopData,))
 
 
 """
@@ -155,8 +159,9 @@ function dropmultiallelic!(data::PopData)
     data.metadata.biallelic = true
     return data
 end
+precompile(dropmultiallelic, (PopData,))
 
-function truncatepath(text::String)
+@inline function truncatepath(text::String)
     width = displaysize(stdout)[2]
     if length(text) > width
         separated = split(text, "/")    
@@ -166,3 +171,4 @@ function truncatepath(text::String)
         return text   
     end
 end
+precompile(truncatepath, (String,))

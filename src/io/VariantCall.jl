@@ -10,6 +10,7 @@ function openvcf(infile::String)
         return open(infile, "r")
     end
 end
+precompile(openvcf, (String,))
 
 """
     bcf(infile::String; ; rename_loci::Bool, silent::Bool, allow_monomorphic::Bool)
@@ -85,6 +86,7 @@ function bcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     !allow_monomorphic && dropmonomorphic!(pd_out, silent = silent)
     return pd_out
 end
+precompile(bcf, (String,))
 
 ### VCF parsing ###
 
@@ -165,3 +167,4 @@ function vcf(infile::String; rename_loci::Bool = false, silent::Bool = false, al
     !allow_monomorphic && dropmonomorphic!(pd_out, silent = silent)
     return pd_out
 end
+precompile(vcf, (String,))

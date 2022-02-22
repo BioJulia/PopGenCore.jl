@@ -38,7 +38,6 @@ map(i -> phase(i, Int16, 3), ["112131", "211112", "001003", "516500"])
     phased = map(i -> parse(type, join(i)), Iterators.partition(loc, digit))
     NTuple{length(phased), type}(sort(phased))
 end
-
 phase(loc::Missing, type::DataType, digit::Int) = missing
 
 @inline function phase(loc::T, type::DataType, digits::T) where T<:Integer
@@ -54,7 +53,10 @@ phase(loc::Missing, type::DataType, digit::Int) = missing
     end
     return NTuple{length(out), type}(sort(out))
 end
-
+precompile(phase, (Missing, DataType, Int64))
+precompile(phase, (String, DataType, Int64))
+precompile(phase, (String, DataType, Int64))
+precompile(phase, (Int64, DataType, Int64))
 
 """
     unphase(geno::T; digits::Int = 3, ploidy::Int = 2, miss::Int = 0) where T <: Genotype
@@ -88,3 +90,6 @@ function unphase(geno::Missing; digits::Int = 3, ploidy::Int, miss::Int = 0)
         return "$miss"
     end
 end
+precompile(unphase, (NTuple{2, Int8},))
+precompile(unphase, (NTuple{2, Int16},))
+precompile(unphase, (Missing,))

@@ -153,6 +153,7 @@ function allelefreq(data::PopData, locus::String; population::Bool=false)
         DataFrames.combine(tmp, :genotype => allelefreq => :frequency)
     end
 end
+precompile(allelefreq, (PopData, String))
 
 
 #TODO swtich order of args do it's data, allele?
@@ -174,3 +175,7 @@ function allelefreq(allele::Int, genos::T) where T<:GenoArray
     tmp = allelefreq(genos)
     haskey(tmp, allele) ? getindex(tmp, allele) : 0.
 end
+precompile(allelefreq, (Int8, NTuple{2, Int8}))
+precompile(allelefreq, (Int64, NTuple{2, Int8}))
+precompile(allelefreq, (Int16, NTuple{2, Int16}))
+precompile(allelefreq, (Int64, NTuple{2, Int16}))

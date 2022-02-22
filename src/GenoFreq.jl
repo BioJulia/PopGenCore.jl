@@ -8,6 +8,8 @@ Return a `Dict` of genotype counts of a single locus in a
     all(ismissing.(locus)) && return missing
     countmap(skipmissing(locus))
 end
+precompile(genocount_observed, (Vector{Union{NTuple{2, Int8}}},))
+precompile(genocount_observed, (Vector{Union{NTuple{2, Int16}}},))
 
 """
     genocount_expected(locus::GenoArray)
@@ -37,6 +39,8 @@ function genocount_expected(locus::T) where T<:GenoArray
 
     return expected
 end
+precompile(genocount_expected, (Vector{Union{NTuple{2, Int8}}},))
+precompile(genocount_expected, (Vector{Union{NTuple{2, Int16}}},))
 
 
 """
@@ -49,6 +53,8 @@ Return a `Dict` of genotype frequencies of a single locus in a
     all(ismissing.(locus)) && return missing
     proportionmap(locus |> skipmissing |> collect)
 end
+precompile(genofreq, (Vector{Union{NTuple{2, Int8}}},))
+precompile(genofreq, (Vector{Union{NTuple{2, Int16}}},))
 
 
 """
@@ -72,6 +78,7 @@ function genofreq(data::PopData, locus::String; population::Bool=false)
         DataFrames.combine(groupby(tmp, :population), :genotype => genofreq => :freq)
     end
 end
+precompile(genofreq, (PopData, String))
 
 """
     genofreq_expected(locus::GenoArray)
@@ -101,6 +108,9 @@ function genofreq_expected(locus::T) where T<:GenoArray
 
     return expected
 end
+precompile(genofreq_expected, (Vector{NTuple{2, Int8}},))
+precompile(genofreq_expected, (Vector{NTuple{2, Int16}},))
+
 
 """
     genofreq_expected(data::PopData, locus::String; population::Bool = false)
@@ -123,3 +133,4 @@ function genofreq_expected(data::PopData, locus::String; population::Bool=false)
         DataFrames.combine(groupby(tmp, :population), :genotype => genofreq_expected => :freq)
     end
 end
+precompile(genofreq_expected, (PopData, String))

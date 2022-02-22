@@ -17,7 +17,8 @@ Return an array of all the non-missing alleles of a locus.
     end
     return Base.Iterators.flatten(skipmissing(locus)) |> collect
 end
-
+precompile(alleles, (Vector{Union{Missing, NTuple{2, Int8}}},))
+precompile(alleles, (Vector{Union{Missing, NTuple{2, Int16}}},))
 
 """
     alleles(locus::T, miss::Bool = false) where T<:GenoArray
@@ -35,6 +36,8 @@ argument as `true` to include missing values.
     end
     return alle_out
 end
+precompile(alleles, (Vector{Union{Missing, NTuple{2, Int8}}},Bool))
+precompile(alleles, (Vector{Union{Missing, NTuple{2, Int16}}},Bool))
 
 
 """
