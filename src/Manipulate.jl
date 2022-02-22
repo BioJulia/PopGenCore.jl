@@ -145,8 +145,8 @@ function locationdata!(data::PopData, longitude::Vector{Union{Missing,String}}, 
     lat_len != long_len && throw(DimensionMismatch("latitude ($lat_len) and longitude ($long_len) arrays not equal in length"))
     lat_len != length(data.sampleinfo.name) && throw(DimensionMismatch("lat/long array length ($lat_len) and number of samples in PopData ($long_len) are not equal"))
     # convert coordinates to decimal degrees
-    data.sampleinfo.longitude = convertcoord.(longitude)
-    data.sampleinfo.latitude = convertcoord.(latitude)
+    data.sampleinfo[:, :longitude] .= convertcoord.(longitude)
+    data.sampleinfo[:, :latitude] .= convertcoord.(latitude)
     return
 end
 
@@ -154,6 +154,7 @@ function locationdata!(data::PopData, longitude::Vector{String}, latitude::Vecto
      # convert to the right type and use locationdata!()
      lat_adjust = latitude |> Vector{Union{Missing, String}}
      long_adjust = longitude |> Vector{Union{Missing, String}}
+     locationdata!(data, long_adjust, lat_adjust)
 end
 
 function locationdata!(data::PopData; kwargs...)
