@@ -21,7 +21,8 @@ a `PopData` object.
     all(ismissing.(locus)) == true && return Dict{eltype(nonmissingtype(eltype(locus))), Float64}()
     proportionmap(alleles(locus))
 end
-
+precompile(allelefreq, (Vector{NTuple{2,Int8}},))
+precompile(allelefreq, (Vector{NTuple{2,Int16}},))
 """
     allelefreq(geno::Genotype)
 Return a `Dict` of allele frequencies of the alleles within a single Genotype in a `PopData`
@@ -35,6 +36,8 @@ object.
     end
     return d
 end
+precompile(allelefreq, (NTuple{2,Int8},))
+precompile(allelefreq, (NTuple{2,Int16},))
 
 """
     allelefreq_vec(locus::GenoArray)
@@ -49,6 +52,8 @@ for getting the expected genotype frequencies.
     d = [count(i -> i == j, flat_alleles) for j in unique(flat_alleles)]
     return d ./ len
 end
+precompile(allelefreq_vec, (Vector{NTuple{2,Int8}},))
+precompile(allelefreq_vec, (Vector{NTuple{2,Int16}},))
 
 @inline function allelefreq_vec(::Missing)
     return missing
@@ -98,6 +103,8 @@ function avg_allelefreq(allele_dicts::AbstractVector{Dict{T, Float64}}, power::I
    end
    return avg_dict
 end
+#precompile(avg_allelefreq, (Vector{Dict{Int16, Float64}}, Int))
+#precompile(avg_allelefreq, (Vector{Dict{Int8, Float64}}, Int))
 
 # method for nei_fst (pairwise)
 function avg_allelefreq(allele_dicts::T, power::Int = 1) where T<:Tuple
