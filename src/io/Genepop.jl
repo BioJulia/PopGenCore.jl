@@ -110,7 +110,7 @@ function genepop(
     popnames = string.(1:length(popcounts))
     popnames = fill.(popnames,popcounts) |> Base.Iterators.flatten |> collect
     insertcols!(geno_parse, 2, :population => popnames)
-    geno_parse.name .= strip.(geno_parse.name, ',')
+    geno_parse[:, :name] .= strip.(geno_parse.name, ',')
     # wide to long format
     geno_parse = DataFrames.stack(geno_parse, DataFrames.Not([1,2]))
     rename!(geno_parse, [:name, :population, :locus, :genotype])
