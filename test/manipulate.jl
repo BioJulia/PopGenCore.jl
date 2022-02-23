@@ -12,10 +12,10 @@ sharks = @gulfsharks;
     @testset "locations" begin
         x = rand(length(samplenames(cats))) ; y = rand(length(samplenames(cats)))
         locationdata!(cats, longitude = x, latitude = y)    
-        @test cats.sampleinfo.longitude == Float32.(x)
-        @test cats.sampleinfo.latitude == Float32.(y)
-        @test locationdata(cats).longitude == Float32.(x)
-        @test locationdata(cats).latitude == Float32.(y)
+        @test cats.sampleinfo.longitude == x
+        @test cats.sampleinfo.latitude == y
+        @test locationdata(cats).longitude == x
+        @test locationdata(cats).latitude == y
     end
 
     @testset "decimal-minutes locations" begin
