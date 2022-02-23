@@ -106,8 +106,8 @@ end
 
 function locationdata!(data::PopData, longitude::Vector{T}, latitude::Vector{T}) where T <: AbstractFloat
     # convert to the right type and use locationdata!()
-    lat_adjust = latitude |> Vector{Union{Missing, Float32}}
-    long_adjust = longitude |> Vector{Union{Missing, Float32}}
+    lat_adjust = latitude |> Vector{Union{Missing, Float64}}
+    long_adjust = longitude |> Vector{Union{Missing, Float64}}
     locationdata!(data, longitude = long_adjust, latitude = lat_adjust)
 end
 precompile(locationdata!, (PopData, Vector{Union{Missing,Float64}}, Vector{Union{Missing,Float64}}))

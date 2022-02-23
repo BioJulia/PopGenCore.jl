@@ -38,7 +38,7 @@ julia> convertcoord.(["-41 31.52", "25 11:54S"])
 function convertcoord(coordinate::String)
     lowercase(coordinate) == "missing" && return missing
     coord_strip = replace(uppercase(coordinate), r"[NSEW]" => "")
-    split_coord = parse.(Float32, split(coord_strip, r"\s|:"))
+    split_coord = parse.(Float64, split(coord_strip, r"\s|:"))
     split_coord[2] /= 60.0
     if length(split_coord) == 3
         split_coord[3] /= 3600.0
