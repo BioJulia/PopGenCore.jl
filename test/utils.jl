@@ -10,8 +10,8 @@ x = @nancycats
         @test typeof(copy(x)) == PopData
         @test size(x) == (;samples = 237, loci = 9)
         @test sort((2,1,3)) == (1,2,3)
-        @test convertcoord("-41 31.52") == -41.5253f0
-        @test convertcoord.(["-41:31.52", "25 11:54S"]) == Float32[-41.5253, -25.1983]
+        @test convertcoord("-41 31.52") == -41.5253
+        @test convertcoord.(["-41:31.52", "25 11:54S"]) == [-41.5253, -25.1983]
         @test length(loci(dropmonomorphic(x))) == 9
         @test length(loci(dropmultiallelic(x))) == 0
     end
