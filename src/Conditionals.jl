@@ -23,7 +23,7 @@ Returns `true` all the loci in the `PopData` are biallelic, `false` if not.
 isbiallelic(data::PopData) = data.metadata.biallelic
 
 
-#TODO how to treat haploids?
+#Haploids treatest as heterozygotes
 """
 ```
 ishom(locus::T) where T <: GenoArray
@@ -78,10 +78,12 @@ precompile(ishom, (Vector{Union{Missing,MSat}},))
 
 
 # API computational methods
-_ishom(locus::NTuple{N,Int8})::Bool where N = ishom(locus)
-
-_ishom(locus::NTuple{N,Int16})::Bool where N = ishom(locus)
-
+function _ishom(locus::NTuple{N,Int8})::Bool where N
+    ishom(locus)
+end
+function _ishom(locus::NTuple{N,Int16})::Bool where N
+    ishom(locus)
+end
 function _ishom(locus::T)::Vector{Bool} where T<:GenoArray
     @inbounds map(_ishom, locus)
 end
@@ -113,7 +115,7 @@ function ishom(geno::T, allele::U)::Vector{Bool} where T<:GenoArray where U<:Int
 end
 
 # public facing method
-ishom(geno::Missing, allele::U)::Bool where U<:Integer = false
+ishom(geno::Missing, allele::U) where U<:Integer = false
 
 # API computational method
 function _ishom(geno::T, allele::U)::Bool where T<:Genotype where U<:Integer
@@ -123,7 +125,7 @@ end
 function _ishom(geno::T, allele::U)::Vector{Bool} where T<:GenoArray where U<:Integer
     @inbounds [ishom(i, allele) for i in geno]
 end
-_ishom(geno::Missing, allele::U)::Bool where U<:Integer = missing
+_ishom(geno::Missing, allele::U) where U<:Integer = missing
 precompile(_ishom, (NTuple{2,Int8},Int8))
 precompile(_ishom, (NTuple{2,Int8},Int64))
 precompile(_ishom, (NTuple{2,Int16},Int64))
@@ -173,7 +175,7 @@ function ishet(geno::T, allele::U)::Vector{Bool} where T<:GenoArray where U<:Int
     [ishet(i, allele) for i in geno]
 end
 
-ishet(geno::Missing, allele::U)::Bool where U<:Integer = false
+ishet(geno::Missing, allele::U) where U<:Integer = false
 
 function _ishet(geno::T, allele::U)::Bool where T<:Genotype where U<:Integer
     _ishom(geno) && return false
@@ -184,6 +186,6 @@ function _ishet(geno::T, allele::U)::Vector{Bool} where T<:GenoArray where U<:In
     [ishet(i, allele) for i in geno]
 end
 
-_ishet(geno::Missing, allele::U)::Bool where U<:Integer = missing
+_ishet(geno::Missing, allele::U) where U<:Integer = missing
 
 
