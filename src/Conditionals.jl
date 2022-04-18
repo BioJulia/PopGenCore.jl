@@ -65,8 +65,12 @@ end
 
 # public facing method
 ishom(locus::Missing)::Bool = false
-ishom(locus::T)::Vector{Bool} where T<:GenoArray = @inbounds map(ishom, locus)
-ishom(locus::T)::Vector{Bool} where T<:Base.SkipMissing = @inbounds map(ishom, locus)
+function ishom(locus::T)::Vector{Bool} where T<:GenoArray
+    @inbounds map(ishom, locus)
+end
+function ishom(locus::T)::Vector{Bool} where T<:Base.SkipMissing
+    @inbounds map(ishom, locus)
+end
 precompile(ishom, (NTuple{2,Int8},))
 precompile(ishom, (NTuple{2,Int16},))
 precompile(ishom, (Vector{Union{Missing,SNP}},))
@@ -78,8 +82,12 @@ _ishom(locus::NTuple{N,Int8})::Bool where N = ishom(locus)
 
 _ishom(locus::NTuple{N,Int16})::Bool where N = ishom(locus)
 
-_ishom(locus::T)::Vector{Bool} where T<:GenoArray = @inbounds map(_ishom, locus)
-_ishom(locus::T)::Vector{Bool} where T<:Base.SkipMissing = @inbounds map(_ishom, locus)
+function _ishom(locus::T)::Vector{Bool} where T<:GenoArray
+    @inbounds map(_ishom, locus)
+end
+function _ishom(locus::T)::Vector{Bool} where T<:Base.SkipMissing
+    @inbounds map(_ishom, locus)
+end
 _ishom(locus::Missing)::Missing = missing
 precompile(_ishom, (NTuple{2,Int8},))
 precompile(_ishom, (NTuple{2,Int16},))
@@ -135,14 +143,20 @@ simply maps the function over the elements.
 """
 ishet(locus::Genotype) = !ishom(locus)
 ishet(locus::Missing) = false
-ishet(locus::T)::Vector{Bool} where T<:GenoArray = @inbounds map(ishet, locus)
-ishet(locus::T)::Vector{Bool} where T<:Base.SkipMissing = @inbounds map(ishet, locus)
-
+function ishet(locus::T)::Vector{Bool} where T<:GenoArray
+    @inbounds map(ishet, locus)
+end
+function ishet(locus::T)::Vector{Bool} where T<:Base.SkipMissing
+    @inbounds map(ishet, locus)
+end
 _ishet(locus::Genotype) = !_ishom(locus)
 _ishet(locus::Missing) = missing
-_ishet(locus::T)::Vector{Bool} where T<:GenoArray = @inbounds map(_ishet, locus)
-_ishet(locus::T)::Vector{Bool} where T<:Base.SkipMissing = @inbounds map(_ishet, locus)
-
+function _ishet(locus::T)::Vector{Bool} where T<:GenoArray
+    @inbounds map(_ishet, locus)
+end
+function _ishet(locus::T)::Vector{Bool} where T<:Base.SkipMissing
+    @inbounds map(_ishet, locus)
+end
 
 # public facing methods
 """
