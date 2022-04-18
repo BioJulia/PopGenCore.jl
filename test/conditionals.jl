@@ -4,6 +4,10 @@ using PopGenCore
 using Test
 
 x = @nancycats
+a = (Int8(1),Int8(2))
+b = (Int8(1),Int8(1))
+c = (Int8(1),Int8(2), Int8(1))
+d = (Int8(2),Int8(2), Int8(2))
 
 @testset "Conditionals.jl" begin
     @testset "biallelic" begin
@@ -15,15 +19,15 @@ x = @nancycats
     @testset "homozygous" begin
         @test ishom(missing) == false
         @test PopGenCore._ishom(missing) === missing
-        @test ishom((1,2)) == false
-        @test ishom((1,1)) == true
-        @test ishom((1,1,2)) == false
-        @test ishom((2,2,2)) == true
+        @test ishom(a) == false
+        @test ishom(b) == true
+        @test ishom(c) == false
+        @test ishom(d) == true
         @test all(ishom(x.genodata.genotype[1:5]) .== [false, false, false, false, false])
         @test all(ishom(skipmissing(x.genodata.genotype[1:5])) .== [false, false, false])
-        @test ishom((1,1), 1) == true
-        @test ishom((1,2), 1) == false
-        @test ishom((1,1), 2) == false
+        @test ishom(b, 1) == true
+        @test ishom(a, 1) == false
+        @test ishom(b, 2) == false
         @test ishom(missing, 2) == false
         @test PopGenCore._ishom(missing, 2) === missing
     end
@@ -31,15 +35,15 @@ x = @nancycats
     @testset "heterozygous" begin
         @test ishet(missing) == false
         @test PopGenCore._ishet(missing) === missing
-        @test ishet((1,2)) == true
-        @test ishet((1,1)) == false
-        @test ishet((1,1,2)) == true
-        @test ishet((2,2,2)) == false
+        @test ishet(a) == true
+        @test ishet(b) == false
+        @test ishet(c) == true
+        @test ishet(d) == false
         @test all(ishet(x.genodata.genotype[1:5]) .=== [false, false, true, true, true])
         @test all(ishet(skipmissing(x.genodata.genotype[1:5])) .== [true, true, true])
-        @test ishet((1,1), 1) == false
-        @test ishet((1,2), 1) == true
-        @test ishet((1,1), 2) == false
+        @test ishet(b, 1) == false
+        @test ishet(a, 1) == true
+        @test ishet(b, 2) == false
         @test ishet(missing, 2) == false
         @test PopGenCore._ishet(missing, 2) === missing
     end
