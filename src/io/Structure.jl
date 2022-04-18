@@ -81,7 +81,7 @@ chestnut_03	2	110	148	66	1	-9
 walnuts = structure("juglans_nigra.str", extracols = 0, extrarows = 0)
 ```
 """
-function structure(infile::String; silent::Bool = false, extracols::Int = 0, extrarows::Int = 0, allow_monomorphic::Bool = false, missingval::String = "-9", faststructure::Bool = false)
+function structure(infile::String; silent::Bool = false, extracols::Int = 0, extrarows::Int = 0, allow_monomorphic::Bool = false, missingval::String = "-9", faststructure::Bool = false)::PopData
     # find the delimiter
     isfile(infile) || throw(ArgumentError("$infile not found."))
     first_row = strip(open(readline, infile))

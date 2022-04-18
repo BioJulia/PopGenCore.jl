@@ -51,7 +51,7 @@ function delimited(
     digits::Int = 3,
     silent::Bool = false,
     allow_monomorphic::Bool = false
-    )
+    )::PopData
     isfile(infile) || throw(ArgumentError("$infile not found."))
     dlm = delim == "auto" ? nothing : delim
     file_parse = CSV.read(infile, DataFrame, delim = dlm, missingstring = ["-9", ""])

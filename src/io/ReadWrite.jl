@@ -24,7 +24,7 @@ PopGen.read("cavernous_assfish.gen", digits = 3)
 PopGen.read("juglans_nigra.vcf")
 ```
 """
-function read(infile::String; kwargs...)
+function read(infile::String; kwargs...)::PopData
     ext = splitext(infile)[2] |> lowercase
     
     if occursin(r".vcf$", infile) | occursin(r".vcf.gz$", infile)
