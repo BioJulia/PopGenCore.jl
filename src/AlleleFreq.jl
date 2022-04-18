@@ -28,13 +28,12 @@ precompile(allelefreq, (Vector{NTuple{2,Int16}},))
 Return a `Dict` of allele frequencies of the alleles within a single Genotype in a `PopData`
 object.
 """
-@inline function allelefreq(geno::Genotype)
-    d = Dict{eltype(geno),Float32}()
-    len = length(geno)
+@inline function allelefreq(geno::NTuple{N,T}) where N where T
+    d = Dict{T,Float32}()
     @inbounds @simd for allele in geno
-        d[allele] = @inbounds get!(d, allele, 0.0) + 1.0/len
+        d[allele] = @inbounds get!(d, allele, 0.0) + 1.0/N
     end
-    return d
+    return d::Dict{T, Float32}
 end
 precompile(allelefreq, (NTuple{2,Int8},))
 precompile(allelefreq, (NTuple{2,Int16},))
@@ -55,9 +54,7 @@ end
 precompile(allelefreq_vec, (Vector{NTuple{2,Int8}},))
 precompile(allelefreq_vec, (Vector{NTuple{2,Int16}},))
 
-@inline function allelefreq_vec(::Missing)
-    return missing
-end
+allelefreq_vec(::Missing) = missing
 
 
 """
@@ -80,7 +77,7 @@ DataFrames.combine(
 ```
 """
 function avg_allelefreq(allele_dicts::AbstractVector{Dict{T, Float64}}, power::Int = 1) where T<:Integer   
-   sum_dict = Dict{Int16, Tuple{Float32, Int}}()
+   sum_dict = Dict{Int16, Tuple{Float32, T}}()
    # remove any dicts with no entries (i.e. from a group without that locus)
    allele_dicts = allele_dicts[findall(i -> length(i) > 0, allele_dicts)]
    # create a list of all the alleles
