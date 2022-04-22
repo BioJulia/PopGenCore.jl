@@ -32,7 +32,10 @@ end
 
 # constructor FORMAT just the genodata dataframe
 function PopDataInfo(genodf::DataFrame)
-    sampleinfo = unique(genodf, :name)
+    nameorder = unique(genodf.name)
+    sampleinfo = unique(dropmissing(genodf), :name)
+    # restore correct sample order if first record for a sample has missing genotype
+    sampleinfo = sampleinfo[indexin(nameorder,sampleinfo.name),:]
     sampleinfo.ploidy = [ismissing(geno) ? Int8(0) : Int8(length(geno)) for geno in sampleinfo.genotype]
     select!(sampleinfo, :name => collect => :name, :population, :ploidy)
     ploidy = unique(sampleinfo.ploidy)
