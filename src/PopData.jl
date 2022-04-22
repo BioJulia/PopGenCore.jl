@@ -32,7 +32,7 @@ end
 
 # constructor FORMAT just the genodata dataframe
 function PopDataInfo(genodf::DataFrame)
-    sampleinfo = unique(dropmissing(genodf), :name)
+    sampleinfo = unique(genodf, :name)
     sampleinfo.ploidy = [ismissing(geno) ? Int8(0) : Int8(length(geno)) for geno in sampleinfo.genotype]
     select!(sampleinfo, :name => collect => :name, :population, :ploidy)
     ploidy = unique(sampleinfo.ploidy)
@@ -99,8 +99,8 @@ struct PopData <: PopObj
         if genocheck != genocols
             throw(error("genodata missing columns $(symdiff(genocheck, genocols))"))
         end
-        sort(meta.sampleinfo.name) != sort(loci.name.pool) && throw(ArgumentError("metadata and genodata do not contain the same sample names"))
-        sort(unique(meta.sampleinfo.population)) != sort(loci.population.pool) && throw(ArgumentError("metadata and genodata do not contain the same population names"))
+        isempty(setdiff(meta.sampleinfo.name, loci.name.pool)) || throw(ArgumentError("metadata and genodata do not contain the same sample names"))
+        isempty(setdiff(meta.sampleinfo.population, loci.population.pool)) || throw(ArgumentError("metadata and genodata do not contain the same population names"))
         new(meta, loci)
     end
 end
@@ -112,8 +112,8 @@ function PopDataInfo!(data::PopData)
     data.metadata.samples = length(data.genodata.name.pool)
     data.metadata.loci = length(data.genodata.locus.pool)
     data.metadata.populations = length(data.genodata.population.pool)
-    filter!(:name => x -> x ∈ data.genodata.name.pool,  data.sampleinfo)
-    filter!(:locus => x -> x ∈ data.genodata.locus.pool,  data.locusinfo)
+    filter!(:name => x -> x ∈ unique(data.genodata.name),  data.sampleinfo)
+    filter!(:locus => x -> x ∈ unique(genodata.locus),  data.locusinfo)
     if "ploidy" ∈ names(data.sampleinfo)
         ploidy = unique(data.sampleinfo.ploidy)
         ploidy = length(ploidy) == 1 ? Int8(ploidy[1]) : Int8.(ploidy)

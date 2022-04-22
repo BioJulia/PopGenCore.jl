@@ -54,9 +54,10 @@ end
 View individual/sample names in a `PopData`
 """
 function samplenames(data::PopData)
-    data.sampleinfo.name
+    string.(unique(data.genodata.name))
+    #data.sampleinfo.name
 end
-
+#TODO update this downstream in PopGen.jl
 
 """
     genotypes(data::PopData, samplelocus::String)
