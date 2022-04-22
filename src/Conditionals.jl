@@ -84,10 +84,10 @@ end
 function _ishom(locus::NTuple{N,Int16})::Bool where N
     ishom(locus)
 end
-function _ishom(locus::T)::Vector{Bool} where T<:GenoArray
+function _ishom(locus::T) where T<:GenoArray
     @inbounds map(_ishom, locus)
 end
-function _ishom(locus::T)::Vector{Bool} where T<:Base.SkipMissing
+function _ishom(locus::T) where T<:Base.SkipMissing
     @inbounds map(_ishom, locus)
 end
 _ishom(locus::Missing)::Missing = missing
@@ -122,7 +122,7 @@ function _ishom(geno::T, allele::U)::Bool where T<:Genotype where U<:Integer
     !_ishom(geno) && return false 
     ∈(allele, geno) && return true
 end
-function _ishom(geno::T, allele::U)::Vector{Bool} where T<:GenoArray where U<:Integer
+function _ishom(geno::T, allele::U) where T<:GenoArray where U<:Integer
     @inbounds [ishom(i, allele) for i in geno]
 end
 _ishom(geno::Missing, allele::U) where U<:Integer = missing
@@ -153,10 +153,10 @@ function ishet(locus::T)::Vector{Bool} where T<:Base.SkipMissing
 end
 _ishet(locus::Genotype) = !_ishom(locus)
 _ishet(locus::Missing) = missing
-function _ishet(locus::T)::Vector{Bool} where T<:GenoArray
+function _ishet(locus::T) where T<:GenoArray
     @inbounds map(_ishet, locus)
 end
-function _ishet(locus::T)::Vector{Bool} where T<:Base.SkipMissing
+function _ishet(locus::T) where T<:Base.SkipMissing
     @inbounds map(_ishet, locus)
 end
 
@@ -182,7 +182,7 @@ function _ishet(geno::T, allele::U)::Bool where T<:Genotype where U<:Integer
     ∈(allele, geno) && return true
 end
 
-function _ishet(geno::T, allele::U)::Vector{Bool} where T<:GenoArray where U<:Integer
+function _ishet(geno::T, allele::U) where T<:GenoArray where U<:Integer
     [ishet(i, allele) for i in geno]
 end
 
