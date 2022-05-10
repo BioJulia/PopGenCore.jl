@@ -1,6 +1,3 @@
-export PopObj, PopData, PopDataInfo, show, Genotype, GenoArray, SNP, MSat
-export getindex, getproperty
-
 """
     AbstractType PopObj
 Generic AbstractType for use in PopGen.jl
@@ -161,14 +158,14 @@ const Genotype = NTuple{N, <:Signed} where N
 An alias for `NTuple{N, Int8}`
 """
 const SNP = NTuple{N, Int8} where N
-_SNP(geno) = all(ismissing.(geno)) ? missing : SNP(geno)
+_SNP(geno) = isallmissing(geno) ? missing : SNP(geno)
 
 """
 MSat::DataType
 An alias for `NTuple{N, Int16}`
     """
 const MSat = NTuple{N, Int16} where N
-_MSat(geno) = all(ismissing.(geno)) ? missing : MSat(geno)
+_MSat(geno) = isallmissing(geno) ? missing : MSat(geno)
 
 """
     GenoArray::DataType
@@ -178,7 +175,6 @@ The definition as an `AbstractVector` adds flexibility for `SubArray`
 cases.
 """
 const GenoArray = AbstractVector{S} where S<:Union{Missing,Genotype}
-#const SnpArray = PooledVector{Union{Missing, Tuple{Int8, Int8}}, UInt8, Vector{UInt8}} 
 
 function _ploidy2text(ploidy::Int8)
     ploidy == 0 ? "" :

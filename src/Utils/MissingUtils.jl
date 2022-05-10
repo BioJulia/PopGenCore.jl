@@ -1,6 +1,19 @@
-export nonmissing, nonmissings
-
 ## Utilities for Missing values ##
+
+"""
+    isallmissing(itr::T) where T<:AbstractArray
+A lightning-fast and non-allocating conditional which tests if iterable `itr`
+contains only `missing` values.
+"""
+function isallmissing(itr::T) where T <: AbstractArray
+    val = true
+    i = 1
+    while (i <= length(itr)) & val
+        val = itr[i] === missing
+        i += 1
+    end
+    return val
+end
 
 """
     nonmissing(vec::T) where T<:AbstractArray

@@ -1,6 +1,3 @@
-export locationdata!, populations!, sampleinfo!, locusinfo!
-export exclude, remove, omit, exclude!, remove!, omit!, keep, keep!, filter, filter!
-
 """
     sampleinfo!(::PopData, metadata::Pair{Symbol, Vector}; categorical::Bool = false)
     sampleinfo!(::PopData, metadata::Pair{String, Vector}; categorical::Bool = false)

@@ -1,6 +1,4 @@
 ## test data available for use in PopGen
-export @nancycats, @gulfsharks, dataset
-
 """
     dataset(::String)
 Load an example dataset from either `"gulfsharks"` (SNP) or `"nancycats"` (microsatellite). 

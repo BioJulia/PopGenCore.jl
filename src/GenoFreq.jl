@@ -1,5 +1,3 @@
-export genofreq, genofreq_expected, genocount_observed, genocount_expected
-
 """
     genocount_observed(locus::GenoArray)
 Return a `Dict` of genotype counts of a single locus in a
@@ -7,10 +5,12 @@ Return a `Dict` of genotype counts of a single locus in a
 """
 @inline function genocount_observed(locus::T) where T<:GenoArray
     # conditional testing if all genos are missing
-    all(ismissing.(locus)) && return missing
+    isallmissing(locus) && return missing
     countmap(skipmissing(locus))
 end
 
+
+#BUG this method does not merge symmetrical genotypes
 """
     genocount_expected(locus::GenoArray)
 Return a `Dict` of the expected genotype counts of a single locus in a
@@ -41,6 +41,22 @@ function genocount_expected(locus::T) where T<:GenoArray
 end
 
 
+function genocount_expected_new(locus::T) where T<:GenoArray
+    #count number of non-missing genotypes in the locus
+    n = nonmissing(locus)
+    ## get the observed allele frequencies
+    allele_dict = allelefreq(locus)
+    expected = Dict{nonmissingtype(eltype(T)), Float64}()
+    @inbounds for (allele1, freq1) in allele_dict
+        @inbounds for (allele2, freq2) in allele_dict
+            geno = sort((allele1, allele2))
+            #geno = (allele1, allele2)
+            expected[geno] = get!(expected, geno, 0.0) + (freq1 * freq2 * n)
+        end
+    end
+    return expected
+end
+
 """
     genofreq(locus::GenoArray)
 Return a `Dict` of genotype frequencies of a single locus in a
@@ -48,7 +64,7 @@ Return a `Dict` of genotype frequencies of a single locus in a
 """
 @inline function genofreq(locus::T) where T<:GenoArray
     # conditional testing if all genos are missing
-    all(ismissing.(locus)) && return missing
+    isallmissing(locus) && return missing
     proportionmap(locus |> skipmissing |> collect)
 end
 
@@ -82,27 +98,19 @@ Return a `Dict` of the expected genotype frequencies of a single locus in a
 observed allele frequencies.
 """
 function genofreq_expected(locus::T) where T<:GenoArray
-    # Get expected number of genotypes in a locus
     ## get the observed allele frequencies
     allele_dict = allelefreq(locus)
-
-    ## split the appropriate pairs into their own vectors
-    alle, freq = collect(keys(allele_dict)), collect(values(allele_dict))
-
-    ## calculate expected genotype frequencies by multiplying all-by-all
-    expected_genotype_freq = vec(freq * freq')
-
-    # reform genotype frequencies with same all-by-all approach
-    genos = reverse.(Base.Iterators.product(alle, alle) |> collect |> vec)
-
-    # reform genotype frequencies into a Dict
-    expected = Dict{nonmissingtype(eltype(locus)), Float64}()
-    for (geno, freq) in zip(genos, expected_genotype_freq)
-        expected[geno] = get!(expected, geno, 0.0) + freq
+    expected = Dict{nonmissingtype(eltype(T)), Float64}()
+    @inbounds for (allele1, freq1) in allele_dict
+        @inbounds for (allele2, freq2) in allele_dict
+            geno = sort((allele1, allele2))
+            #geno = (allele1, allele2)
+            expected[geno] = get!(expected, geno, 0.0) + (freq1 * freq2)
+        end
     end
-
     return expected
 end
+
 
 """
     genofreq_expected(data::PopData, locus::String; population::Bool = false)

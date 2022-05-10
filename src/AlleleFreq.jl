@@ -1,5 +1,3 @@
-export allelefreq, allelefreq_vec, avg_allelefreq
-
 """
     allelefreq(data::PopData)
 Return a NamedTuple of `Dicts` of allele frequencies of all
@@ -20,9 +18,10 @@ Return a `Dict` of allele frequencies of a GenoArray (typically a single locus) 
 a `PopData` object.
 """
 @inline function allelefreq(locus::GenoArray)
-    all(ismissing.(locus)) == true && return Dict{eltype(nonmissingtype(eltype(locus))), Float64}()
+    isallmissing(locus) && return Dict{eltype(nonmissingtype(eltype(locus))), Float64}()
     proportionmap(alleles(locus))
 end
+
 
 """
     allelefreq(geno::Genotype)
@@ -48,8 +47,7 @@ for getting the expected genotype frequencies.
 @inline function allelefreq_vec(locus::GenoArray)
     flat_alleles = alleles(locus)
     len = length(flat_alleles)
-    d = [count(i -> i == j, flat_alleles) for j in unique(flat_alleles)]
-    return d ./ len
+    [count(==(j), flat_alleles)/len for j in unique(flat_alleles)]
 end
 
 @inline function allelefreq_vec(::Missing)
@@ -77,52 +75,50 @@ DataFrames.combine(
 ```
 """
 function avg_allelefreq(allele_dicts::AbstractVector{Dict{T, Float64}}, power::Int = 1) where T<:Integer   
-   sum_dict = Dict{Int16, Tuple{Float32, Int}}()
-   # remove any dicts with no entries (i.e. from a group without that locus)
-   allele_dicts = allele_dicts[findall(i -> length(i) > 0, allele_dicts)]
-   # create a list of all the alleles
-   all_alleles = keys.(allele_dicts) |> Base.Iterators.flatten |> collect |> unique
-   # populate the sum dict with allele frequency and n for each allele
-   @inbounds for allele in all_alleles
-       for allele_dict in allele_dicts
-           @inbounds sum_dict[allele] = get!(sum_dict, allele, (0., 0)) .+ (get!(allele_dict, allele, 0.), 1)
-       end
-   end
-   avg_dict = Dict{Int16, Float32}()
-   # collapse the sum dict into a dict of averages
-   @inbounds for (key, value) in sum_dict
-       freq_sum, n = value
-       avg = (freq_sum / n) ^ power
-       # drop zeroes
-       if !iszero(avg)
-           @inbounds avg_dict[key] = avg
-       end
-   end
-   return avg_dict
-end
-
-# method for nei_fst (pairwise)
-function avg_allelefreq(allele_dicts::T, power::Int = 1) where T<:Tuple
-    sum_dict = Dict{Int16, Tuple{Float32, Int}}()
-    # remove any dicts with no entries (i.e. from a group without that locus)
-    allele_dicts = allele_dicts[findall(i -> length(i) > 0, allele_dicts)]
-    # create a list of all the alleles
-    all_alleles = keys.(allele_dicts) |> Base.Iterators.flatten |> collect |> unique
-    # populate the sum dict with allele frequency and n for each allele
-    @inbounds for allele in all_alleles
-        for allele_dict in allele_dicts
-            @inbounds sum_dict[allele] = get!(sum_dict, allele, (0., 0)) .+ (get!(allele_dict, allele, 0.), 1)
+    sum_dict = Dict{T, Tuple{Float64, Int}}()
+    # ignore any dicts with no entries (i.e. from a group without that locus)
+    @inbounds for frqdict in Base.Iterators.filter(!isempty, allele_dicts)
+        # populate the sum dict with allele frequency and n+1 for each allele
+        @inbounds for (allele, freq) in pairs(frqdict)
+            @inbounds sum_dict[allele] = get!(sum_dict, allele, (0.0, 0)) .+ (freq, 1)
         end
     end
-    avg_dict = Dict{Int16, Float32}()
+    avg_dict = Dict{T, Float64}()
     # collapse the sum dict into a dict of averages
-    @inbounds for (key, value) in sum_dict
-        freq_sum, n = value
+    @inbounds for (key, value) in pairs(sum_dict)
+        @inbounds freq_sum, n = value
         avg = (freq_sum / n) ^ power
-        # drop zeroes
+        @inbounds avg_dict[key] = avg
+        #= drop zeroes
         if !iszero(avg)
             @inbounds avg_dict[key] = avg
         end
+        =#
+    end
+    return avg_dict
+ end
+
+# method for nei_fst (pairwise)
+function avg_allelefreq(allele_dicts::NTuple{N,Dict{T, Float64}}, power::Int = 1) where N where T<:Union{Int8, Int16}
+    sum_dict = Dict{T, Tuple{Float64, Int}}()
+    # ignore any dicts with no entries (i.e. from a group without that locus)
+    @inbounds for frqdict in Base.Iterators.filter(!isempty, allele_dicts)
+        # populate the sum dict with allele frequency and n+1 for each allele
+        @inbounds for (allele, freq) in pairs(frqdict)
+            @inbounds sum_dict[allele] = get!(sum_dict, allele, (0.0, 0)) .+ (freq, 1)
+        end
+    end
+    avg_dict = Dict{T, Float64}()
+    # collapse the sum dict into a dict of averages
+    @inbounds for (key, value) in pairs(sum_dict)
+        @inbounds freq_sum, n = value
+        avg = (freq_sum / n) ^ power
+        @inbounds avg_dict[key] = avg
+        #= drop zeroes
+        if !iszero(avg)
+            @inbounds avg_dict[key] = avg
+        end
+        =#
     end
     return avg_dict
  end
@@ -153,19 +149,17 @@ end
 #TODO swtich order of args do it's data, allele?
 # Does doing that break anything?
 """
-    allelefreq(allele::Int, genos::GenoArray)
+    allelefreq(genos::GenoArray, allele::Int)
 Return the frequency of a specific `allele` from a vector of `genotypes`.
 
 ### Example
 ```
-using DataFramesMeta
 ncats = @nancycats;
-ncats_sub @where(ncats.genodata, :locus .== "fca8", :genotype .!== missing)
+ncats_sub = ncats[(ncats.genodata.locus .== "fca8") .& (ncats.genodata.genotype .!== missing)] 
 pop_grp = groupby(ncats_sub, :population)
 DataFrames.combine(pop_grp, :genotype => (geno -> allelefreq(137, geno)) => :freq_137)
 ```
 """
-function allelefreq(allele::Int, genos::T) where T<:GenoArray
-    tmp = allelefreq(genos)
-    haskey(tmp, allele) ? getindex(tmp, allele) : 0.
+function allelefreq(genos::T, allele::Int) where T<:GenoArray
+    get(allelefreq(genos), allele, 0.0)
 end

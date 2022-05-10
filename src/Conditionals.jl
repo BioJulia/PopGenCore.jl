@@ -1,20 +1,25 @@
-export ishom, ishet, _ishom, _ishet, isbiallelic, isbinary
-
-
 """
     isbiallelic(data::GenoArray)
 Returns `true` if the `GenoArray` is biallelic, `false` if not.
 """
 @inline function isbiallelic(data::T) where T<:GenoArray
-    length(unique(Base.Iterators.flatten(skipmissing(data)))) == 2
+    allelecount(data) == 2
 end
 
 # method for using just a genodata input
 function isbiallelic(data::DataFrame)
-    tmp = sort(data, [:locus, :name])
+    tmp = sort(data, :locus)
     prt = Base.Iterators.partition(tmp.genotype, length(data.name.pool))
     bi = findfirst(!isbiallelic, collect(prt))
     isnothing(bi) ? true : false
+end
+
+function isbi2(data::DataFrame)
+    tmp = sort(data, :locus)
+    @inbounds for i in Base.Iterators.partition(tmp.genotype, length(data.name.pool))
+        isbiallelic(i) || return false
+    end
+    return true
 end
 
 """
@@ -37,7 +42,14 @@ it is, `false` if it isn't (or missing). For calculations, we recommend using `_
 which returns `missing` if the genotype is `missing`. The vector version
 simply maps the function over the elements.
 """
-ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
+#ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
+function ishom(geno::NTuple{N,T}) where N where T<:Union{Int8, Int16}
+    @inbounds @simd for i in 1:N-1
+        @inbounds geno[i] != geno[i+1] && return false
+    end
+    return true
+end
+
 
 # public facing method
 ishom(locus::Missing) = false
@@ -51,16 +63,7 @@ _ishom(locus::T) where T<:Base.SkipMissing = @inbounds map(_ishom, locus)
 _ishom(locus::Missing) = missing
 
 #= scales for size, which isn't super necessary yet
-function ishom(geno::Genotype)
-    x = true
-    y = 2
-    while x
-        x = geno[1] == geno[y]
-        y += 1
-    end
-    x
-end
-=#2
+=#
 """
     ishom(locus::Genotype, allele::Signed)
     ishom(loci::GenoArray, allele::Signed)

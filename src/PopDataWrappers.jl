@@ -1,7 +1,3 @@
-export metadata, info, sampleinfo, genodata, locusinfo, samplenames
-export locationdata, loci, samples, populations
-export genotype, genotypes
-
 """
     info(::PopData)
 Display the metadata (PopDataInfo) of a PopData object.
@@ -125,7 +121,7 @@ View unique population ID's and/or their counts in `PopData`.
 - `counts` returns a dataframe of samples per `population` instead (default = `false`)
 """
 @inline function populations(data::PopData; counts::Bool = false)
-    if all(ismissing.(data.sampleinfo.population)) == true
+    if isallmissing(data.sampleinfo.population) == true
         println("no population data present in PopData")
         return
     end

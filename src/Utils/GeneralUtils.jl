@@ -1,12 +1,6 @@
-export copy, size, sort 
-export dropmonomorphic, dropmonomorphic!
-export dropmultiallelic, dropmultiallelic!
-export convertcoord
-
 #=
 General use utilities
 =#
-
 
 function Base.copy(data::PopData)
     PopData(deepcopy(data.metadata), copy(data.genodata))

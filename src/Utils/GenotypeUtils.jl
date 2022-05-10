@@ -1,13 +1,9 @@
-export allelecount, alleles, uniquealleles
-export locidataframe, locimatrix, phasedmatrix
-
-
 """
     allelecount(locus::T) where T<:GenoArray
 Return the number of unique alleles present at a locus.
 """
 @inline function allelecount(locus::T) where T<:GenoArray
-    unique(locus) |> skipmissing |> Base.Iterators.flatten |> unique |> length
+    unique(Base.Iterators.flatten(skipmissing(locus))) |> length
 end
 
 """
@@ -15,7 +11,7 @@ end
 Return an array of all the non-missing alleles of a locus.
 """
 @inline function alleles(locus::T) where T<:GenoArray
-    if all(ismissing.(locus))
+    if isallmissing(locus)
         int_type = eltype(typeof(locus)) |> nonmissingtype |> eltype
         return Vector{Union{Missing, int_type}}(undef, length(locus))
     end
@@ -30,12 +26,13 @@ argument as `true` to include missing values.
 """
 @inline function alleles(locus::T, miss::Bool) where T<:GenoArray
     int_type = eltype(typeof(locus)) |> nonmissingtype |> eltype
-    if all(ismissing.(locus))
+    if isallmissing(locus)
         return Vector{Union{Missing, int_type}}(undef, length(locus))
     end
     alle_out = Vector{Union{Missing, int_type}}(Base.Iterators.flatten(skipmissing(locus)) |> collect)
     if miss == true
-        append!(alle_out, locus[locus .=== missing])
+        nmiss = count(ismissing, locus)
+        append!(alle_out, fill(missing, nmiss))
     end
     return alle_out
 end
@@ -46,7 +43,7 @@ end
 Return an array of all the unique non-missing alleles of a locus.
 """
 @inline function uniquealleles(locus::GenoArray)
-    unique(alleles(locus))
+    unique(Base.Iterators.flatten(skipmissing(locus)))
 end
 
 

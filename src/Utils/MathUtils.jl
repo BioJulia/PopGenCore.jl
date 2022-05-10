@@ -1,5 +1,3 @@
-export reciprocal, reciprocalsum
-export countnonzeros
 ## Utilities relevant for math ##
 
 """

@@ -1,5 +1,3 @@
-export structure
-
 """
 	phase_structure(datatype::DataType, args...)
 Takes a DataType (such as `Int8`) and a series of integers to return
@@ -15,7 +13,7 @@ missing
 ```
 """
 function phase_structure(datatype::DataType, args...)
-    all(ismissing.(args)) && return missing
+    isallmissing(args) && return missing
     return Tuple(datatype.(sort([args...])))
 end
 

@@ -1,6 +1,3 @@
-export permuteloci!, permutesamples!, permutegenotypes!, permutealleles!
-export strictshuffle, strictshuffle!
-
 """
     permuteloci!(data::PopData)
 Edits `PopData` in place with loci permuted across populations within

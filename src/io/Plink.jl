@@ -58,10 +58,10 @@ function _plinkped(infile::String, keepfields::Union{Symbol,Vector{Symbol}} = :a
     return pedfile
     nsamples = length(pedfile.name)
     npopulations = length(unique(pedfile.population))
-    sirecheck = !all(ismissing.(pedfile.sire)) ?  "(✔)" : "(𐄂)"
-    damcheck = !all(ismissing.(pedfile.dam)) ?  "(✔)" : "(𐄂)"
-    sexcheck = !all(ismissing.(pedfile.sex)) ?  "(✔)" : "(𐄂)"
-    phenotypecheck = !all(ismissing.(pedfile.phenotype)) ?  "(✔)" : "(𐄂)"
+    sirecheck = !isallmissing(pedfile.sire) ?  "(✔)" : "(𐄂)"
+    damcheck = !isallmissing(pedfile.dam) ?  "(✔)" : "(𐄂)"
+    sexcheck = !isallmissing(pedfile.sex) ?  "(✔)" : "(𐄂)"
+    phenotypecheck = !isallmissing(pedfile.phenotype) ?  "(✔)" : "(𐄂)"
     if !silent
         if !bimfound
             @info "\n $(truncatepath(abspath(infile)))\n data: loci = $(n), samples = $(nsamples), populations = $(npopulations)\n .fam: sire $(sirecheck), dam $(damcheck), sex $(sexcheck), phenotype $(phenotypecheck)\n $(basefile * ".bim") not found, generating new marker names"
@@ -84,10 +84,10 @@ function _plinkbed(infile::String, famfields::Union{Symbol,Vector{Symbol}} = :al
     )
     nsamples = length(famfile.name)
     npopulations = length(unique(famfile.population))
-    sirecheck = !all(ismissing.(famfile.sire)) ?  "(✔)" : "(𐄂)"
-    damcheck = !all(ismissing.(famfile.dam)) ?  "(✔)" : "(𐄂)"
-    sexcheck = !all(ismissing.(famfile.sex)) ?  "(✔)" : "(𐄂)"
-    phenotypecheck = !all(ismissing.(famfile.phenotype)) ?  "(✔)" : "(𐄂)"
+    sirecheck = !isallmissing(famfile.sire) ?  "(✔)" : "(𐄂)"
+    damcheck =  !isallmissing(famfile.dam) ?  "(✔)" : "(𐄂)"
+    sexcheck =  !isallmissing(famfile.sex) ?  "(✔)" : "(𐄂)"
+    phenotypecheck = !isallmissing(famfile.phenotype) ?  "(✔)" : "(𐄂)"
     bimfound = isfile(basefile * ".bim")
     if bimfound
         bimfile = CSV.read(
@@ -100,9 +100,9 @@ function _plinkbed(infile::String, famfields::Union{Symbol,Vector{Symbol}} = :al
             pool=0.3
         )
         locinames = bimfile.snp
-        chromcheck = !all(ismissing.(bimfile.chromosome)) ?  "(✔)" : "(𐄂)"
-        cmcheck = !all(ismissing.(bimfile.cm)) ?  "(✔)" : "(𐄂)"
-        bpcheck = !all(ismissing.(bimfile.bp)) ?  "(✔)" : "(𐄂)"
+        chromcheck = !isallmissing(bimfile.chromosome) ?  "(✔)" : "(𐄂)"
+        cmcheck =    !isallmissing(bimfile.cm) ?  "(✔)" : "(𐄂)"
+        bpcheck =    !isallmissing(bimfile.bp) ?  "(✔)" : "(𐄂)"
     end
     bedfile = basefile * ".bed"
     data = open(bedfile, "r") do io

@@ -1,6 +1,3 @@
-export phase, unphase, findploidy
-
-
 """
     isbinary(filepath::String)
 Returns `true` if the `filepath` is a binary file. 

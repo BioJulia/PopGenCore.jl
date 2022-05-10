@@ -1,5 +1,3 @@
-export genepop
-
 """
     genepop(infile::String; kwargs...)
 Load a Genepop format file into memory as a PopData object.
