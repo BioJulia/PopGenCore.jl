@@ -20,7 +20,7 @@ sharks = @gulfsharks ;
         @test avg_allelefreq([a,b], 2) isa Dict
         @test allelefreq(cats, "fca8") isa Dict
         @test allelefreq(cats, "fca8", population = true) isa DataFrame
-        @test allelefreq(133, g) isa AbstractFloat
+        @test allelefreq(g, 133) isa AbstractFloat
     end
 
     @testset "Nuanced" begin
@@ -70,7 +70,7 @@ end
         @test typeof(genofreq(cats, "fca8")) <: Dict{<:Tuple,Float64}
         @test size(genofreq(cats, "fca8", population = true)) == (17,2)
 
-        @test length(genofreq_expected(cats.genodata.genotype)) == 6241
+        @test length(genofreq_expected(cats.genodata.genotype)) == length(unique(Base.Iterators.product(uniquealleles(cats.genodata.genotype), uniquealleles(cats.genodata.genotype))))
         @test typeof(genofreq_expected(cats.genodata.genotype)) <: Dict{<:Tuple,Float64}
         @test length(genofreq_expected(cats, "fca8")) == 256
         @test typeof(genofreq_expected(cats, "fca8")) <: Dict{<:Tuple,Float64}
@@ -81,9 +81,9 @@ end
         @test typeof(genofreq(sharks, "contig_2784")) <: Dict{<:Tuple,Float64}
         @test size(genofreq(sharks, "contig_2784", population = true)) == (7,2)
 
-        @test length(genofreq_expected(sharks.genodata.genotype)) == 25
+        @test length(genofreq_expected(sharks.genodata.genotype)) == 15
         @test typeof(genofreq_expected(sharks.genodata.genotype)) <: Dict{<:Tuple,Float64}
-        @test length(genofreq_expected(sharks, "contig_2784")) == 4
+        @test length(genofreq_expected(sharks, "contig_2784")) == 3
         @test typeof(genofreq_expected(sharks, "contig_2784")) <: Dict{<:Tuple,Float64}
         @test size(genofreq_expected(sharks, "contig_2784", population = true)) == (7,2)
     end

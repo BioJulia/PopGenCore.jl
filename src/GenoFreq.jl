@@ -12,7 +12,7 @@ precompile(genocount_observed, (Vector{Union{NTuple{2, Int8}}},))
 precompile(genocount_observed, (Vector{Union{NTuple{2, Int16}}},))
 
 
-#BUG this method does not merge symmetrical genotypes
+#NOTICE the original method does not merge symmetrical genotypes
 """
     genocount_expected(locus::GenoArray)
 Return a `Dict` of the expected genotype counts of a single locus in a
@@ -20,32 +20,6 @@ Return a `Dict` of the expected genotype counts of a single locus in a
 allele frequencies multiplied by the number of non-missing genotypes.
 """
 function genocount_expected(locus::T) where T<:GenoArray
-    #count number of non-missing genotypes in the locus
-    n = nonmissing(locus)
-
-    # Get expected number of genotypes in a locus
-    ## get the observed allele frequencies
-    allele_dict = allelefreq(locus)
-
-    ## split the appropriate pairs into their own vectors
-    alle, freq = collect(keys(allele_dict)), collect(values(allele_dict))
-    ## calculate expected genotype frequencies by multiplying all-by-all x n
-    expected_genotype_freq = vec(freq * freq' .* n)
-
-    # reform genotype frequencies with same all-by-all approach
-    genos = reverse.(Base.Iterators.product(alle, alle) |> collect |> vec)
-    expected = Dict{nonmissingtype(eltype(locus)), Float64}()
-    for (geno, freq) in zip(genos, expected_genotype_freq)
-        expected[geno] = get!(expected, geno, 0.0) + freq
-    end
-
-    return expected
-end
-precompile(genocount_expected, (Vector{Union{NTuple{2, Int8}}},))
-precompile(genocount_expected, (Vector{Union{NTuple{2, Int16}}},))
-
-
-function genocount_expected_new(locus::T) where T<:GenoArray
     #count number of non-missing genotypes in the locus
     n = nonmissing(locus)
     ## get the observed allele frequencies
@@ -60,6 +34,9 @@ function genocount_expected_new(locus::T) where T<:GenoArray
     end
     return expected
 end
+precompile(genocount_expected, (Vector{Union{NTuple{2, Int8}}},))
+precompile(genocount_expected, (Vector{Union{NTuple{2, Int16}}},))
+
 
 """
     genofreq(locus::GenoArray)
