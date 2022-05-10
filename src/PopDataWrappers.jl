@@ -54,9 +54,9 @@ end
 View individual/sample names in a `PopData`
 """
 function samplenames(data::PopData)
-    data.sampleinfo.name
+    #string.(unique(data.genodata.name))
+    string.(data.sampleinfo.name)
 end
-
 
 """
     genotypes(data::PopData, samplelocus::String)

@@ -44,7 +44,7 @@ function genepop(
     popsep::String = "POP",
     silent::Bool = false,
     allow_monomorphic::Bool = false
-)
+)::PopData
     isfile(infile) || throw(ArgumentError("$infile not found."))
     # open the file as lines of strings to suss out loci names, pop idx, and popcounts
     gpop_readlines = readlines(infile)
@@ -110,7 +110,7 @@ function genepop(
     popnames = string.(1:length(popcounts))
     popnames = fill.(popnames,popcounts) |> Base.Iterators.flatten |> collect
     insertcols!(geno_parse, 2, :population => popnames)
-    geno_parse.name .= strip.(geno_parse.name, ',')
+    geno_parse[:, :name] .= strip.(geno_parse.name, ',')
     # wide to long format
     geno_parse = DataFrames.stack(geno_parse, DataFrames.Not([1,2]))
     rename!(geno_parse, [:name, :population, :locus, :genotype])
@@ -192,3 +192,6 @@ function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3
     end
     close(outfile)
 end
+
+precompile(genepop, (String,))
+precompile(genepop, (PopData,))

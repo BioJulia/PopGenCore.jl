@@ -51,7 +51,7 @@ function delimited(
     digits::Int = 3,
     silent::Bool = false,
     allow_monomorphic::Bool = false
-    )
+    )::PopData
     isfile(infile) || throw(ArgumentError("$infile not found."))
     dlm = delim == "auto" ? nothing : delim
     file_parse = CSV.read(infile, DataFrame, delim = dlm, missingstring = ["-9", ""])
@@ -149,3 +149,5 @@ function delimited(data::PopData; filename::String, delim::String = ",", digits:
         return
     end
 end
+precompile(delimited, (String,))
+precompile(delimited, (PopData,))

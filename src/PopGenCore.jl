@@ -1,4 +1,4 @@
-__precompile__()
+#__precompile__()
 
 module PopGenCore
 
@@ -34,7 +34,6 @@ export reciprocal, reciprocalsum, countnonzeros
 
 include("Utils/MissingUtils.jl")
 export nonmissing, nonmissings
-##
 
 include("AlleleFreq.jl")
 export allelefreq, allelefreq_vec, avg_allelefreq
@@ -73,8 +72,5 @@ include("io/ReadWrite.jl")
 ##
 include("Datasets.jl")
 export @nancycats, @gulfsharks, dataset
-
-# precompile some file IO
-#include("precompile/precompile.jl") ;
 
 end

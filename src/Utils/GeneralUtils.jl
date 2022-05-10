@@ -7,7 +7,6 @@ function Base.copy(data::PopData)
 end
 
 
-
 function Base.size(data::PopData)
     return (samples = data.metadata.samples, loci = data.metadata.loci)
 end
@@ -43,7 +42,7 @@ julia> convertcoord.(["-41 31.52", "25 11:54S"])
 function convertcoord(coordinate::String)
     lowercase(coordinate) == "missing" && return missing
     coord_strip = replace(uppercase(coordinate), r"[NSEW]" => "")
-    split_coord = parse.(Float32, split(coord_strip, r"\s|:"))
+    split_coord = parse.(Float64, split(coord_strip, r"\s|:"))
     split_coord[2] /= 60.0
     if length(split_coord) == 3
         split_coord[3] /= 3600.0
@@ -60,6 +59,8 @@ function convertcoord(coordinate::String)
 end
 
 convertcoord(coordinate::Missing) = missing
+precompile(convertcoord, (String,))
+precompile(convertcoord, (Missing,))
 
 
 """
@@ -85,7 +86,7 @@ function dropmonomorphic(data::PopData; silent::Bool = false)
     end
     exclude(data, locus = loci_to_rm)
 end
-
+precompile(dropmonomorphic, (PopData,))
 
 """
     dropmonomorphic!(data::PopData; silent::Bool = false)
@@ -110,6 +111,7 @@ function dropmonomorphic!(data::PopData; silent::Bool = false)
     end
     exclude!(data, locus = monomorphs)
 end
+precompile(dropmonomorphic!, (PopData,))
 
 
 """
@@ -135,6 +137,7 @@ function dropmultiallelic(data::PopData)
     _out.metadata.biallelic = true
     return _out
 end
+precompile(dropmultiallelic, (PopData,))
 
 
 """
@@ -160,8 +163,9 @@ function dropmultiallelic!(data::PopData)
     data.metadata.biallelic = true
     return data
 end
+precompile(dropmultiallelic, (PopData,))
 
-function truncatepath(text::String)
+@inline function truncatepath(text::String)
     width = displaysize(stdout)[2]
     if length(text) > width
         separated = split(text, "/")    
@@ -171,3 +175,4 @@ function truncatepath(text::String)
         return text   
     end
 end
+precompile(truncatepath, (String,))

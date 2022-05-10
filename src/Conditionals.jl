@@ -5,6 +5,8 @@ Returns `true` if the `GenoArray` is biallelic, `false` if not.
 @inline function isbiallelic(data::T) where T<:GenoArray
     allelecount(data) == 2
 end
+#precompile(isbiallelic, (Vector{SNP}))
+#precompile(isbiallelic, (Vector{MSat}))
 
 # method for using just a genodata input
 function isbiallelic(data::DataFrame)
@@ -29,7 +31,7 @@ Returns `true` all the loci in the `PopData` are biallelic, `false` if not.
 isbiallelic(data::PopData) = data.metadata.biallelic
 
 
-#TODO how to treat haploids?
+#Haploids treatest as heterozygotes
 """
 ```
 ishom(locus::T) where T <: GenoArray
@@ -39,8 +41,8 @@ ishom(locus::Missing)
 ```
 A series of methods to test if a locus or loci are homozygous and return `true` if
 it is, `false` if it isn't (or missing). For calculations, we recommend using `_ishom()`,
-which returns `missing` if the genotype is `missing`. The vector version
-simply maps the function over the elements.
+which returns `missing` if the genotype is `missing`. The vector methods
+simply map the function over the elements. Haploid genotypes return `false`.
 """
 #ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
 function ishom(geno::NTuple{N,T}) where N where T<:Union{Int8, Int16}
@@ -52,9 +54,18 @@ end
 
 
 # public facing method
-ishom(locus::Missing) = false
-ishom(locus::T) where T<:GenoArray = @inbounds map(ishom, locus)
-ishom(locus::T) where T<:Base.SkipMissing = @inbounds map(ishom, locus)
+ishom(locus::Missing)::Bool = false
+function ishom(locus::T)::Vector{Bool} where T<:GenoArray
+    @inbounds map(ishom, locus)
+end
+function ishom(locus::T)::Vector{Bool} where T<:Base.SkipMissing
+    @inbounds map(ishom, locus)
+end
+precompile(ishom, (NTuple{2,Int8},))
+precompile(ishom, (NTuple{2,Int16},))
+precompile(ishom, (Vector{Union{Missing,SNP}},))
+precompile(ishom, (Vector{Union{Missing,MSat}},))
+
 
 # API computational methods
 _ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
@@ -65,23 +76,39 @@ _ishom(locus::Missing) = missing
 #= scales for size, which isn't super necessary yet
 =#
 """
-    ishom(locus::Genotype, allele::Signed)
-    ishom(loci::GenoArray, allele::Signed)
+    ishom(locus::Genotype, allele::Integer)
+    ishom(loci::GenoArray, allele::Integer)
 Returns `true` if the `locus`/`loci` is/are homozygous for the specified `allele`.
 """
-function ishom(geno::T, allele::U) where T<:Genotype where U<:Integer
-    ∈(allele, geno) & ishom(geno) ? true : false
+function ishom(geno::T, allele::U)::Bool where T<:Genotype where U<:Integer
+    !ishom(geno) && return false
+    ∈(allele, geno) && return true
 end
+precompile(ishom, (NTuple{2,Int8},Int64))
+precompile(ishom, (NTuple{2,Int8},Int8))
+precompile(ishom, (NTuple{2,Int16},Int64))
+precompile(ishom, (NTuple{2,Int16},Int16))
 
-ishom(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> ishom(i, allele), geno)
+function ishom(geno::T, allele::U)::Vector{Bool} where T<:GenoArray where U<:Integer 
+    @inbounds [ishom(i, allele) for i in geno]
+end
 
 # public facing method
 ishom(geno::Missing, allele::U) where U<:Integer = false
 
 # API computational method
-_ishom(geno::T, allele::U) where T<:Genotype where U<:Integer = ∈(allele, geno) & _ishom(geno) ? true : false
-_ishom(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> _ishom(i, allele), geno)
+function _ishom(geno::T, allele::U)::Bool where T<:Genotype where U<:Integer
+    !_ishom(geno) && return false 
+    ∈(allele, geno) && return true
+end
+function _ishom(geno::T, allele::U) where T<:GenoArray where U<:Integer
+    @inbounds [ishom(i, allele) for i in geno]
+end
 _ishom(geno::Missing, allele::U) where U<:Integer = missing
+precompile(_ishom, (NTuple{2,Int8},Int8))
+precompile(_ishom, (NTuple{2,Int8},Int64))
+precompile(_ishom, (NTuple{2,Int16},Int64))
+precompile(_ishom, (NTuple{2,Int16},Int16))
 
 # public facing method
 """
@@ -97,14 +124,20 @@ simply maps the function over the elements.
 """
 ishet(locus::Genotype) = !ishom(locus)
 ishet(locus::Missing) = false
-ishet(locus::T) where T<:GenoArray = @inbounds map(ishet, locus)
-ishet(locus::T) where T<:Base.SkipMissing = @inbounds map(ishet, locus)
-
+function ishet(locus::T)::Vector{Bool} where T<:GenoArray
+    @inbounds map(ishet, locus)
+end
+function ishet(locus::T)::Vector{Bool} where T<:Base.SkipMissing
+    @inbounds map(ishet, locus)
+end
 _ishet(locus::Genotype) = !_ishom(locus)
 _ishet(locus::Missing) = missing
-_ishet(locus::T) where T<:GenoArray = @inbounds map(_ishet, locus)
-_ishet(locus::T) where T<:Base.SkipMissing = @inbounds map(_ishet, locus)
-
+function _ishet(locus::T) where T<:GenoArray
+    @inbounds map(_ishet, locus)
+end
+function _ishet(locus::T) where T<:Base.SkipMissing
+    @inbounds map(_ishet, locus)
+end
 
 # public facing methods
 """
@@ -112,15 +145,26 @@ _ishet(locus::T) where T<:Base.SkipMissing = @inbounds map(_ishet, locus)
     ishet(loci::GenoArray, allele::Signed)
 Returns `true` if the `locus`/`loci` is/are heterozygous for the specified `allele`. 
 """
-function ishet(geno::T, allele::U) where T<:Genotype where U<:Integer
-    ∈(allele, geno) & !ishom(geno) ? true : false
+function ishet(geno::T, allele::U)::Bool where T<:Genotype where U<:Integer
+    ishom(geno) && return false
+    ∈(allele, geno) && return true
 end
 
-ishet(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> ishet(i, allele), geno)
+function ishet(geno::T, allele::U)::Vector{Bool} where T<:GenoArray where U<:Integer
+    [ishet(i, allele) for i in geno]
+end
+
 ishet(geno::Missing, allele::U) where U<:Integer = false
 
-_ishet(geno::T, allele::U) where T<:Genotype where U<:Integer = ∈(allele, geno) & !ishom(geno) ? true : false
-_ishet(geno::T, allele::U) where T<:GenoArray where U<:Integer = map(i -> ishet(i, allele), geno)
+function _ishet(geno::T, allele::U)::Bool where T<:Genotype where U<:Integer
+    _ishom(geno) && return false
+    ∈(allele, geno) && return true
+end
+
+function _ishet(geno::T, allele::U) where T<:GenoArray where U<:Integer
+    [ishet(i, allele) for i in geno]
+end
+
 _ishet(geno::Missing, allele::U) where U<:Integer = missing
 
 

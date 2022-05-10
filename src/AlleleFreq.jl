@@ -21,21 +21,27 @@ a `PopData` object.
     isallmissing(locus) && return Dict{eltype(nonmissingtype(eltype(locus))), Float64}()
     proportionmap(alleles(locus))
 end
+<<<<<<< HEAD
 
 
+=======
+precompile(allelefreq, (Vector{NTuple{2,Int8}},))
+precompile(allelefreq, (Vector{NTuple{2,Int16}},))
+>>>>>>> 32a3493467e61f1e4848cebd51203e9c3de7e358
 """
     allelefreq(geno::Genotype)
 Return a `Dict` of allele frequencies of the alleles within a single Genotype in a `PopData`
 object.
 """
-@inline function allelefreq(geno::Genotype)
-    d = Dict{eltype(geno),Float32}()
-    len = length(geno)
+@inline function allelefreq(geno::NTuple{N,T}) where N where T
+    d = Dict{T,Float32}()
     @inbounds @simd for allele in geno
-        d[allele] = @inbounds get!(d, allele, 0.0) + 1.0/len
+        d[allele] = @inbounds get!(d, allele, 0.0) + 1.0/N
     end
-    return d
+    return d::Dict{T, Float32}
 end
+precompile(allelefreq, (NTuple{2,Int8},))
+precompile(allelefreq, (NTuple{2,Int16},))
 
 """
     allelefreq_vec(locus::GenoArray)
@@ -49,10 +55,10 @@ for getting the expected genotype frequencies.
     len = length(flat_alleles)
     [count(==(j), flat_alleles)/len for j in unique(flat_alleles)]
 end
+precompile(allelefreq_vec, (Vector{NTuple{2,Int8}},))
+precompile(allelefreq_vec, (Vector{NTuple{2,Int16}},))
 
-@inline function allelefreq_vec(::Missing)
-    return missing
-end
+allelefreq_vec(::Missing) = missing
 
 
 """
@@ -144,6 +150,7 @@ function allelefreq(data::PopData, locus::String; population::Bool=false)
         DataFrames.combine(tmp, :genotype => allelefreq => :frequency)
     end
 end
+precompile(allelefreq, (PopData, String))
 
 
 #TODO swtich order of args do it's data, allele?

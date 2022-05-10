@@ -1,5 +1,3 @@
-## Utilities for Missing values ##
-
 """
     isallmissing(itr::T) where T<:AbstractArray
 A lightning-fast and non-allocating conditional which tests if iterable `itr`

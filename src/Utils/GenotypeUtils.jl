@@ -17,7 +17,8 @@ Return an array of all the non-missing alleles of a locus.
     end
     return Base.Iterators.flatten(skipmissing(locus)) |> collect
 end
-
+precompile(alleles, (Vector{Union{Missing, NTuple{2, Int8}}},))
+precompile(alleles, (Vector{Union{Missing, NTuple{2, Int16}}},))
 
 """
     alleles(locus::T, miss::Bool = false) where T<:GenoArray
@@ -36,6 +37,8 @@ argument as `true` to include missing values.
     end
     return alle_out
 end
+precompile(alleles, (Vector{Union{Missing, NTuple{2, Int8}}},Bool))
+precompile(alleles, (Vector{Union{Missing, NTuple{2, Int16}}},Bool))
 
 
 """
@@ -80,35 +83,23 @@ Return a matrix of genotypes with dimensions `samples × loci`.
 Rows are samples and columns are loci. Will return an error if ploidy varies between samples. 
 
 **Example**
-```
+
+```julia
 julia> locimatrix(@nancycats)
-237×9 Array{Union{Missing, Tuple{Int16,Int16}},2}:
- missing     (136, 146)  (139, 139)  …  (199, 199)  (113, 113)  (208, 208)
- missing     (146, 146)  (139, 145)     (185, 199)  (113, 113)  (208, 208)
- (135, 143)  (136, 146)  (141, 141)     (197, 197)  (113, 113)  (210, 210)
- (133, 135)  (138, 138)  (139, 141)     (199, 199)  (91, 105)   (208, 208)
- (133, 135)  (140, 146)  (141, 145)     (193, 199)  (113, 113)  (208, 208)
- (135, 143)  (136, 146)  (145, 149)  …  (193, 195)  (91, 113)   (208, 208)
- (135, 135)  (136, 146)  (139, 145)     (199, 199)  (105, 113)  (208, 208)
- (135, 143)  (136, 146)  (135, 149)     (193, 197)  (91, 91)    (208, 212)
- (137, 143)  (136, 146)  (139, 139)     (197, 197)  (105, 113)  (208, 212)
- (135, 135)  (132, 132)  (141, 145)     (197, 197)  (91, 105)   (208, 208)
- (137, 141)  (130, 136)  (137, 145)  …  (193, 199)  (91, 91)    (182, 182)
- (129, 133)  (130, 136)  (135, 145)     (193, 199)  (91, 113)   (182, 208)
- ⋮                                   ⋱                          
- (133, 135)  (136, 136)  (135, 139)  …  (199, 199)  (113, 113)  (182, 182)
- (133, 141)  (136, 136)  (135, 139)     (197, 197)  (113, 113)  (182, 208)
- (133, 141)  (130, 146)  (141, 141)     (191, 199)  missing     (208, 208)
- (123, 133)  (138, 138)  (141, 145)     (191, 197)  missing     (208, 208)
- (123, 133)  (138, 138)  (139, 139)     (197, 199)  missing     (208, 208)
- (133, 141)  (136, 146)  (139, 139)  …  (197, 197)  missing     (208, 208)
- (133, 141)  (130, 136)  (139, 145)     (191, 199)  missing     (208, 208)
- (133, 141)  (136, 146)  (139, 145)     (199, 199)  missing     (208, 220)
- (133, 143)  (130, 130)  (135, 145)     (197, 197)  missing     (208, 208)
- (135, 141)  (136, 144)  (143, 143)     (191, 197)  (113, 117)  (208, 208)
- (137, 143)  (130, 136)  (135, 145)  …  (193, 199)  (113, 117)  (208, 208)
- (135, 141)  (130, 146)  (135, 139)     (197, 197)  missing     (208, 208)
- ```
+237×9 Matrix{Union{Missing, Tuple{Int16, Int16}}}:
+ missing     …  (208, 208)
+ missing        (208, 208)
+ (135, 143)     (210, 210)
+ (133, 135)     (208, 208)
+ (133, 135)     (208, 208)
+ (135, 143)  …  (208, 208)
+ ⋮           ⋱
+ (133, 141)     (208, 220)
+ (133, 143)     (208, 208)
+ (135, 141)     (208, 208)
+ (137, 143)  …  (208, 208)
+ (135, 141)     (208, 208)
+```
 """
 function locimatrix(data::PopData)
     dims = size(data)

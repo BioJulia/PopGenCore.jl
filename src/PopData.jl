@@ -32,7 +32,10 @@ end
 
 # constructor FORMAT just the genodata dataframe
 function PopDataInfo(genodf::DataFrame)
+    nameorder = unique(genodf.name)
     sampleinfo = unique(dropmissing(genodf), :name)
+    # restore correct sample order if first record for a sample has missing genotype
+    sampleinfo = sampleinfo[indexin(nameorder,sampleinfo.name),:]
     sampleinfo.ploidy = [ismissing(geno) ? Int8(0) : Int8(length(geno)) for geno in sampleinfo.genotype]
     select!(sampleinfo, :name => collect => :name, :population, :ploidy)
     ploidy = unique(sampleinfo.ploidy)
@@ -99,8 +102,8 @@ struct PopData <: PopObj
         if genocheck != genocols
             throw(error("genodata missing columns $(symdiff(genocheck, genocols))"))
         end
-        sort(meta.sampleinfo.name) != sort(loci.name.pool) && throw(ArgumentError("metadata and genodata do not contain the same sample names"))
-        sort(unique(meta.sampleinfo.population)) != sort(loci.population.pool) && throw(ArgumentError("metadata and genodata do not contain the same population names"))
+        isempty(setdiff(meta.sampleinfo.name, loci.name.pool)) || throw(ArgumentError("metadata and genodata do not contain the same sample names"))
+        isempty(setdiff(meta.sampleinfo.population, loci.population.pool)) || throw(ArgumentError("metadata and genodata do not contain the same population names"))
         new(meta, loci)
     end
 end
@@ -207,6 +210,10 @@ function Base.show(io::IO, data::PopData)
     end
 end
 
+"""
+    getindex(PopData, Symbol)
+Return specific elements in a PopData objects, such at `sampleinfo`, `ploidy`, etc.
+"""
 function Base.getindex(data::PopData, idx::Symbol)
     if idx == :sampleinfo
         return data.sampleinfo
@@ -227,6 +234,19 @@ function Base.getindex(data::PopData, idx::Symbol)
     end
 end
 
+"""
+    getindex(PopData, args...)
+    getindex(PopData, args..., cols)
+Return a new PopData object or specific columns by indexing using standard DataFrames.jl conventions.
+Expressions can be compounded using `.&` and `.|` operators.
+
+**Example**
+```julia
+julia> cats = @nancycats ;
+julia> cats[cats.genodata.name .== "N290"]
+julia> cats[cats.genodata.name .∈ Ref(["N290", "N291]), :genotype]
+```
+"""
 function Base.getindex(data::PopData, args)
     geno = getindex(data.genodata, args, :)
     transform!(
@@ -240,11 +260,95 @@ function Base.getindex(data::PopData, args)
     out = PopDataInfo!(pdinfo, geno)
     PopData(out, geno)
 end
+precompile(Base.getindex, (PopData, BitVector))
 
 
 function Base.getindex(data::PopData, expression, cols)
     getindex(data.genodata, expression, cols)
 end
+precompile(Base.getindex, (PopData, BitVector, Colon))
+precompile(Base.getindex, (PopData, BitVector, Symbol))
+precompile(Base.getindex, (PopData, BitVector, Vector{Symbol}))
+precompile(Base.getindex, (PopData, BitVector, Vector{Int64}))
+
+"""
+    getindex(PopData, NamedTuple)
+    getindex(PopData, NamedTuple, cols)
+Return a new PopData object or specific genodata columns by indexing a PopData object using a NamedTuple.
+This method is syntactic sugar, but limited to basic `==` indexing.
+
+**Example**
+```julia
+julia> cats = @nancycats ;
+julia> a = (; locus = "fca8", population = ["1", "2", "3"]) ;
+julia> cats[a]
+PopData{Diploid, 1 Microsatellite loci}
+  Samples: 44
+  Populations: 3
+
+julia> cats[a, :]
+44×4 DataFrame
+ Row │ name     population  locus   genotype   
+     │ String7  String      String  Tuple…?    
+─────┼─────────────────────────────────────────
+   1 │ N215     1           fca8    missing
+   2 │ N216     1           fca8    missing
+   3 │ N217     1           fca8    (135, 143)
+  ⋮  │    ⋮         ⋮         ⋮         ⋮
+  42 │ N33      3           fca8    (123, 137)
+  43 │ N34      3           fca8    (135, 139)
+  44 │ N70      3           fca8    (143, 145)
+                                38 rows omitted
+```
+"""
+function Base.getindex(data::PopData, args::NamedTuple, cols)
+    idx = mapreduce(.&, pairs(args)) do kv
+        k = kv.first
+        v = kv.second
+        v isa AbstractVector ? data.genodata[:,k] .∈ Ref(v) : data.genodata[:,k] .== v
+    end
+    getindex(data.genodata, idx, cols)
+end
+
+
+function Base.getindex(data::PopData, args::NamedTuple)
+    idx = mapreduce(.&, pairs(args)) do kv
+        k = kv.first
+        v = kv.second
+        v isa AbstractVector ? data.genodata[:,k] .∈ Ref(v) : data.genodata[:,k] .== v
+    end
+    geno = getindex(data.genodata, idx, :)
+    transform!(
+        geno,
+        1 => (i -> PooledArray(i, compress = true)) => :name,
+        2 => (i -> PooledArray(i, compress = true)) => :population,
+        3 => (i -> PooledArray(i, compress = true)) => :locus,
+        4
+    )
+    pdinfo = deepcopy(data.info)
+    out = PopDataInfo!(pdinfo, geno)
+    PopData(out, geno)
+end
+
+function getindex_not(data::PopData, args::NamedTuple)
+    idx = mapreduce(.&, pairs(args)) do kv
+        k = kv.first
+        v = kv.second
+        v isa AbstractVector ? data.genodata[:,k] .∉ Ref(v) : data.genodata[:,k] .!= v
+    end
+    geno = getindex(data.genodata, idx, :)
+    transform!(
+        geno,
+        1 => (i -> PooledArray(i, compress = true)) => :name,
+        2 => (i -> PooledArray(i, compress = true)) => :population,
+        3 => (i -> PooledArray(i, compress = true)) => :locus,
+        4
+    )
+    pdinfo = deepcopy(data.info)
+    out = PopDataInfo!(pdinfo, geno)
+    PopData(out, geno)
+end
+
 
 # shortcut methods for convenience and less verbose typing
 """
