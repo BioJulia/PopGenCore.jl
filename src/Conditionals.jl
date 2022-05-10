@@ -11,13 +11,6 @@ end
 # method for using just a genodata input
 function isbiallelic(data::DataFrame)
     tmp = sort(data, :locus)
-    prt = Base.Iterators.partition(tmp.genotype, length(data.name.pool))
-    bi = findfirst(!isbiallelic, collect(prt))
-    isnothing(bi) ? true : false
-end
-
-function isbi2(data::DataFrame)
-    tmp = sort(data, :locus)
     @inbounds for i in Base.Iterators.partition(tmp.genotype, length(data.name.pool))
         isbiallelic(i) || return false
     end
@@ -45,13 +38,12 @@ which returns `missing` if the genotype is `missing`. The vector methods
 simply map the function over the elements. Haploid genotypes return `false`.
 """
 #ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
-function ishom(geno::NTuple{N,T}) where N where T<:Union{Int8, Int16}
+function ishom(geno::NTuple{N,T})::Bool where N where T<:Union{Int8, Int16}
     @inbounds @simd for i in 1:N-1
         @inbounds geno[i] != geno[i+1] && return false
     end
     return true
 end
-
 
 # public facing method
 ishom(locus::Missing)::Bool = false
@@ -68,10 +60,12 @@ precompile(ishom, (Vector{Union{Missing,MSat}},))
 
 
 # API computational methods
-_ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
+function _ishom(geno::NTuple{N,T})::Bool where N where T<:Union{Int8, Int16}
+    ishom(geno)
+end
+_ishom(locus::Missing) = missing
 _ishom(locus::T) where T<:GenoArray = @inbounds map(_ishom, locus)
 _ishom(locus::T) where T<:Base.SkipMissing = @inbounds map(_ishom, locus)
-_ishom(locus::Missing) = missing
 
 #= scales for size, which isn't super necessary yet
 =#

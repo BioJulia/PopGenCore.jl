@@ -54,7 +54,7 @@ function genocount_expected_new(locus::T) where T<:GenoArray
     @inbounds for (allele1, freq1) in allele_dict
         @inbounds for (allele2, freq2) in allele_dict
             geno = sort((allele1, allele2))
-            #geno = (allele1, allele2)
+            #geno = (allele1, allele2)   # if not merging symmetrical genotypes
             expected[geno] = get!(expected, geno, 0.0) + (freq1 * freq2 * n)
         end
     end

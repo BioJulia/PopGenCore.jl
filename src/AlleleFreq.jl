@@ -21,13 +21,8 @@ a `PopData` object.
     isallmissing(locus) && return Dict{eltype(nonmissingtype(eltype(locus))), Float64}()
     proportionmap(alleles(locus))
 end
-<<<<<<< HEAD
-
-
-=======
 precompile(allelefreq, (Vector{NTuple{2,Int8}},))
 precompile(allelefreq, (Vector{NTuple{2,Int16}},))
->>>>>>> 32a3493467e61f1e4848cebd51203e9c3de7e358
 """
     allelefreq(geno::Genotype)
 Return a `Dict` of allele frequencies of the alleles within a single Genotype in a `PopData`

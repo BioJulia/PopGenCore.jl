@@ -1,5 +1,3 @@
-#__precompile__()
-
 module PopGenCore
 
 using CSV, DataFrames, PooledArrays, StaticArrays
