@@ -17,9 +17,17 @@ end
 Return a `Dict` of allele frequencies of a GenoArray (typically a single locus) in 
 a `PopData` object.
 """
-@inline function allelefreq(locus::GenoArray)
-    isallmissing(locus) && return Dict{eltype(nonmissingtype(eltype(locus))), Float64}()
-    proportionmap(alleles(locus))
+@inline function allelefreq(locus::AbstractVector{Union{Missing, NTuple{N,T}}}) where N where T<:Union{Int8, Int16}
+    d = Dict{T,Float64}()
+    skipm = skipmissing(locus)
+    n = count(!ismissing, skipm) * N
+    addval = 1.0/n
+    @inbounds for geno in skipm
+        @inbounds for allele in geno
+            d[allele] = @inbounds get(d, allele, 0.0) + addval
+        end
+    end
+    return d
 end
 precompile(allelefreq, (Vector{NTuple{2,Int8}},))
 precompile(allelefreq, (Vector{NTuple{2,Int16}},))
@@ -28,12 +36,13 @@ precompile(allelefreq, (Vector{NTuple{2,Int16}},))
 Return a `Dict` of allele frequencies of the alleles within a single Genotype in a `PopData`
 object.
 """
-@inline function allelefreq(geno::NTuple{N,T}) where N where T
-    d = Dict{T,Float32}()
-    @inbounds @simd for allele in geno
-        d[allele] = @inbounds get!(d, allele, 0.0) + 1.0/N
+@inline function allelefreq(geno::NTuple{N,T}) where N where T<:Union{Int8, Int16}
+    d = Dict{T,Float64}()
+    addval = 1.0/N
+    @inbounds for allele in geno
+        d[allele] = @inbounds get(d, allele, 0.0) + addval
     end
-    return d::Dict{T, Float32}
+    return d
 end
 precompile(allelefreq, (NTuple{2,Int8},))
 precompile(allelefreq, (NTuple{2,Int16},))
@@ -81,7 +90,7 @@ function avg_allelefreq(allele_dicts::AbstractVector{Dict{T, Float64}}, power::I
     @inbounds for frqdict in Base.Iterators.filter(!isempty, allele_dicts)
         # populate the sum dict with allele frequency and n+1 for each allele
         @inbounds for (allele, freq) in pairs(frqdict)
-            @inbounds sum_dict[allele] = get!(sum_dict, allele, (0.0, 0)) .+ (freq, 1)
+            @inbounds sum_dict[allele] = get(sum_dict, allele, (0.0, 0)) .+ (freq, 1)
         end
     end
     avg_dict = Dict{T, Float64}()
