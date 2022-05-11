@@ -70,9 +70,9 @@ end
         @test typeof(genofreq(cats, "fca8")) <: Dict{<:Tuple,Float64}
         @test size(genofreq(cats, "fca8", population = true)) == (17,2)
 
-        @test length(genofreq_expected(cats.genodata.genotype)) == length(unique(Base.Iterators.product(uniquealleles(cats.genodata.genotype), uniquealleles(cats.genodata.genotype))))
+        @test length(genofreq_expected(cats.genodata.genotype)) == 3160
         @test typeof(genofreq_expected(cats.genodata.genotype)) <: Dict{<:Tuple,Float64}
-        @test length(genofreq_expected(cats, "fca8")) == 256
+        @test length(genofreq_expected(cats, "fca8")) == 136
         @test typeof(genofreq_expected(cats, "fca8")) <: Dict{<:Tuple,Float64}
         @test size(genofreq_expected(cats, "fca8", population = true)) == (17,2)
 
@@ -99,12 +99,12 @@ end
     @testset "Nuanced" begin
         @test length(genocount_observed(cats.genodata.genotype)) == 295
         @test typeof(genocount_observed(cats.genodata.genotype)) <: Dict{<:Tuple,Int64}
-        @test length(genocount_expected(cats.genodata.genotype)) == 6241
+        @test length(genocount_expected(cats.genodata.genotype)) == 3160
         @test typeof(genocount_expected(cats.genodata.genotype)) <: Dict{<:Tuple,Float64}
 
         @test length(genocount_observed(sharks.genodata.genotype)) == 12
         @test typeof(genocount_observed(sharks.genodata.genotype)) <: Dict{<:Tuple,Int64}
-        @test length(genocount_expected(sharks.genodata.genotype)) == 25
+        @test length(genocount_expected(sharks.genodata.genotype)) == 15
         @test typeof(genocount_expected(sharks.genodata.genotype)) <: Dict{<:Tuple,Float64}
     end
 end
