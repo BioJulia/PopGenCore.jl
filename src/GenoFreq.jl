@@ -29,7 +29,7 @@ function genocount_expected(locus::T) where T<:GenoArray
         @inbounds for (allele2, freq2) in allele_dict
             geno = sort((allele1, allele2))
             #geno = (allele1, allele2)   # if not merging symmetrical genotypes
-            expected[geno] = get!(expected, geno, 0.0) + (freq1 * freq2 * n)
+            expected[geno] = get(expected, geno, 0.0) + (freq1 * freq2 * n)
         end
     end
     return expected
@@ -41,16 +41,23 @@ precompile(genocount_expected, (Vector{Union{NTuple{2, Int16}}},))
 """
     genofreq(locus::GenoArray)
 Return a `Dict` of genotype frequencies of a single locus in a
-`PopData` object.
+`PopData` object. Returns `missing` if all genotypes are `missing`.
 """
-@inline function genofreq(locus::T) where T<:GenoArray
+@inline function genofreq(locus::AbstractVector{Union{Missing, T}}) where T<:Genotype
     # conditional testing if all genos are missing
     isallmissing(locus) && return missing
-    proportionmap(locus |> skipmissing |> collect)
+    d = Dict{T,Float64}()
+    skipm = skipmissing(locus)
+    n = count(!ismissing, skipm)
+    addval = 1.0/n
+    @inbounds for geno in skipm
+        @inbounds d[geno] = get(d, geno, 0.0) + addval
+    end
+    return d
+    #proportionmap(locus |> skipmissing |> collect)
 end
 precompile(genofreq, (Vector{Union{NTuple{2, Int8}}},))
 precompile(genofreq, (Vector{Union{NTuple{2, Int16}}},))
-
 
 """
     genofreq(data::PopData, locus::String; population::Bool = false)
@@ -89,7 +96,7 @@ function genofreq_expected(locus::T) where T<:GenoArray
         @inbounds for (allele2, freq2) in allele_dict
             geno = sort((allele1, allele2))
             #geno = (allele1, allele2)
-            expected[geno] = get!(expected, geno, 0.0) + (freq1 * freq2)
+            expected[geno] = get(expected, geno, 0.0) + (freq1 * freq2)
         end
     end
     return expected
