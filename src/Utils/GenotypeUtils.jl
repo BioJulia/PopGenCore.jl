@@ -2,20 +2,30 @@
     allelecount(locus::T) where T<:GenoArray
 Return the number of unique alleles present at a locus.
 """
-@inline function allelecount(locus::T) where T<:GenoArray
-    unique(Base.Iterators.flatten(skipmissing(locus))) |> length
+@inline function allelecount(locus::AbstractVector{Union{Missing, NTuple{N,T}}})::Int64 where N where T<: Union{Int8, Int16}
+    out = 0
+    uniq = T[]
+    @inbounds for geno in skipmissing(locus)
+        @inbounds @simd for allele in geno
+            contains = allele ∉ uniq
+            out += contains
+            contains && push!(uniq, allele)
+        end
+    end
+    return out
 end
 
 """
     alleles(locus::T) where T<:GenoArray
 Return an array of all the non-missing alleles of a locus.
 """
-@inline function alleles(locus::T) where T<:GenoArray
-    if isallmissing(locus)
-        int_type = eltype(typeof(locus)) |> nonmissingtype |> eltype
-        return Vector{Union{Missing, int_type}}(undef, length(locus))
+@inline function alleles(locus::AbstractVector{Union{Missing, NTuple{N,T}}}) where N where T<: Union{Int8, Int16}
+    skipm = skipmissing(locus)
+    if isempty(skipm)
+        return Vector{Union{Missing, T}}(undef, length(locus))
+    else
+        return [j for i in skipm for j in i]
     end
-    return Base.Iterators.flatten(skipmissing(locus)) |> collect
 end
 precompile(alleles, (Vector{Union{Missing, NTuple{2, Int8}}},))
 precompile(alleles, (Vector{Union{Missing, NTuple{2, Int16}}},))
@@ -30,7 +40,7 @@ argument as `true` to include missing values.
     if isallmissing(locus)
         return Vector{Union{Missing, int_type}}(undef, length(locus))
     end
-    alle_out = Vector{Union{Missing, int_type}}(Base.Iterators.flatten(skipmissing(locus)) |> collect)
+    alle_out = [j for i in skipmissing(locus) for j in i]
     if miss == true
         nmiss = count(ismissing, locus)
         append!(alle_out, fill(missing, nmiss))
@@ -45,8 +55,15 @@ precompile(alleles, (Vector{Union{Missing, NTuple{2, Int16}}},Bool))
     uniquealleles(locus::T) where T<:GenoArray
 Return an array of all the unique non-missing alleles of a locus.
 """
-@inline function uniquealleles(locus::GenoArray)
-    unique(Base.Iterators.flatten(skipmissing(locus)))
+@inline function uniquealleles(locus::AbstractVector{Union{Missing, NTuple{N,T}}})::Vector{T} where N where T<: Union{Int8, Int16}
+    out = T[]
+    @inbounds for geno in skipmissing(locus)
+        @inbounds @simd for allele in geno
+            allele ∉ out && push!(out, allele)
+        end
+    end
+    sort!(out)  # is this necessary?
+    return out
 end
 
 
