@@ -25,7 +25,7 @@ x = @nancycats
         @test alleles([geno1, geno2]) == [1,2,1,4]
         @test alleles([geno1, geno2], false) == [1,2,1,4] 
         @test alleles([geno1, geno2, missing], false) == [1,2,1,4] 
-        @test all(alleles([geno1, geno2, missing], true) .=== [1,2,1,4,missing])
+        @test all(alleles([geno1, geno2, missing], true) .=== [Int8(1), Int8(2), Int8(1), Int8(4), missing])
         @test uniquealleles([geno1, geno2, missing]) == [1,2,4]
         @test size(locidataframe(x)) == (9,237)
         @test size(locimatrix(x)) == (237,9)

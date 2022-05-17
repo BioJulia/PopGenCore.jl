@@ -48,7 +48,7 @@ sharks = @gulfsharks ;
         @test length(allelefreq(sharks, "contig_2784")) == 2
         @test allelefreq(sharks, "contig_2784") isa Dict{Int8,Float64}
 
-        @test allelefreq_vec([(1,1), (2,2), (2,1)]) == [0.5, 0.5]
+        @test allelefreq_vec([Tuple(Int8[1,1]), Tuple(Int8[2,2]), Tuple(Int8[2,1])]) == [0.5, 0.5]
         @test allelefreq_vec(missing) === missing
     end
 end

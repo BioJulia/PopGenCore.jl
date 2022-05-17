@@ -12,7 +12,7 @@ d = (Int8(2),Int8(2), Int8(2))
 @testset "Conditionals.jl" begin
     @testset "biallelic" begin
         @test isbiallelic(x) == false
-        @test isbiallelic(fill((1,2), 10)) == true
+        @test isbiallelic(fill(a, 10)) == true
         @test isbiallelic(x.genodata) == false
     end
 
