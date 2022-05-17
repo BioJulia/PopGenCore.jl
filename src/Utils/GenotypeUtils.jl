@@ -2,7 +2,7 @@
     allelecount(locus::T) where T<:GenoArray
 Return the number of unique alleles present at a locus.
 """
-@inline function allelecount(locus::AbstractVector{Union{Missing, NTuple{N,T}}})::Int64 where N where T<: Union{Int8, Int16}
+@inline function allelecount(locus::AbstractVector{U})::Int64 where U<:Union{Missing, NTuple{N,T}} where N where T<: Union{Int8, Int16}
     out = 0
     uniq = T[]
     @inbounds for geno in skipmissing(locus)
@@ -19,7 +19,7 @@ end
     alleles(locus::T) where T<:GenoArray
 Return an array of all the non-missing alleles of a locus.
 """
-@inline function alleles(locus::AbstractVector{Union{Missing, NTuple{N,T}}}) where N where T<: Union{Int8, Int16}
+@inline function alleles(locus::AbstractVector{U}) where U<:Union{Missing, NTuple{N,T}} where N where T<: Union{Int8, Int16}
     skipm = skipmissing(locus)
     if isempty(skipm)
         return Vector{Union{Missing, T}}(undef, length(locus))
@@ -36,11 +36,11 @@ Return an array of all the non-missing alleles of a locus. Use the second positi
 argument as `true` to include missing values.
 """
 @inline function alleles(locus::T, miss::Bool) where T<:GenoArray
-    int_type = eltype(typeof(locus)) |> nonmissingtype |> eltype
+    int_type = eltype(T) |> nonmissingtype |> eltype
     if isallmissing(locus)
         return Vector{Union{Missing, int_type}}(undef, length(locus))
     end
-    alle_out = [j for i in skipmissing(locus) for j in i]
+    alle_out = Union{Missing, int_type}[j for i in skipmissing(locus) for j in i]
     if miss == true
         nmiss = count(ismissing, locus)
         append!(alle_out, fill(missing, nmiss))
@@ -55,7 +55,7 @@ precompile(alleles, (Vector{Union{Missing, NTuple{2, Int16}}},Bool))
     uniquealleles(locus::T) where T<:GenoArray
 Return an array of all the unique non-missing alleles of a locus.
 """
-@inline function uniquealleles(locus::AbstractVector{Union{Missing, NTuple{N,T}}})::Vector{T} where N where T<: Union{Int8, Int16}
+@inline function uniquealleles(locus::AbstractVector{U})::Vector{T} where U<:Union{Missing, NTuple{N,T}} where N where T<: Union{Int8, Int16}
     out = T[]
     @inbounds for geno in skipmissing(locus)
         @inbounds @simd for allele in geno

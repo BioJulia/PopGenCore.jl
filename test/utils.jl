@@ -18,13 +18,15 @@ x = @nancycats
 
 
     @testset "GenotypeUtils.jl" begin
-        @test allelecount([(1,2), (1,4)]) == 3
+        geno1 = Tuple(Int8[1,2])
+        geno2 = Tuple(Int8[1,4])
+        @test allelecount([(Int8(1),Int8(2)), (Int8(1),Int8(4))]) == 3
         @test allelecount(x.genodata.genotype[1:10]) == 4
-        @test alleles([(1,2), (1,4)]) == [1,2,1,4]
-        @test alleles([(1,2), (1,4)], false) == [1,2,1,4] 
-        @test alleles([(1,2), (1,4), missing], false) == [1,2,1,4] 
-        @test all(alleles([(1,2), (1,4), missing], true) .=== [1,2,1,4,missing])
-        @test uniquealleles([(1,2), (1,4), missing]) == [1,2,4]
+        @test alleles([geno1, geno2]) == [1,2,1,4]
+        @test alleles([geno1, geno2], false) == [1,2,1,4] 
+        @test alleles([geno1, geno2, missing], false) == [1,2,1,4] 
+        @test all(alleles([geno1, geno2, missing], true) .=== [1,2,1,4,missing])
+        @test uniquealleles([geno1, geno2, missing]) == [1,2,4]
         @test size(locidataframe(x)) == (9,237)
         @test size(locimatrix(x)) == (237,9)
         @test length(phasedmatrix(x)) == 2
@@ -67,6 +69,9 @@ x = @nancycats
         @test nonmissing([1,2,3,missing, missing]) == 3
         @test nonmissing(x, "fca8") == 217
         @test nonmissings([1,2,missing, missing, 3], [3,missing, missing, 4, 5]) == [1,5]
+        @test isallmissing([missing, missing, missing]) == true
+        @test isallmissing([1,missing]) == false
+        @test isallmissing([1,2]) == false
     end
 end
 end
