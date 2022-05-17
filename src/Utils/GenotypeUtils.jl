@@ -24,7 +24,7 @@ Return an array of all the non-missing alleles of a locus.
     if isempty(skipm)
         return Vector{Union{Missing, T}}(undef, length(locus))
     else
-        return [j for i in skipm for j in i]
+        return T[j for i in skipm for j in i]
     end
 end
 precompile(alleles, (Vector{Union{Missing, NTuple{2, Int8}}},))

@@ -57,7 +57,7 @@ for getting the expected genotype frequencies.
 @inline function allelefreq_vec(locus::GenoArray)
     flat_alleles = alleles(locus)
     len = length(flat_alleles)
-    [count(==(j), flat_alleles)/len for j in unique(flat_alleles)]
+    Float64[count(==(j), flat_alleles)/len for j in unique(flat_alleles)]
 end
 precompile(allelefreq_vec, (Vector{NTuple{2,Int8}},))
 precompile(allelefreq_vec, (Vector{NTuple{2,Int16}},))
