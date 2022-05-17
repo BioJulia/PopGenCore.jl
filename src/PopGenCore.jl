@@ -19,6 +19,7 @@ include("Utils/GeneralUtils.jl")
 export copy, size, sort, convertcoord
 export dropmonomorphic, dropmonomorphic!
 export dropmultiallelic, dropmultiallelic!
+export uppertri2vec, lowertri2vec
 
 include("Utils/GenotypeUtils.jl")
 export allelecount, alleles, uniquealleles
@@ -31,7 +32,7 @@ include("Utils/MathUtils.jl")
 export reciprocal, reciprocalsum, countnonzeros
 
 include("Utils/MissingUtils.jl")
-export nonmissing, nonmissings
+export isallmissing, nonmissing, nonmissings
 
 include("AlleleFreq.jl")
 export allelefreq, allelefreq_vec, avg_allelefreq

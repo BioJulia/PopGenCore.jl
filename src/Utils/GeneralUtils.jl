@@ -176,3 +176,34 @@ precompile(dropmultiallelic, (PopData,))
     end
 end
 precompile(truncatepath, (String,))
+
+
+"""
+    uppertri2vec(x, diag::Bool = false)
+Returns a `Vector`` of the upper triangle of a `Matrix`. Use `diag` to specify
+whether to include the diagonal (default: `false`). The Vector is created row-wise.
+See also `lowertri2vec`
+"""
+function uppertri2vec(x, diag::Bool = false)
+    n = size(x,1)
+    if !diag
+        [x[i, j] for i in 1:n-1 for j in i+1:n]
+    else
+        [x[i, j] for i in 1:n-1 for j in i:n]
+    end
+end
+
+"""
+    uppertri2vec(x, diag::Bool = false)
+Returns a `Vector`` of the lower triangle of a `Matrix`. Use `diag` to specify
+whether to include the diagonal (default: `false`). The Vector is created row-wise.
+See also `uppertri2vec`
+"""
+function lowertri2vec(x, diag::Bool = false)
+    n = size(x,1)
+    if !diag
+        [x[j,i] for i in 1:n-1 for j in i+1:n]
+    else
+        [x[j,i] for i in 1:n-1 for j in i:n]
+    end
+end
