@@ -16,8 +16,8 @@ jobs:
         julia-version: [1]
         os: [ubuntu-latest]
         package:
-          - {user: BioJulia, repo: PopGen.jl, group: PopGen}
-          - {user: pdimens, repo: PopGenSims.jl, group: PopGen}
+          - {user: BioJulia, repo: PopGen.jl, group: downstream}
+          - {user: pdimens, repo: PopGenSims.jl, group: downstream}
     steps:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
