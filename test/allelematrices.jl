@@ -13,7 +13,7 @@ cats = @nancycats ;
         @test size(allelematrix(cats, by = "frequency", missings = "mean", scale = false, center = false)) == (237, 108)
         @test size(allelematrix(cats, scale = true)) == (237, 108)
         @test size(allelematrix(cats, center = true)) == (237, 108)
-        @test allelematrix(cats, scale = true) != PopGen.allelematrix(cats, center = true)
+        @test allelematrix(cats, scale = true) != allelematrix(cats, center = true)
         a = allelematrix(cats, by = "count")
         b = allelematrix(cats, missings = "missing")
         c = allelematrix(cats, missings = "zero")
