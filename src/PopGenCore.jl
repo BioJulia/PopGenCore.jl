@@ -2,7 +2,7 @@ module PopGenCore
 
 using CSV, DataFrames, PooledArrays, StaticArrays
 using CodecZlib, VariantCallFormat
-using StatsBase: countmap, proportionmap, mean, standardize
+using StatsBase: countmap, proportionmap, mean, standardize, ZScoreTransform
 using Random: shuffle, shuffle!
 
 include("PopData.jl")
