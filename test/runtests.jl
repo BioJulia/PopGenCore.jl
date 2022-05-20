@@ -9,6 +9,7 @@ all_tests = [
     "popdata.jl",
     "types.jl",
     "allelegenofreq.jl",
+    "allelematrices.jl",
     "io.jl",
     "manipulate.jl",
     "utils.jl",
