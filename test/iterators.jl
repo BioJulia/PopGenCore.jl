@@ -20,7 +20,6 @@ x = @nancycats
         @test length(collect(pairwisepairs(string.(1:10)))) == 45
     end
 
-    #TODO moved to PopGenSims.jl
     @testset "simulated pairs" begin
         @test simpairs(string.(1:4)) == [("1","2"), ("3","4")]
         @test_throws ArgumentError simpairs(string.(1:3))

@@ -24,7 +24,7 @@ Returns `true` all the loci in the `PopData` are biallelic, `false` if not.
 isbiallelic(data::PopData) = data.metadata.biallelic
 
 
-#Haploids treatest as heterozygotes
+#Haploids treated as heterozygotes
 """
 ```
 ishom(locus::T) where T <: GenoArray

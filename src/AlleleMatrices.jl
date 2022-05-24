@@ -76,16 +76,6 @@ function allelematrix(data::PopData; by::String = "frequency", missings::String 
     end
 end
 
-#=
-function _countset(query::Genotype,reference::Vector{T}) where T<:Union{Int8, Int16}
-    @inbounds [count(==(x), query, init = T(0)) for x in reference]
-end
-
-function _countset(query::Missing, reference)
-    fill(eltype(reference)(-1), length(reference))
-end
-=#
-
 function _setcounts(q, r)
     l = 0
     @inbounds for i in r
@@ -113,13 +103,12 @@ Missing values are preserved as `-1`.
 function countmatrix(data::PopData)
     gmtx = locimatrix(data)
     allalleles = Tuple(uniquealleles(i) for i in eachcol(gmtx))
-    #return allalleles
     mapreduce(hcat, eachrow(gmtx)) do smple
         _setcounts(smple, allalleles)
         #[j for i in _countset.(smple, allalleles) for j in i]
     end |> permutedims
 end
-
+precompile(countmatrix, (PopData,))
 
 """
     freqmatrix_zero(data::PopData)
@@ -133,6 +122,8 @@ function freqmatrix_zero(data::PopData)
     replace!(out, -1 => 0)
     out ./ data.sampleinfo.ploidy
 end
+precompile(freqmatrix_zero, (PopData,))
+
 
 """
     freqmatrix_mean(data::PopData)
@@ -148,6 +139,8 @@ function freqmatrix_mean(data::PopData)
     end
     return counts
 end
+precompile(freqmatrix_mean, (PopData,))
+
 
 """
     freqmatrix_missing(data::PopData)
@@ -160,6 +153,7 @@ function freqmatrix_missing(data::PopData)
     replace!(out, -1 => missing)
     out ./ data.sampleinfo.ploidy
 end
+precompile(freqmatrix_missing, (PopData,))
 
 
 """
@@ -175,3 +169,4 @@ function freqmatrix_scale(freqs::Matrix{Float64}, scale::Bool = true, center::Bo
     replace!(x ->  0 < x < (10^-9) ? 0.0 : x, mtx)
     return mtx
 end
+precompile(freqmatrix_scale, (PopData,))

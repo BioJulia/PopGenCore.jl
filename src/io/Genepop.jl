@@ -133,6 +133,7 @@ function genepop(
     return pd_out
 end
 
+
 """
     genepop(data::PopData; filename::String = "output.gen", digits::Int = 3, format::String = "vertical", miss::Int = 0)
 Writes a `PopData` object to a Genepop-formatted file.

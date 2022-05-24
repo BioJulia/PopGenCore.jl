@@ -11,7 +11,7 @@ function allelefreq(data::PopData)
         )[:, :frq] |> Tuple
     )
 end
-
+precompile(allelefreq, (PopData,))
 """
     allelefreq(locus::GenoArray)
 Return a `Dict` of allele frequencies of a GenoArray (typically a single locus) in 
@@ -157,7 +157,7 @@ end
 precompile(allelefreq, (PopData, String))
 
 
-#TODO swtich order of args do it's data, allele?
+# swtiches order of args so it's f(data, allele)
 # Does doing that break anything?
 """
     allelefreq(genos::GenoArray, allele::Int)
