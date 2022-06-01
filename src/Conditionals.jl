@@ -24,7 +24,8 @@ Returns `true` all the loci in the `PopData` are biallelic, `false` if not.
 isbiallelic(data::PopData) = data.metadata.biallelic
 
 
-#Haploids treated as heterozygotes
+# public facing method
+# Haploids treated as heterozygotes
 """
 ```
 ishom(locus::T) where T <: GenoArray
@@ -37,15 +38,16 @@ it is, `false` if it isn't (or missing). For calculations, we recommend using `_
 which returns `missing` if the genotype is `missing`. The vector methods
 simply map the function over the elements. Haploid genotypes return `false`.
 """
-#ishom(locus::Genotype) = all(@inbounds first(locus) .== locus)
 function ishom(geno::NTuple{N,T})::Bool where N where T<:Union{Int8, Int16}
-    @inbounds @simd for i in 1:N-1
-        @inbounds geno[i] != geno[i+1] && return false
+    first,rest = Base.Iterators.peel(geno)
+    @inbounds for v in rest
+        v != first && return false
     end
     return true
 end
 
-# public facing method
+ishom(geno::NTuple{1,T}) where T<:Union{Int8, Int16} = false
+
 ishom(locus::Missing)::Bool = false
 function ishom(locus::T)::Vector{Bool} where T<:GenoArray
     @inbounds map(ishom, locus)
