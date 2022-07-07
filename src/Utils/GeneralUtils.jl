@@ -120,7 +120,7 @@ Return a `PopData` object omitting loci that are not biallelic.
 """
 function dropmultiallelic(data::PopData)
     if data.metadata.biallelic == true
-        prinln("PopData object is already biallelic")
+        println("PopData object is already biallelic")
         return data
     end 
     all_loci = loci(data)
