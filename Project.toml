@@ -1,27 +1,27 @@
 name = "PopGenCore"
 uuid = "45b36091-5ef7-4b08-b448-aaf24c763a14"
 authors = ["Pavel Dimens"]
-version = "0.6.0-dev"
+version = "0.7.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
-PooledArrays = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
-Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 VariantCallFormat = "28eba6e3-a997-4ad9-87c6-d933b8bca6c1"
+PooledArrays = "2dfb63ee-cc39-5dd5-95bd-886bf059d720"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 CSV = "0.9, 0.10"
 CodecZlib = "0.7"
-DataFrames = "1.0, 1.1"
-PooledArrays = "1.1"
 StaticArrays = "1"
 StatsBase = "0.33"
-VariantCallFormat = "0.5"
 julia = "1.5, 1.6, 1.7"
-
-[extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+DataFrames = "1.0, 1.1"
+VariantCallFormat = "0.5"
+PooledArrays = "1.1"
