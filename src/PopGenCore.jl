@@ -71,6 +71,9 @@ export structure
 include("io/VariantCall.jl")
 export bcf, vcf
 
+include("io/Baypass.jl")
+export baypass
+
 include("io/ReadWrite.jl")
 ##
 include("Datasets.jl")

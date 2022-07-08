@@ -20,6 +20,15 @@ example_vcf = normpath(joinpath(@__DIR__,"../src/precompile", "precompile.vcf.gz
     @testset "VCF io" begin
         @test typeof(vcf(example_vcf, silent = true)) == PopData    
     end
+
+    @testset "Baypass io" begin
+        @test_throws ArgumentError baypass(@nancycats)
+        sharks = dropmultiallelic(@gulfsharks)
+        @test baypass(sharks) isa Matrix
+        baypass(sharks, filename = "CI_test.baypass")
+        @test isfile("CI_test.baypass")
+        rm("CI_test.baypass")
+    end
 end
 
 end # module

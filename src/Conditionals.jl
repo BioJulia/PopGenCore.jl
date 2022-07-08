@@ -1,9 +1,9 @@
 """
     isbiallelic(data::GenoArray)
-Returns `true` if the `GenoArray` is biallelic, `false` if not.
+Returns `true` if the `GenoArray` has 2 or fewer unique alleles, `false` if 3 or more unique alleles.
 """
 @inline function isbiallelic(data::T) where T<:GenoArray
-    allelecount(data) == 2
+    allelecount(data) <= 2
 end
 #precompile(isbiallelic, (Vector{SNP}))
 #precompile(isbiallelic, (Vector{MSat}))
