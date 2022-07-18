@@ -167,7 +167,7 @@ function genepop(data::PopData; filename::String = "output.gen", digits::Int = 3
     print(outfile, "\n")
     if lowercase(format) != "ibd"
         pops = Vector{String}()
-        for (keys, sample) in pairs(groupby(data.genodata, [:name, :population]))
+        for (keys, sample) in pairs(groupby(data.genodata, [:population,:name]))
             if keys.population ∉ pops
                 push!(pops, keys.population)
                 println(outfile, "POP")
