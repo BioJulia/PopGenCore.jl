@@ -169,7 +169,7 @@ precompile(dropmultiallelic, (PopData,))
     width = displaysize(stdout)[2]
     if length(text) > width
         separated = split(text, "/")    
-        newtxt = join(separated[[1,2,3]], "/") * "/…/" * join(separated[[end-1, end]],"/")
+        newtxt = join("…/" * join(separated[[end-1, end]],"/")
         return newtxt
     else
         return text   
