@@ -38,7 +38,7 @@ include("AlleleFreq.jl")
 export allelefreq, allelefreq_vec, avg_allelefreq
 
 include("AlleleMatrices.jl")
-export allelematrix, countmatrix
+export allelematrix, countmatrix, featurematrix
 export freqmatrix_mean, freqmatrix_zero, freqmatrix_missing, freqmatrix_scale
 
 include("GenoFreq.jl")

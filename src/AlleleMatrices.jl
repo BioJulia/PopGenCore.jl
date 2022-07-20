@@ -6,7 +6,7 @@ Loci and alleles are sorted alphanumerically. Setting `scale` or `center` as `tr
 compute allele frequencies regardless of the `by` keyword.
 
 ### Keyword Arguments
-- `by`: a `String` of `count` or `frequency` (default: `frequency`)
+- `by`: a `String` of `count`, `frequency` (default: `frequency`)
 - `missings`: a `String` denoting how to handle missing values when outputting `frequency` (default: `mean`)
     - `"missing"`: fallback method to keep `missing` values as they are
     - `"zero"`: replace `missing` values with `0`
@@ -170,3 +170,19 @@ function freqmatrix_scale(freqs::Matrix{Float64}, scale::Bool = true, center::Bo
     return mtx
 end
 precompile(freqmatrix_scale, (PopData,))
+
+"""
+    featurematrix(data::PopData)
+Return a matrix of dummy-encoded genotypes (0,1,2...), where rows correspond with samples and columns correspond to loci.
+Missing genotypes are encoded as `-1`. For biallelic loci, `0` encodes homozygous for allele 1, `1` encodes for a heterozygote,
+and `2` encodes for homozygous allele 2.
+"""
+function featurematrix(data::PopData)::Matrix{Int8}
+    genomtx = locimatrix(data)
+    mapreduce(hcat, eachcol(genomtx)) do i
+        uniq_genos = sort(unique(skipmissing(i)))
+        gdict = Dict(zip(uniq_genos, Int8.(0:length(uniq_genos)-1)))
+        Int8[get(gdict, geno, Int8(-1)) for geno in i]
+    end
+end
+precompile(freaturematrix, (PopData,))
