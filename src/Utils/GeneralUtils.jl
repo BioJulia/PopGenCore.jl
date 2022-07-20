@@ -168,10 +168,9 @@ precompile(dropmultiallelic, (PopData,))
 @inline function truncatepath(text::T) where T<: AbstractString
     width = displaysize(stdout)[2]
     if length(text) > width
-        midpoint = (width÷2) - 5
-        firsthalf = text[begin:midpoint]
-        secondhalf = text[(end-midpoint):end]
-        return firsthalf * "..." * secondhalf
+        separated = split(text, "/")    
+        newtxt = "…/" * join(separated[[end-1, end]],"/")
+        return newtxt
     else
         return text   
     end
