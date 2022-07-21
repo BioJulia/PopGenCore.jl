@@ -56,7 +56,7 @@ julia> frq = matrix(cats, "frequency") ;  frq[1:5,1:6]
 ```
  """
 function matrix(data::PopData, matrixtype::String = "frequency"; missings::String = "mean", scale::Bool = false, center::Bool = false)
-    if occursin(lowercase(matrixtype), "counts") && !any([scale, center])
+    if occursin(lowercase(matrixtype), "count") && !any([scale, center])
         return countmatrix(data)
     elseif occursin(lowercase(matrixtype), "frequency") 
         freqs = 
