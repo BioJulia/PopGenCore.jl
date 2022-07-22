@@ -1,5 +1,5 @@
 """
-    matrix(data::PopData, matrixtype::String = "count", missings = "mean", scale = false, center = false)
+    matrix(data::PopData, matrixtype::Union{String, Symbol} = "count", missings = "mean", scale = false, center = false)
 Return a matrix of allele counts or frequencies per genotype where rows are samples
 and columns are the occurence count or frequency of an allele for that locus in that sample.
 Loci and alleles are sorted alphanumerically. Setting `scale` or `center` as `true` will
@@ -7,7 +7,7 @@ compute allele frequencies regardless of the `by` keyword.
 
 ### Positional Arguments
 - `data`: a PopData object
-- `matrixtype`: a `String` of `count` or `frequency` (default: `frequency`)
+- `matrixtype`: a `String` or `Symbol` of `count` or `frequency` (default: `frequency`)
 
 ### Keyword Arguments
 - `missings`: a `String` denoting how to handle missing values when outputting `frequency` (default: `mean`)
@@ -55,28 +55,17 @@ julia> frq = matrix(cats, "frequency") ;  frq[1:5,1:6]
  -0.0709577   -0.0709577   -0.175857  -0.394198  -0.0709577   -0.300797
 ```
  """
-function matrix(data::PopData, matrixtype::String = "frequency"; missings::String = "mean", scale::Bool = false, center::Bool = false)
-    if occursin(lowercase(matrixtype), "count") && !any([scale, center])
-        return countmatrix(data)
-    elseif occursin(lowercase(matrixtype), "frequency") 
-        freqs = 
-            if lowercase(missings) == "mean"
-                freqmatrix_mean(data)
-            elseif lowercase(missings) == "zero"
-                freqmatrix_zero(data)
-            elseif lowercase(missings) == "missing"
-                freqmatrix_missing(data)
-            else
-                throw(ArgumentError("use one of \"zero\" or \"mean\" for handling missing values"))
-            end
-        if any([scale, center])
-            return freqmatrix_scale(freqs, scale, center)
-        else
-            return freqs
-        end
-    else
-        throw(ArgumentError("Choose from either \"count\" or \"frequency\" methods"))
+function matrix(data::PopData, matrixtype::Union{String, Symbol} = "frequency"; missings::String = "mean", scale::Bool = false, center::Bool = false)
+    mthd = string(matrixtype)
+    mthd ∉  ["frequency", "count"] && throw(ArgumentError("Matrix type $matrixtype not recognized. Choose from either \"count\" or \"frequency\" methods"))
+    mthd = matrixtype == "frequency" ? matrixtype * missings : matrixtype
+    mtx = _matrix(data, Val(Symbol(mthd)))    
+    if (mthd != "count") & (scale | center)
+        mtx = standardize(ZScoreTransform, mtx, dims = 1, scale = scale, center = center)
+        # replace almost-zero values caused by missing values with 0.0
+        replace!(x ->  0 < x < (10^-9) ? 0.0 : x, mtx)
     end
+    return mtx
 end
 
 function _setcounts(q, r)
@@ -98,43 +87,41 @@ end
 
 
 """
-    countmatrix(data::PopData)
+    _matrix(data::PopData, ::Val{:count})
 Create a matrix of allele count per genotype where rows are samples
 and columns are the occurence count of an allele for that locus in that sample.
 Missing values are preserved as `-1`.
 """
-function countmatrix(data::PopData)
+function _matrix(data::PopData, ::Val{:count})
     gmtx = locimatrix(data)
     allalleles = Tuple(uniquealleles(i) for i in eachcol(gmtx))
     mapreduce(hcat, eachrow(gmtx)) do smple
         _setcounts(smple, allalleles)
-        #[j for i in _countset.(smple, allalleles) for j in i]
     end |> permutedims
 end
-precompile(countmatrix, (PopData,))
+precompile(_matrix, (PopData,Val{:count}))
 
 """
-    freqmatrix_zero(data::PopData)
+    _matrix(data::PopData, ::Val{:frequencyzero})
 Create a matrix of allele frequencies per genotype where rows are samples
 and columns are the frequency of an allele for that locus in that sample.
 Missing values are replaced by zeros.
 """
-function freqmatrix_zero(data::PopData)
-    # divide each row (sample) by the ploidy of that sample
+function _matrix(data::PopData, ::Val{:frequencyzero})
     out = countmatrix(data)
     replace!(out, -1 => 0)
     out ./ data.sampleinfo.ploidy
 end
-precompile(freqmatrix_zero, (PopData,))
+precompile(_matrix, (PopData,Val{:frequencyzero}))
 
 
 """
-    freqmatrix_mean(data::PopData)
+    _matrix(data::PopData, ::Val{:frequencymean})
 Create a matrix of allele frequencies per genotype where rows are samples
 and columns are the frequency of an allele for that locus in that sample.
 Missing values are replaced by the global mean allele frequency.
 """
-function freqmatrix_mean(data::PopData)
+function _matrix(data::PopData, ::Val{:frequencymean})
     counts = @inbounds countmatrix(data) ./ data.sampleinfo.ploidy
     map(eachcol(counts)) do alcol
         colmean = mean([x for x in alcol if x >= 0])
@@ -142,44 +129,29 @@ function freqmatrix_mean(data::PopData)
     end
     return counts
 end
-precompile(freqmatrix_mean, (PopData,))
+precompile(_matrix, (PopData,Val{:frequencymean}))
 
 
 """
-    freqmatrix_missing(data::PopData)
+    _matrix(data::PopData, ::Val{:frequencymissing})
 Create a matrix of allele frequencies per genotype where rows are samples
 and columns are the frequency of an allele for that locus in that sample.
 Missing values are kept as `missing`.
 """
-function freqmatrix_missing(data::PopData)
+function _matrix(data::PopData, ::Val{:frequencymissing})
     out = allowmissing(countmatrix(data))
     replace!(out, -1 => missing)
     out ./ data.sampleinfo.ploidy
 end
-precompile(freqmatrix_missing, (PopData,))
+precompile(_matrix, (PopData,Val{:frequencymissing}))
 
 
 """
-    freqmatrix_scale(freqs::Matrix{Float32}, scale::Bool = true, center::Bool = true)
-Returns a Z-score scaled matrix of allele frequencies where rows are samples 
-and columns are the frequency of an allele for that locus in that sample.
-- `scale`: a 'Bool' of whether to z-score scale allele frequencies (default: `false`)
-- `center`: a `Bool` of whether to center the allele frequencies (default: 'false')
-"""
-function freqmatrix_scale(freqs::Matrix{Float64}, scale::Bool = true, center::Bool = true)
-    mtx = standardize(ZScoreTransform, freqs, dims = 1, scale = scale, center = center)
-    # replace almost-zero values caused by missing values with 0.0
-    replace!(x ->  0 < x < (10^-9) ? 0.0 : x, mtx)
-    return mtx
-end
-precompile(freqmatrix_scale, (PopData,))
-
-"""
-    featurematrix(data::PopData, matrixtype::String = "genotype")
+    featurematrix(data::PopData, matrixtype::Union{String, Symbol} = "genotype")
 
 ### Positional Arguments
     - `data`: a PopData object
-    - `matrixtype`: a `String` of `genotype`, or `allele` (default: `genotype`)
+    - `matrixtype`: a `String` or `Symbol` of `genotype`, or `allele` (default: `genotype`)
 
 **genotype feature matrix**
 
@@ -188,6 +160,7 @@ Missing genotypes are encoded as `-1`. For biallelic loci, `0` encodes homozygou
 and `2` encodes for homozygous allele 2.
 
 **allele feature matrix**
+
 Return a matrix of dummy-encoded alleles (0,1), where rows correspond with samples and columns correspond to alleles within loci, such
 that there are as many columns per locus as alleles for that locus. Missing alleles (from missing genotypes) are encoded as `-1`.
 
@@ -209,7 +182,6 @@ julia> featurematrix(cats)
  29  10  16  -1   4  3   2  -1   0
 
  julia> featurematrix(cats, "allele")
- julia> featurematrix(y, "allele")
 237×108 Matrix{Int8}:
  -1  -1  -1  -1  -1  …  0  0  0  0  0  0
  -1  -1  -1  -1  -1     0  0  0  0  0  0
@@ -224,23 +196,18 @@ julia> featurematrix(cats)
   0   0   0   0   0     0  0  0  0  0  0 
 ```
 """
-function featurematrix(data::PopData, matrixtype::String = "genotype")::Matrix{Int8}
-    if lowercase(matrixtype) == "genotype"
-        featurematrix_genotype(data)
-    elseif lowercase(matrixtype) == "allele"
-        featurematrix_allele(data)
-    else
-        throw(ArgumentError("matrix type $matrixtype not recognized. Please use one of \"genotype\" or \"allele\"."))
-    end
+function featurematrix(data::PopData, matrixtype::Union{String, Symbol} = "genotype")::Matrix{Int8}
+    string(matrixtype) ∉ ["genotype", "allele"] && throw(ArgumentError("Matrix type $matrixtype not recognized. Please use one of \"genotype\" or \"allele\"."))
+    _featurematrix(data, Val(Symbol(matrixtype))) 
 end
 
 """
-    featurematrix_genotype(data::PopData, matrixtype::String = "genotype")
+    _featurematrix(data::PopData, ::Val{:genotype})
 Return a matrix of dummy-encoded genotypes (0,1,2...), where rows correspond with samples and columns correspond to loci.
 Missing genotypes are encoded as `-1`. For biallelic loci, `0` encodes homozygous for allele 1, `1` encodes for a heterozygote,
 and `2` encodes for homozygous allele 2.
 """
-function featurematrix_genotype(data::PopData)::Matrix{Int8}
+function _featurematrix(data::PopData, ::Val{:genotype})::Matrix{Int8}
     genomtx = locimatrix(data)
     if isbiallelic(data)
         mapreduce(hcat, eachcol(genomtx)) do i
@@ -266,18 +233,18 @@ function featurematrix_genotype(data::PopData)::Matrix{Int8}
         end
     end
 end
-precompile(featurematrix_genotype, (PopData,))
+precompile(_featurematrix, (PopData,Val{:genotype}))
 
 """
-    featurematrix_allele(data::PopData)
+    _featurematrix(data::PopData, ::Val{:allele})
 Return a matrix of dummy-encoded alleles (0,1,2...), where rows correspond with samples and columns correspond to loci.
 Missing genotypes are encoded as `-1`.
 """
-function featurematrix_allele(data::PopData)::Matrix{Int8}
+function _featurematrix(data::PopData, ::Val{:allele})::Matrix{Int8}
     allecounts = countmatrix(data)
     replace!(allecounts) do i
         i > 0 ? Int8(1) : i
     end
     return allecounts
 end
-precompile(featurematrix_allele, (PopData,))
+precompile(_featurematrix, (PopData, Val{:allele}))
