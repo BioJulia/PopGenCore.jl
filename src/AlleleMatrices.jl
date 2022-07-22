@@ -266,7 +266,7 @@ function featurematrix_genotype(data::PopData)::Matrix{Int8}
         end
     end
 end
-precompile(freaturematrix_genotype, (PopData,))
+precompile(featurematrix_genotype, (PopData,))
 
 """
     featurematrix_allele(data::PopData)
@@ -280,4 +280,4 @@ function featurematrix_allele(data::PopData)::Matrix{Int8}
     end
     return allecounts
 end
-precompile(freaturematrix_allele, (PopData,))
+precompile(featurematrix_allele, (PopData,))
