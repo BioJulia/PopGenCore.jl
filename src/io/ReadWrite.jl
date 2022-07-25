@@ -64,6 +64,8 @@ to Genepop format, call up the `?genepop` docstring.
 | genepop     | `.gen`, `.genepop`     | ?genepop   |
 | delimited   | `.csv`, `.txt`, `.tsv` | ?delimited |
 | structure   | `.str`, `.structure`   | ?structure |
+| plink       | `.ped`                 | ?plink     |
+| baypass     | `.baypass`             | ?baypass   |
 
 ### Example
 ```
@@ -80,8 +82,10 @@ function Base.write(data::PopData; filename::String, kwargs...)
         structure(data, filename = filename; kwargs...)
     elseif ext in ["csv", "txt", "tsv"]
         delimited(data, filename = filename; kwargs...)
+    elseif ext == "baypass"
+        baypass(data, filename = filename)
     else
-        @error "File type not recognized by filename extension. Please see the docstring"
+        throw(ArgumentError("File type not recognized by filename extension. Please see the docstring"))
     end
 end
 
@@ -93,7 +97,9 @@ function Base.write(data::PopData, filename::String, kwargs...)
         structure(data, filename = filename; kwargs...)
     elseif ext in ["csv", "txt", "tsv"]
         delimited(data, filename = filename; kwargs...)
+    elseif ext == "baypass"
+        baypass(data, filename = filename)
     else
-        @error "File type not recognized by filename extension. Please see the docstring"
+        throw(ArgumentError("File type not recognized by filename extension. Please see the docstring"))
     end
 end

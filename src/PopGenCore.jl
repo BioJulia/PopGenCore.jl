@@ -73,6 +73,9 @@ export bcf, vcf
 include("io/Baypass.jl")
 export baypass
 
+include("io/Plink.jl")
+export plink
+
 include("io/ReadWrite.jl")
 ##
 include("Datasets.jl")
