@@ -38,7 +38,7 @@ julia> frq = matrix(cats, "frequency") ;  frq[1:5,1:6]
  0.0         0.0         0.0        0.0       0.0         0.0
  0.0         0.0         0.0        0.0       0.0         0.0
 
- julia> frq = matrix(cats, "frequency", missings = "zero") ;  frq[1:5,1:6]
+ julia> frq = matrix(cats, :frequency, missings = "zero") ;  frq[1:5,1:6]
  5×6 Matrix{Float64}:
  0.0  0.0  0.0  0.0  0.0  0.0
  0.0  0.0  0.0  0.0  0.0  0.0
@@ -59,8 +59,9 @@ function matrix(data::PopData, matrixtype::Union{String, Symbol} = "frequency"; 
     mthd = string(matrixtype)
     mthd ∉  ["frequency", "count"] && throw(ArgumentError("Matrix type $matrixtype not recognized. Choose from either \"count\" or \"frequency\" methods"))
     mthd = matrixtype == "frequency" ? matrixtype * missings : matrixtype
-    mtx = _matrix(data, Val(Symbol(mthd)))    
-    if (mthd != "count") & (scale | center)
+    missings ∉ ["mean", "zero", "missing"] && throw(ArgumentError("Missing handling method $missing not recognized. Choose from either \"mean\", \"zero\"m or \"missing\" methods"))
+    mtx = _matrix(data, Val(Symbol(mthd)))   
+    if (mthd != "count") & (scale | center) 
         mtx = standardize(ZScoreTransform, mtx, dims = 1, scale = scale, center = center)
         # replace almost-zero values caused by missing values with 0.0
         replace!(x ->  0 < x < (10^-9) ? 0.0 : x, mtx)
