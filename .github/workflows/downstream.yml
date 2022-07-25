@@ -1,4 +1,4 @@
-name: Downstream
+name: Downstream Pkg Tests
 on:
   push:
     branches: [dev]
@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    name: ${{ matrix.package.repo }}/${{ matrix.package.group }}
+    name: ${{ matrix.package.repo }}
     runs-on: ${{ matrix.os }}
     env:
       GROUP: ${{ matrix.package.group }}
