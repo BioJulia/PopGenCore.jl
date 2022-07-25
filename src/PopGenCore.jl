@@ -38,8 +38,7 @@ include("AlleleFreq.jl")
 export allelefreq, allelefreq_vec, avg_allelefreq
 
 include("AlleleMatrices.jl")
-export matrix, countmatrix, featurematrix, featurematrix_allele, featurematrix_genotype
-export freqmatrix_mean, freqmatrix_zero, freqmatrix_missing, freqmatrix_scale
+export matrix, _matrix, featurematrix, _featurematrix
 
 include("GenoFreq.jl")
 export genofreq, genofreq_expected, genocount_observed, genocount_expected
