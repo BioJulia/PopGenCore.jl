@@ -108,7 +108,7 @@ and columns are the frequency of an allele for that locus in that sample.
 Missing values are replaced by zeros.
 """
 function _matrix(data::PopData, ::Val{:frequencyzero})
-    out = matrix(data, Val(:count))
+    out = _matrix(data, Val(:count))
     replace!(out, -1 => 0)
     out ./ data.sampleinfo.ploidy
 end
@@ -122,7 +122,7 @@ and columns are the frequency of an allele for that locus in that sample.
 Missing values are replaced by the global mean allele frequency.
 """
 function _matrix(data::PopData, ::Val{:frequencymean})
-    counts = @inbounds matrix(data, Val(:count)) ./ data.sampleinfo.ploidy
+    counts = @inbounds _matrix(data, Val(:count)) ./ data.sampleinfo.ploidy
     map(eachcol(counts)) do alcol
         colmean = mean([x for x in alcol if x >= 0])
         replace!(x -> x < 0 ? colmean : x, alcol)
@@ -139,7 +139,7 @@ and columns are the frequency of an allele for that locus in that sample.
 Missing values are kept as `missing`.
 """
 function _matrix(data::PopData, ::Val{:frequencymissing})
-    out = allowmissing(matrix(data, Val(:count)))
+    out = allowmissing(_matrix(data, Val(:count)))
     replace!(out, -1 => missing)
     out ./ data.sampleinfo.ploidy
 end
@@ -241,7 +241,7 @@ Return a matrix of dummy-encoded alleles (0,1,2...), where rows correspond with 
 Missing genotypes are encoded as `-1`.
 """
 function _featurematrix(data::PopData, ::Val{:allele})::Matrix{Int8}
-    allecounts = matrix(data, Val(:count))
+    allecounts = _matrix(data, Val(:count))
     replace!(allecounts) do i
         i > 0 ? Int8(1) : i
     end
