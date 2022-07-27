@@ -220,7 +220,7 @@ function plink(data::PopData; filename::String)
     data.metadata.biallelic != true && throw(ArgumentError("To write to PLINK format, data must be biallelic.\nThis can be done with dropmultiallelic())\n"))
     basename = endswith(filename, r".bed|.ped") ? splitext(filename)[1] : filename
     # the .fam file
-    tmp = data.metadata[:, r"population|name|sire|dam|sex|phenotype"]
+    tmp = data.sampleinfo[:, r"population|name|sire|dam|sex|phenotype"]
     current_cols = propertynames(tmp)
     fill_cols = symdiff(current_cols,[:population, :name, :sire, :dam, :sex, :phenotype])
     for i in fill_cols
