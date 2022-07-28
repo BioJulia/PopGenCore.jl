@@ -66,6 +66,22 @@ Return an array of all the unique non-missing alleles of a locus.
     return out
 end
 
+"""
+    uniquebialleles(locus::T) where T<:GenoArray
+Return an array of all the unique non-missing alleles of a biallelic locus. This is similar
+to `uniquealleles` but terminates once two alleles have been identified.
+"""
+@inline function uniquebialleles(locus::AbstractVector{U})::Vector{T} where U<:Union{Missing, NTuple{N,T}} where N where T<: Union{Int8, Int16}
+    out = T[]
+    @inbounds for geno in skipmissing(locus)
+        @inbounds @simd for allele in geno
+            allele ∉ out && push!(out, allele)
+        end
+        length(out) == 2 && break
+    end
+    sort!(out)  # is this necessary?
+    return out
+end
 
 """
     locidataframe(data::PopData)
