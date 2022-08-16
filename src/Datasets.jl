@@ -16,7 +16,7 @@ function dataset(name::String)
     if lowercase(name) in ["nancycats", "cats"] 
         filename = normpath(joinpath(@__DIR__,"..","data", "nancycats.gen"))
     elseif lowercase(name) in ["gulfsharks", "sharks"]
-        filename = normpath(joinpath(@__DIR__,"..","data", "gulfsharks.csv"))
+        filename = normpath(joinpath(@__DIR__,"..","data", "gulfsharks.csv.gz"))
     else
         throw(ArgumentError("Please choose either the \"nancycats\" or \"gulfsharks\" datasets"))
     end
@@ -56,7 +56,7 @@ sharks = @gulfsharks
 """
 macro gulfsharks()
     return esc(quote
-        filename = normpath(joinpath(@__DIR__,"..","data", "gulfsharks.csv"))
+        filename = normpath(joinpath(@__DIR__,"..","data", "gulfsharks.csv.gz"))
         delimited(filename, silent = true, allow_monomorphic = true)
     end)
 end
