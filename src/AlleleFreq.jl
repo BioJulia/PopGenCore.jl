@@ -29,8 +29,27 @@ a `PopData` object.
     end
     return d
 end
+
+
 precompile(allelefreq, (Vector{NTuple{2,Int8}},))
 precompile(allelefreq, (Vector{NTuple{2,Int16}},))
+
+@inline function allelefreq(geno::NTuple{2,T}) where T<:Union{Int8,Int16}
+    a, b = geno
+    d = Dict{T,Float64}()
+    if a == b
+        @inbounds d[a] = 1.0
+    else
+        @inbounds d[a] = 0.5
+        @inbounds d[b] = 0.5
+    end
+    return d
+end
+
+@inline function allelefreq(geno::NTuple{1,T}) where T<:Union{Int8,Int16}
+    return Dict{T,Float64}(a => 1.0)
+end
+
 """
     allelefreq(geno::Genotype)
 Return a `Dict` of allele frequencies of the alleles within a single Genotype in a `PopData`
@@ -40,10 +59,12 @@ object.
     d = Dict{T,Float64}()
     addval = 1.0/N
     @inbounds for allele in geno
-        d[allele] = @inbounds get(d, allele, 0.0) + addval
+        d[allele] = get(d, allele, 0.0) + addval
     end
     return d
 end
+precompile(allelefreq, (NTuple{1,Int8},))
+precompile(allelefreq, (NTuple{1,Int16},))
 precompile(allelefreq, (NTuple{2,Int8},))
 precompile(allelefreq, (NTuple{2,Int16},))
 
@@ -100,7 +121,9 @@ function avg_allelefreq(allele_dicts::AbstractVector{Dict{T, Float64}}, power::I
         avg_dict[key] = (freq_sum / n_pops) ^ power
     end
     return avg_dict
- end
+end
+precompile(avg_allelefreq, (AbstractVector{Dict{T, Float64}))
+
 
 # method for nei_fst (pairwise)
 function avg_allelefreq(allele_dicts::NTuple{N,Dict{T, Float64}}, power::Int = 1) where N where T<:Union{Int8, Int16}
@@ -120,6 +143,7 @@ function avg_allelefreq(allele_dicts::NTuple{N,Dict{T, Float64}}, power::Int = 1
     end
     return avg_dict
 end
+precompile(avg_allelefreq, (NTuple{N,Dict{T, Float64}}))
 
 
 """
