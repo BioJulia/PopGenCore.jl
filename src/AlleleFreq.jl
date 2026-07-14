@@ -29,8 +29,6 @@ a `PopData` object.
     end
     return d
 end
-
-
 precompile(allelefreq, (Vector{NTuple{2,Int8}},))
 precompile(allelefreq, (Vector{NTuple{2,Int16}},))
 
@@ -122,7 +120,7 @@ function avg_allelefreq(allele_dicts::AbstractVector{Dict{T, Float64}}, power::I
     end
     return avg_dict
 end
-precompile(avg_allelefreq, (AbstractVector{Dict{T, Float64}))
+precompile(avg_allelefreq, (AbstractVector{Dict{T, Float64}},))
 
 
 # method for nei_fst (pairwise)
@@ -143,7 +141,7 @@ function avg_allelefreq(allele_dicts::NTuple{N,Dict{T, Float64}}, power::Int = 1
     end
     return avg_dict
 end
-precompile(avg_allelefreq, (NTuple{N,Dict{T, Float64}}))
+precompile(avg_allelefreq, (NTuple{N,Dict{T, Float64}},))
 
 
 """
