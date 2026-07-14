@@ -142,8 +142,8 @@ function avg_allelefreq(allele_dicts::NTuple{N,Dict{T, Float64}}, power::Int = 1
     end
     return avg_dict
 end
-precompile(avg_allelefreq, (NTuple{N,Dict{Int8, Float64}},))
-precompile(avg_allelefreq, (NTuple{N,Dict{Int16, Float64}},))
+precompile(avg_allelefreq, (NTuple{2,Dict{Int8, Float64}},))
+precompile(avg_allelefreq, (NTuple{2,Dict{Int16, Float64}},))
 
 
 """

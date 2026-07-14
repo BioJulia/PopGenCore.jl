@@ -16,12 +16,12 @@ VariantCallFormat = "28eba6e3-a997-4ad9-87c6-d933b8bca6c1"
 [compat]
 CSV = "0.9, 0.10"
 CodecZlib = "0.7"
-DataFrames = "1.0, 1.1"
-PooledArrays = "1.1"
+DataFrames = "1"
+PooledArrays = "1"
 StaticArrays = "1"
 StatsBase = "0.33, 0.34"
 VariantCallFormat = "0.5"
-julia = "1.8, 1.9, 1.10"
+julia = "1.9, 1.10, 1.11, 1.12"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
