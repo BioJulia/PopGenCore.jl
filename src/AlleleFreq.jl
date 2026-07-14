@@ -85,53 +85,41 @@ DataFrames.combine(
 ```
 """
 function avg_allelefreq(allele_dicts::AbstractVector{Dict{T, Float64}}, power::Int = 1) where T<:Integer   
-    sum_dict = Dict{T, Tuple{Float64, Int}}()
+    n_pops = count(!isempty, allele_dicts)
+    sum_dict = Dict{T, Float64}()
     # ignore any dicts with no entries (i.e. from a group without that locus)
     @inbounds for frqdict in Base.Iterators.filter(!isempty, allele_dicts)
-        # populate the sum dict with allele frequency and n+1 for each allele
+        # populate the sum dict with allele frequency for each allele
         @inbounds for (allele, freq) in pairs(frqdict)
-            @inbounds sum_dict[allele] = get(sum_dict, allele, (0.0, 0)) .+ (freq, 1)
+            @inbounds sum_dict[allele] = get(sum_dict, allele, 0.0) + freq
         end
     end
     avg_dict = Dict{T, Float64}()
     # collapse the sum dict into a dict of averages
-    @inbounds for (key, value) in pairs(sum_dict)
-        @inbounds freq_sum, n = value
-        avg = (freq_sum / n) ^ power
-        @inbounds avg_dict[key] = avg
-        #= drop zeroes
-        if !iszero(avg)
-            @inbounds avg_dict[key] = avg
-        end
-        =#
+    @inbounds for (key, freq_sum) in pairs(sum_dict)
+        avg_dict[key] = (freq_sum / n_pops) ^ power
     end
     return avg_dict
  end
 
 # method for nei_fst (pairwise)
 function avg_allelefreq(allele_dicts::NTuple{N,Dict{T, Float64}}, power::Int = 1) where N where T<:Union{Int8, Int16}
-    sum_dict = Dict{T, Tuple{Float64, Int}}()
+    n_pops = count(!isempty, allele_dicts)
+    sum_dict = Dict{T, Float64}()
     # ignore any dicts with no entries (i.e. from a group without that locus)
     @inbounds for frqdict in Base.Iterators.filter(!isempty, allele_dicts)
-        # populate the sum dict with allele frequency and n+1 for each allele
+        # populate the sum dict with allele frequency
         @inbounds for (allele, freq) in pairs(frqdict)
-            @inbounds sum_dict[allele] = get!(sum_dict, allele, (0.0, 0)) .+ (freq, 1)
+            sum_dict[allele] = get(sum_dict, allele, 0.0) + freq
         end
     end
     avg_dict = Dict{T, Float64}()
     # collapse the sum dict into a dict of averages
-    @inbounds for (key, value) in pairs(sum_dict)
-        @inbounds freq_sum, n = value
-        avg = (freq_sum / n) ^ power
-        @inbounds avg_dict[key] = avg
-        #= drop zeroes
-        if !iszero(avg)
-            @inbounds avg_dict[key] = avg
-        end
-        =#
+    @inbounds for (key, freq_sum) in pairs(sum_dict)
+        avg_dict[key] = (freq_sum / n_pops) ^ power
     end
     return avg_dict
- end
+end
 
 
 """
