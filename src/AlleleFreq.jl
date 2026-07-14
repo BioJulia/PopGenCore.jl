@@ -120,7 +120,8 @@ function avg_allelefreq(allele_dicts::AbstractVector{Dict{T, Float64}}, power::I
     end
     return avg_dict
 end
-precompile(avg_allelefreq, (AbstractVector{Dict{T, Float64}},))
+precompile(avg_allelefreq, (AbstractVector{Dict{Int8, Float64}},))
+precompile(avg_allelefreq, (AbstractVector{Dict{Int16, Float64}},))
 
 
 # method for nei_fst (pairwise)
@@ -141,7 +142,8 @@ function avg_allelefreq(allele_dicts::NTuple{N,Dict{T, Float64}}, power::Int = 1
     end
     return avg_dict
 end
-precompile(avg_allelefreq, (NTuple{N,Dict{T, Float64}},))
+precompile(avg_allelefreq, (NTuple{N,Dict{Int8, Float64}},))
+precompile(avg_allelefreq, (NTuple{N,Dict{Int16, Float64}},))
 
 
 """
